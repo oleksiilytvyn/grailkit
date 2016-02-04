@@ -17,7 +17,8 @@ OS_LINUX = platform.system() == "Linux"
 def script_path():
   """Get the path to main script file no matter how it's run.
 
-  Returns path
+  Returns:
+    path to python script
   """
 
   if hasattr(sys, 'frozen'):
@@ -30,7 +31,7 @@ def script_path():
   return path
 
 
-def appdata_path( appname ):
+def app_path( appname ):
   """Returns appdata path for any platform
 
   Args:
