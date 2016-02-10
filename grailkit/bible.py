@@ -5,7 +5,7 @@ import os
 import re
 import sqlite3 as lite
 
-from grail.sdk.core import DataBaseHost
+from grailkit.core import DataBaseHost
 
 
 def verse_factory( cursor, row ):
@@ -118,6 +118,63 @@ class Book:
         self._title = row[3]
         self._osisid = row[1]
 
+
+class BibleInfo:
+    """Object that represents a bible file but dont have access to file"""
+
+    _date = ""
+    _title = ""
+    _subject = ""
+    _language = ""
+    _publisher = ""
+    _copyright = ""
+    _identifier = ""
+    _description = ""
+
+    _version = 1
+
+    # database handler
+    _db = None
+
+    def __init__( self, file_path ):
+        pass
+
+    @property
+    def date( self ):
+        return self._date
+
+    @property
+    def title( self ):
+        return self._title
+
+    @property
+    def subject( self ):
+        return self._subject
+
+    @property
+    def language( self ):
+        return self._language
+
+    @property
+    def publisher( self ):
+        return self._publisher
+
+    @property
+    def copyright( self ):
+        return self._copyright
+
+    @property
+    def identifier( self ):
+        return self._identifier
+
+    @property
+    def description( self ):
+        return self._description
+
+    @property
+    def version( self ):
+        """Schema version nubmer"""
+        return self._version
 
 class Bible:
     """Representation of grail bible file.
@@ -422,5 +479,44 @@ class Bible:
 
 
 class BibleHost:
-    """Mange bible versions"""
+    """Manage all installed bibles"""
+
+    @staticmethod
+    def list():
+        """List all installed bibles"""
+        return []
+
+    @staticmethod
+    def get( id ):
+        """Get a bible object"""
+        return Bible()
+
+    @staticmethod
+    def install( file ):
+        """Install bible from file, it can be any format file supported by parsers"""
+        pass
+
+    @staticmethod
+    def uninstall( id ):
+        """Uninstall bible by id"""
+        pass
+
+
+class Parser:
+    """Parse other file formats into grail bible format. Not implemented"""
+    pass
+
+
+class OSISParser(Parser):
+    """Parse OSIS bible. Not implemented"""
+    pass
+
+
+class SwordParser(Parser):
+    """Parse Sword bible. Not implemented"""
+    pass
+
+
+class CSVParser(Parser):
+    """Parse CSV bible. Not implemented"""
     pass

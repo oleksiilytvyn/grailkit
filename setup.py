@@ -24,16 +24,16 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name='grail.sdk',
+    name='grailkit',
     version='0.1',
     author='Oleksii Lytvyn',
     author_email='grailapplication@gmail.com',
     description=(
-        'Grail SDK'),
+        'Grail development kit'),
     long_description=open('README.rst').read(),
     url='https://bitbucket.org/grailapp/sdk',
     platforms='any',
-    packages=['grail.sdk'],
+    packages=['grailkit'],
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
