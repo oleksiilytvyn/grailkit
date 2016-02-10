@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from grail.sdk.core import DataBase, DataBaseHost, DataBaseError
+from grailkit.core import DataBase, DataBaseHost, DataBaseError
 
 
 class GrailFileError(Exception):

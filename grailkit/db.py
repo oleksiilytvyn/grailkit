@@ -3,7 +3,8 @@
 
 import os
 import sqlite3 as lite
-from grail.sdk.utils import copy_file
+from grailkit.utils import copy_file
+
 
 class DataBaseError(Exception):
     """Base class for DataBase Errors"""
@@ -12,6 +13,7 @@ class DataBaseError(Exception):
 class DataBase:
     """SQLite database wrapper"""
 
+    # sqlite connection handler
     _connection = None
 
     def __init__( self, file_path, file_copy = False, query = False, create = True ):
@@ -90,11 +92,19 @@ class DataBase:
 class DataBaseHost:
     """Host all sqlite database connections"""
 
+    # list of all connected databases
     _list = {}
 
     @staticmethod
     def get( file_path, file_copy = False, query = False, create = True  ):
-        """Get databse"""
+        """Get databse object
+
+        Args:
+            - file_path: database file path
+            - file_copy: copy file if file_path not exists
+            - query: execute query if file_path not exists
+            - create: create database file or not
+        """
         
         file_path = os.path.abspath(file_path)
 
@@ -109,6 +119,7 @@ class DataBaseHost:
     @staticmethod
     def close():
         """Close all connections"""
+
         for key in DataBaseHost._list:
             DataBaseHost._list[ key ].close()
 
