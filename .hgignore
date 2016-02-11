@@ -14,3 +14,4 @@ __pycache__/*
 .db-journal
 Thumbs.db
 *.log
+.idea/*
