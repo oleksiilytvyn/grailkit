@@ -1,5 +1,5 @@
-Grail SDK
+Grail Kit
 =========
 
-Grail SDK (Standart Development Kit) in python. This SDK used in original Grail application and with it you can develop compatible extensions to Grail.
-SDK includes handling of Project, CueList's, Cue and reading/writing to *.grail files.
+Grailkit is a standart library for development of Grail application. Grailkit includes handling of Project, CueList's, Cue and reading/writing to *.grail files. Reading and writing to grail bible format.
+Also grailkit implements new PyQt5 widgets and dialogs.
