@@ -4,7 +4,9 @@
 import sys
 
 from PyQt5.QtWidgets import QMainWindow
-from grailkit.ui.gapplication import GApplication
+
+from grailkit.ui import GApplication
+
 
 class MainWindow(QMainWindow):
 
@@ -18,6 +20,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize( 320, 240 )
         self.setWindowTitle( "Grail" )
         self.show()
+
 
 def main():
     """Launch application"""

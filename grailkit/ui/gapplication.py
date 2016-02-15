@@ -21,7 +21,7 @@ class GApplication(QApplication):
         """For proper work you need to set application name via self.setApplicationName(name)"""
         super(GApplication, self).__init__(argv)
 
-        sys.excepthook = self.hook_exception
+        #sys.excepthook = self.hook_exception
 
         # prevent from running more than one instance
         if not self._multiple_instances and self.isAlreadyRunning():
@@ -83,8 +83,8 @@ class GApplication(QApplication):
     def quit( self ):
         """Quit application and close all connections"""
 
-        super(GApplication, self).quit()
         self.shared_memory.detach()
+        super(GApplication, self).quit()
         sys.exit()
 
     def alredy_running( self ):
