@@ -19,7 +19,7 @@ class DataBase:
     # sqlite connection handler
     _connection = None
 
-    def __init__(self, file_path, file_copy=False, query=False, create=True):
+    def __init__(self, file_path, file_copy=False, query="", create=True):
         """Create SQLite database wrapper
 
         Args:
@@ -110,7 +110,7 @@ class DataBaseHost:
     _list = {}
 
     @staticmethod
-    def get(file_path, file_copy=False, query=False, create=True):
+    def get(file_path, file_copy=False, query="", create=True):
         """Get databse object
 
         Args:
