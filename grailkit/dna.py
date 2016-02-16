@@ -22,7 +22,7 @@ class GrailFile:
         """Open a *.grail file
 
         Args:
-            file_pathstr): path to file
+            file_path (str): path to file
             create (bool): create file if not exists
 
         Raises:
