@@ -14,69 +14,65 @@ OS_UNIX = platform.system() == "unix"
 OS_LINUX = platform.system() == "Linux"
 
 
-def _get_app():
-    """Get the path to main script file no matter how it's run.
+class PathUtils:
 
-    Returns:
-        path to python script
-        :rtype: string
-    """
+    def get_app(self):
+        """Get the path to main script file no matter how it's run.
 
-    apppath = sys.path[0]
+        Returns:
+            path to python script
+            :rtype: string
+        """
 
-    if hasattr(sys, 'frozen'):
-        apppath = os.path.dirname(sys.executable)
-    elif '__file__' in locals():
-        apppath = os.path.dirname(__file__)
-    else:
         apppath = sys.path[0]
 
-    return apppath
+        if hasattr(sys, 'frozen'):
+            apppath = os.path.dirname(sys.executable)
+        elif '__file__' in locals():
+            apppath = os.path.dirname(__file__)
+        else:
+            apppath = sys.path[0]
 
+        return os.path.abspath(apppath)
 
-def _get_appdata(appname):
-    """Returns appdata path for any platform
+    def get_appdata(self, appname):
+        """Returns appdata path for any platform
 
-    Args:
-        appname: name of program
+        Args:
+            appname: name of program
 
-    Returns:
-        path
-    """
-    if sys.platform == 'win32':
-        appdata = os.path.join(os.environ['APPDATA'], appname)
-    else:
-        appdata = os.path.expanduser(os.path.join("~", "." + appname))
+        Returns:
+            path
+        """
+        if sys.platform == 'win32':
+            appdata = os.path.join(os.environ['APPDATA'], appname)
+        else:
+            appdata = os.path.expanduser(os.path.join("~", "." + appname))
 
-    return appdata
+        return os.path.abspath(appdata)
 
+    def copy(self, source, destination):
+        """Copy file 'source' to file 'destination'
 
-def _copy(source, destination):
-    """Copy file 'source' to file 'destination'
+        Args:
+            source: path of file to be copied
+            destination: file destination path
 
-    Args:
-        source: path of file to be copied
-        destination: file destination path
+        Returns:
+            returns True if copy is successful.
+        """
+        directory = os.path.dirname(os.path.realpath(destination))
 
-    Returns:
-        returns True if copy is successful.
-    """
-    directory = os.path.dirname(os.path.realpath(destination))
+        if not os.path.exists(source):
+            return False
 
-    if not os.path.exists(source):
-        return False
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+        if os.path.exists(source):
+            shutil.copyfile(source, destination)
 
-    if os.path.exists(source):
-        shutil.copyfile(source, destination)
+        return True
 
-    return True
-
-# export locals
-path = {
-    'get_appdata': _get_appdata,
-    'get_app': _get_app,
-    'copy': _copy
-    }
+# export path utils
+path = PathUtils()

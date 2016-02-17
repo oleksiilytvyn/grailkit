@@ -23,7 +23,7 @@ class DataBase:
     # sqlite connection handler
     _connection = None
 
-    def __init__(self, file_path, file_copy=False, query="", create=True):
+    def __init__(self, file_path, file_copy=False, query="", create=False):
         """Create SQLite database wrapper
 
         Args:
