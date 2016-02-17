@@ -8,6 +8,10 @@ import sqlite3 as lite
 from grailkit.core import path
 
 
+def create_factory(object_def, cursor, row):
+    return object_def(row, cursor)
+
+
 class DataBaseError(Exception):
     """Base class for DataBase Errors"""
     pass
@@ -23,17 +27,18 @@ class DataBase:
         """Create SQLite database wrapper
 
         Args:
-            file_path: database file path
-            file_copy: copy file if file_path not exists
-            query: execute query if file_path not exists
-            create: create database file or not
+            file_path (str): database file path
+            file_copy (str): copy file if file_path not exists
+            query (str): execute query if file_path not exists
+            create (bool): create database file or not
         """
+
         directory = os.path.dirname(os.path.realpath(file_path))
         execute_query = False
 
         if not create and (not os.path.exists(directory) or
            not os.path.isfile(file_path)):
-            raise Exception("Database file not exists. Unable to open sqlite file.")
+            raise DataBaseError("Database file not exists. Unable to open sqlite file.")
 
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -66,20 +71,23 @@ class DataBase:
     @property
     def connection(self):
         """Returns sqlite3 connection"""
+
         return self._connection
 
     @property
     def cursor(self):
         """Returns sqlite3 connection cursor"""
+
         return self._connection.cursor()
 
     def get(self, query, data=tuple()):
         """Execute query and return first record
 
         Args:
-            query: SQL query string
-            data (typle): typle of data
+            query (str): SQL query string
+            data (tuple): tuple of data
         """
+
         cursor = self.cursor
         cursor.execute(query, data)
 
@@ -89,16 +97,29 @@ class DataBase:
         """Execute query and return all records
 
         Args:
-            query: SQL query string
-            data (typle): typle of data
+            query (str): SQL query string
+            data (tuple): tuple of data
         """
+
         cursor = self.cursor
         cursor.execute(query, data)
 
         return cursor.fetchall()
 
+    def execute(self, query, data=tuple()):
+        """Execute query
+
+        Args:
+            query (str): SQL query string
+            data: tuple of data
+        """
+
+        cursor = self.cursor
+        cursor.execute(query, data)
+
     def close(self):
         """Close connection"""
+
         self._connection.commit()
         self._connection.close()
 
@@ -111,13 +132,13 @@ class DataBaseHost:
 
     @staticmethod
     def get(file_path, file_copy=False, query="", create=True):
-        """Get databse object
+        """Get database object
 
         Args:
-            file_path: database file path
-            file_copy: copy file if file_path not exists
-            query: execute query if file_path not exists
-            create: create database file or not
+            file_path (str): path to database file
+            file_copy (str): copy file from `file_copy` if `file_path` not exists
+            query (str): execute query if file `file_path` not exists
+            create (bool): create database file or not
         """
 
         file_path = os.path.abspath(file_path)

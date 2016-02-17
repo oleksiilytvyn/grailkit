@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+from grailkit.dna import DNA
+
 
 class ProjectError(Exception):
     """Base class for all project related exceptions"""
     pass
 
 
-class Project:
+class Project(DNA):
     """Representation of a project"""
 
     _name = "Untitled project"
@@ -16,7 +18,6 @@ class Project:
     _created = 0
     _modified = 0
 
-    _db = None
     _items = []
 
     def __init__(self, file_path="", create=False):
@@ -26,6 +27,8 @@ class Project:
             file_path (str): path to file
             create (bool): create file if not exists
         """
+
+        super(Project, self).__init__(file_path, create)
 
         if not file_path:
             raise ProjectError("Can't open project, file not specified.")
