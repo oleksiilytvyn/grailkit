@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+
 import os
 
 from grailkit.db import DataBaseHost
@@ -12,7 +13,7 @@ class DNAError(Exception):
 
 class DNA:
     """Base class for parsing grail file,
-    use this class whe you don't want to show public methods.
+    use this class when you don't want to show public methods.
     Otherwise use DNAFile class.
     """
 
@@ -118,7 +119,11 @@ class DNA:
         Returns:
             property of an entity
         """
-        return default
+
+        if value:
+            return self._set_property(entity_id, key, value, default, force_type)
+        else:
+            return self._get_property(entity_id, key, default)
 
     def _get_property(self, entity_id, key, default=None):
         """Get property of entity with id `entity_id` and property name `key`
@@ -131,7 +136,11 @@ class DNA:
         Returns:
             Value of property of an entity
         """
-        return default
+
+        value = self._db.get("SELECT value FROM `properties` WHERE `entity` = ? AND `key` = ?", (entity_id, key))
+
+        # TO-DO: add type handling
+        return value if value else default
 
     def _set_property(self, entity_id, key, value, force_type=None):
         """Set a property value of an entity
@@ -154,7 +163,10 @@ class DNA:
         Returns:
             True if property exists
         """
-        pass
+
+        value = self._db.get("SELECT value FROM `properties` WHERE `entity` = ? AND `key` = ?", (entity_id, key))
+
+        return bool(value)
 
     def _properties(self, entity_id):
         """Get list of all properties linked to entity
@@ -165,7 +177,11 @@ class DNA:
         Returns:
             properties list of an entity
         """
-        return []
+
+        props = self._db.all("SELECT key, value FROM `properties` WHERE `entity` = ?", (entity_id,))
+
+        # TO-DO: add type handling
+        return props
 
     def _remove_property(self, entity_id, key):
         """Remove property of an entity
@@ -177,6 +193,10 @@ class DNA:
         Returns:
             True if property removed
         """
+
+        cursor = self._db.cursor
+        props = cursor.get("SELECT key, value FROM `properties` WHERE `entity` = ?", (entity_id,))
+
         return True
 
     def _remove_properties(self, entity_id):

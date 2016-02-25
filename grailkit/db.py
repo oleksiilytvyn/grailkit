@@ -86,6 +86,8 @@ class DataBase:
         Args:
             query (str): SQL query string
             data (tuple): tuple of data
+        Returns:
+            first row
         """
 
         cursor = self.cursor
@@ -99,6 +101,8 @@ class DataBase:
         Args:
             query (str): SQL query string
             data (tuple): tuple of data
+        Returns:
+            list of fetched rows
         """
 
         cursor = self.cursor
@@ -111,11 +115,20 @@ class DataBase:
 
         Args:
             query (str): SQL query string
-            data: tuple of data
+            data (tuple): tuple of data
         """
 
         cursor = self.cursor
         cursor.execute(query, data)
+
+    def set_factory(self, factory=lite.Row):
+        """Set sqlite row factory
+
+        Args:
+            factory (sqlite3.Row): factory object
+        """
+
+        self.connection.row_factory = factory
 
     def close(self):
         """Close connection"""
@@ -139,6 +152,8 @@ class DataBaseHost:
             file_copy (str): copy file from `file_copy` if `file_path` not exists
             query (str): execute query if file `file_path` not exists
             create (bool): create database file or not
+        Returns
+            DataBase object if open or opens database and returns it.
         """
 
         file_path = os.path.abspath(file_path)
