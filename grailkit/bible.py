@@ -406,7 +406,11 @@ class Bible:
 
     @staticmethod
     def validate(file_path):
-        """Check file to be valid grail bible file format"""
+        """Check file to be valid grail bible file format
+
+        Args:
+            file_path (str): pat to bible file
+        """
         # return True
         # if file not exists
         if not os.path.isfile(file_path):
