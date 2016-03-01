@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from grailkit.dna import DNA
+from grailkit.dna import DNA, DNAEntity
 
 
 class ProjectError(Exception):
@@ -30,9 +30,6 @@ class Project(DNA):
 
         super(Project, self).__init__(file_path, create)
 
-        if not file_path:
-            raise ProjectError("Can't open project, file not specified.")
-
     def items(self): pass
 
     def insert(self, index, item): pass
@@ -58,67 +55,17 @@ class Project(DNA):
         pass
 
 
-class Cuelist:
+class Cuelist(DNAEntity):
     """Representation of cuelist"""
-
-    _id = 0
-    _name = "Untitled cuelist"
-
-    @property
-    def id(self):
-        return self._id
-
-    @property
-    def name(self):
-        return self._name
 
     def __init__(self):
         """Create a cuelist"""
-        pass
+        super(Cuelist, self).__init__()
 
-    def items(self):
-        """List all cues inside this cuelist"""
-        pass
-
-    def insert(self, index, item):
-        """Add Cue item to cuelist at `index` position
-
-        Args:
-            index (int): position to inset
-            item (Cue): Cue to insert
-        """
-        pass
-
-    def append(self, item):
-        """Add Cue item to end of list
-
-        Args:
-            item (Cue): Cue to be added
-        """
-        pass
-
-    def remove(self, index):
-        """
-
-        Args:
-            index: index of item that will be removed
-        """
-        pass
-
-    def __len__(self): pass
-
-    def __getitem__(self, key): pass
-
-    def __setitem__(self, key, value): pass
-
-    def __delitem__(self, key): pass
-
-    def __iter__(self): pass
-
-    def __reversed__(self): pass
+        self._name = "Untitled cuelist"
 
 
-class Cue:
+class Cue(DNAEntity):
     """Representation of a Cue in Cuelist"""
 
     # Follow type
@@ -151,24 +98,9 @@ class Cue:
     _data = {}
 
     @property
-    def id(self):
-        """unique identifier of cue"""
-        return self._id
-
-    @property
-    def parent(self):
-        """Identifier of parent cue, if 0 is in root of Cuelist"""
-        return self._parent
-
-    @property
     def number(self):
         """Identifier of cue assigned by user"""
         return self._number
-
-    @property
-    def name(self):
-        """any text that describe cue"""
-        return self._name
 
     @property
     def color(self):
@@ -198,44 +130,3 @@ class Cue:
     def __init__(self):
         """Create a cue instance"""
         pass
-
-    def items(self):
-        """Get list of sub cues
-
-        Returns:
-            list of child cues
-        """
-        return self._items
-
-    def insert(self, index, item):
-        """Insert a child cue after
-
-        Args:
-            index (int): insert to index
-            item (Cue): cue item
-        """
-        pass
-
-    def append(self, item):
-        """Add a child cue to end
-
-        Args:
-            item: cue item
-        """
-        return self.insert(len(self), item)
-
-    def remove(self, index):
-        """Remove item by index
-
-        Args:
-            index: index of an item
-        """
-        pass
-
-    def __len__(self):
-        """Child cues count"""
-        return len(self._items)
-
-    def __iter__(self):
-        """Iterate through child cues"""
-        return self._items

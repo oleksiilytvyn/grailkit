@@ -39,7 +39,7 @@ class PathUtils:
         """Returns appdata path for any platform
 
         Args:
-            appname: name of program
+            appname: name of application
 
         Returns:
             path

@@ -80,35 +80,49 @@ class DataBase:
 
         return self._connection.cursor()
 
-    def get(self, query, data=tuple()):
+    def get(self, query, data=tuple(), factory=None):
         """Execute query and return first record
 
         Args:
             query (str): SQL query string
             data (tuple): tuple of data
+            factory: sqlite row factory
         Returns:
             first row
         """
 
+        if factory:
+            self.set_factory(factory)
+
         cursor = self.cursor
         cursor.execute(query, data)
 
-        return cursor.fetchone()
+        result = cursor.fetchone()
+        self.set_factory()
 
-    def all(self, query, data=tuple()):
+        return result
+
+    def all(self, query, data=tuple(), factory=None):
         """Execute query and return all records
 
         Args:
             query (str): SQL query string
             data (tuple): tuple of data
+            factory: sqlite row factory for this query only
         Returns:
             list of fetched rows
         """
 
+        if factory:
+            self.set_factory(factory)
+
         cursor = self.cursor
         cursor.execute(query, data)
 
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        self.set_factory()
+
+        return result
 
     def execute(self, query, data=tuple()):
         """Execute query
