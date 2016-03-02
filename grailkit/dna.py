@@ -9,6 +9,21 @@ import sqlite3 as lite
 from grailkit.db import DataBaseHost, DataBaseError
 
 
+def millis_now():
+    """Returns time in milliseconds since epoch"""
+    return int(round(time.time() * 1000))
+
+
+PROPERTY_TYPE = {
+    'NONE': 0,
+    'BOOL': 1,
+    'INT': 2,
+    'FLOAT': 3,
+    'STR': 4,
+    'JSON': 6
+    }
+
+
 class DNAError(DataBaseError):
     """Base class for DNA errors"""
     pass
@@ -50,6 +65,10 @@ class DNA:
         else:
             self._db = DataBaseHost.get(file_path, query=self._db_create_query, create=create)
 
+    def _create(self):
+        """Returns new DNAEntity inside this DNA file"""
+        return DNAEntity(self)
+
     def _entity(self, entity_id):
         """Get entity by `entity_id`
 
@@ -59,10 +78,10 @@ class DNA:
         Returns:
             DNAEntity with id `entity_id`
         """
+        raw_entity = self._db.get("""SELECT id, parent, type, name, created, modified, content, search, sort_order
+                            FROM entities WHERE id = ?""", (entity_id,))
 
-        return self._db.get("""SELECT id, parent, type, name, created, modified, content, search, sort_order
-                            FROM entities WHERE id = ?""", (entity_id,),
-                            factory=DNAEntity.from_sqlite)
+        return DNAEntity.from_sqlite(self, raw_entity)
 
     def _entities(self):
         """Get list of all entities
@@ -71,9 +90,15 @@ class DNA:
             list of all entities available
         """
 
-        return self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
-                            FROM entities ORDER BY sort_order ASC""",
-                            factory=DNAEntity.from_sqlite)
+        raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
+                            FROM entities ORDER BY sort_order ASC""")
+
+        entities = []
+
+        for raw in raw_entities:
+            entities.append(DNAEntity.from_sqlite(self, raw))
+
+        return entities
 
     def _add(self, entity):
         """Add new entity
@@ -131,11 +156,15 @@ class DNA:
         Returns:
             list of child entities
         """
-        entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
+        raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
                                 FROM entities
                                 WHERE parent = ?
-                                ORDER BY sort_order ASC""", (entity_id,),
-                                factory=DNAEntity.from_sqlite)
+                                ORDER BY sort_order ASC""", (entity_id,))
+
+        entities = []
+
+        for raw in raw_entities:
+            entities.append(DNAEntity.from_sqlite(self, raw))
 
         return entities
 
@@ -198,9 +227,13 @@ class DNA:
             properties list of an entity
         """
 
-        props = self._db.all("SELECT key, value FROM `properties` WHERE `entity` = ?", (entity_id,))
+        raw_props = self._db.all("SELECT key, value, type FROM `properties` WHERE `entity` = ?", (entity_id,))
+        props = {}
 
         # TO-DO: add type handling
+        for prop in raw_props:
+            props[prop[0]] = prop[1]
+
         return props
 
     def _remove_property(self, entity_id, key):
@@ -260,6 +293,7 @@ class DNAFile(DNA):
         super(DNAFile, self).__init__(file_path, create=create)
 
         # entities
+        self.create = self._create
         self.entity = self._entity
         self.entities = self._entities
         self.add = self._add
@@ -286,6 +320,7 @@ class DNAEntity:
     TYPE_CUE = 4
     TYPE_FILE = 5
 
+    # enumerate all types
     TYPES = (
         TYPE_ABSTRACT,
         TYPE_PROJECT,
@@ -294,7 +329,7 @@ class DNAEntity:
         TYPE_CUE,
         TYPE_FILE)
 
-    def __init__(self):
+    def __init__(self, parent=None):
         """ """
         self._id = 0
         self._type = None
@@ -302,24 +337,25 @@ class DNAEntity:
         self._parent = 0
         self._search = ""
         self._content = None
-        self._created = int(round(time.time() * 1000))
+        self._created = millis_now()
         self._modified = 0
         self._index = 0
+
+        self._dna_parent = parent
+
+        if parent is None:
+            raise DNAError("DNAEntity cannot be created without parent")
 
     def __len__(self):
         """
         Returns:
             number of child entities
         """
-        pass
+        return len(self._dna_child_ids)
 
     def __iter__(self):
         """Iterate over child items"""
-        pass
-
-    def __reversed__(self):
-        """Reversed iterator"""
-        pass
+        return iter(self._dna_parent._entity_childs(self._id))
 
     # fields
     @property
@@ -328,14 +364,15 @@ class DNAEntity:
         return self._id
 
     @property
-    def parent(self):
+    def parent_id(self):
         """Parent identifier"""
         return self._parent
 
-    @parent.setter
-    def parent(self, parent):
+    @parent_id.setter
+    def parent_id(self, parent):
         """Set parent identifier"""
         self._parent = parent
+        self._modified = millis_now()
 
     @property
     def name(self):
@@ -345,6 +382,7 @@ class DNAEntity:
     @name.setter
     def name(self, name):
         self._name = name
+        self._modified = millis_now()
 
     @property
     def type(self):
@@ -359,6 +397,7 @@ class DNAEntity:
             arg_type: type of entity
         """
         self._type = arg_type
+        self._modified = millis_now()
 
     @property
     def created(self):
@@ -379,6 +418,7 @@ class DNAEntity:
     def content(self, content):
         """Set content of item"""
         self._content = content
+        self._modified = millis_now()
 
     @property
     def search(self):
@@ -394,55 +434,11 @@ class DNAEntity:
     def search(self, value):
         """Search string"""
         self._search = value
+        self._modified = millis_now()
 
-    # properties
-    def get_property(self, key, default=None):
-        return default
+    def _parse(self, row):
+        """Parse sqlite row into DNAEntity
 
-    def set_property(self, key, value, type=None):
-        pass
-
-    def has_property(self, key):
-        return True
-
-    def remove_property(self, key):
-        pass
-
-    def items(self):
-        """Get list of sub cues
-
-        Returns:
-            list of child cues
-        """
-        return []
-
-    def insert(self, index, item):
-        """Insert a child cue after
-
-        Args:
-            index (int): insert to index
-            item (Cue): cue item
-        """
-        pass
-
-    def append(self, item):
-        """Add a child cue to end
-
-        Args:
-            item: cue item
-        """
-        return self.insert(len(self), item)
-
-    def remove(self, index):
-        """Remove item by index
-
-        Args:
-            index: index of an item
-        """
-        pass
-
-    def _parse(self, cursor, row):
-        """
         Args:
             cursor (sqlite3.Cursor): cursor object
             row (sqlite3.Row): row object
@@ -459,8 +455,8 @@ class DNAEntity:
         self._index = row[8]
 
     @staticmethod
-    def from_sqlite(cursor, row):
-        entity = DNAEntity()
-        entity._parse(cursor, row)
+    def from_sqlite(parent, row):
+        entity = DNAEntity(parent=parent)
+        entity._parse(row)
 
         return entity

@@ -59,24 +59,21 @@ class TestGrailkitDNA(unittest.TestCase):
 
     def test_dna_entity(self):
 
-        entity1 = dna.DNAEntity()
+        db_path = os.path.join(self.test_dir, 'entity.grail')
+        db_obj = dna.DNAFile(db_path, create=True)
+
+        entity1 = db_obj.create()
         entity1.name = "project"
         entity1.parent = 0
 
-        entity2 = dna.DNAEntity()
+        entity2 = db_obj.create()
         entity2.content = [0, 2, 3]
         entity2.name = "cuelist"
         entity2.parent = 1
         entity2.search = "cuelist 1 (0 2 3)"
 
-        db_path = os.path.join(self.test_dir, 'entity.grail')
-        db_obj = dna.DNAFile(db_path, create=True)
-
         eid1 = db_obj.add(entity1)
-        print(eid1, db_obj.entity(eid1))
-
         eid2 = db_obj.add(entity2)
-        print(eid2, db_obj.entity(eid2))
 
         db_obj.set_property(eid1, "author", "Alex Litvin")
         db_obj.set_property(eid1, "description", "testing DNA file")
@@ -88,16 +85,8 @@ class TestGrailkitDNA(unittest.TestCase):
         self.assertTrue(db_obj.entity_has_childs(eid1))
         self.assertFalse(db_obj.entity_has_childs(eid2))
 
-        print("entities:")
-        for entity in db_obj.entities():
-            print(entity)
-
-        print("entity 1 properties")
-        for prop in db_obj.properties(eid1):
-            print(list(prop))
-
-        print("entity 2 properties")
-        for prop in db_obj.properties(eid2):
-            print(list(prop))
+        self.assertEqual(len(db_obj.entities()), 2)
+        self.assertEqual(len(db_obj.properties(eid1)), 2)
+        self.assertEqual(len(db_obj.properties(eid2)), 3)
 
         db_obj.close()
