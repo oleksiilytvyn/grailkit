@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-import os
 import re
-import sqlite3 as lite
 
-from grailkit.db import DataBaseHost
+from grailkit.dna import DNA
 
 
 def verse_factory(cursor, row):
-    return Verse(row, cursor)
+    return Verse.from_sqlite(row)
 
 
 def book_factory(cursor, row):
-    return Book(row, cursor)
+    return Book.from_sqlite(row)
 
 
 class BibleError(Exception):
@@ -33,26 +31,27 @@ class Verse:
 
     _text = ""
 
-    def __init__(self, row=None, cursor=None):
-        if row is not None:
-            self.parse(row)
-        else:
-            raise BibleError("Could not create Verse, sqlite row is not defined.")
+    def __init__(self):
+        pass
 
     @property
     def book(self):
+        """Book name"""
         return self._book
 
     @property
     def book_id(self):
+        """Book id (int)"""
         return self._book
 
     @property
     def chapter(self):
+        """Chapter number (int)"""
         return self._chapter
 
     @property
     def verse(self):
+        """Verse number (int)"""
         return self._verse
 
     @property
@@ -62,15 +61,32 @@ class Verse:
 
     @property
     def text(self):
+        """Text of verse"""
         return self._text
 
     def parse(self, row):
+        """Parse sqlite row into verse"""
         self._book = row[5]
         self._book_id = row[1]
         self._chapter = row[2]
         self._verse = row[3]
         self._text = row[4]
         self._osisid = row[0]
+
+    @staticmethod
+    def from_sqlite(row):
+        """Parse sqlite row and return Verse
+
+        Args:
+            row: sqlite3 row
+
+        Returns:
+            Verse
+        """
+        verse = Verse()
+        verse.parse(row)
+
+        return verse
 
 
 class Book:
@@ -82,9 +98,8 @@ class Book:
     _title = ""
     _osisid = ""
 
-    def __init__(self, row=None, cursor=None):
-        if row:
-            self.parse(row, cursor)
+    def __init__(self):
+        pass
 
     @property
     def id(self):
@@ -111,16 +126,33 @@ class Book:
         """OASIS identifier, can be used for cross-referencing"""
         return self._osisid
 
-    def parse(self, row, cursor):
+    def parse(self, row):
+        """Parse sqlite row and fill Book"""
+
         self._id = row[0]
         self._abbr = row[4]
         self._name = row[2]
         self._title = row[3]
         self._osisid = row[1]
 
+    @staticmethod
+    def from_sqlite(row):
+        """Parse sqlite row and return Book
+
+        Args:
+            row: sqlite row
+
+        Returns:
+            Book
+        """
+        book = Book()
+        book.parse(row)
+
+        return book
+
 
 class BibleInfo:
-    """Object that represents a bible file but dont have access to file"""
+    """Object that represents a bible file but don't have access to file"""
 
     _date = ""
     _title = ""
@@ -177,44 +209,40 @@ class BibleInfo:
         return self._version
 
 
-class Bible:
+class Bible(DNA):
     """Representation of grail bible file.
     This class gives you read only access to file
     """
 
-    _date = ""
-    _title = ""
-    _subject = ""
-    _language = ""
-    _publisher = ""
-    _copyright = ""
-    _identifier = ""
-    _description = ""
-
-    _version = 1
-
-    # database handler
-    _db = None
+    # create file from this query
+    # TO-DO: extend query from DNA class
+    # file extension
+    _file_extension = ".grail-bible"
 
     def __init__(self, file_path):
         """Read grail bible format into Bible class"""
 
-        if not Bible.validate(file_path):
-            raise BibleError("Bible file could not be opened.")
-        else:
-            self._db = DataBaseHost.get(file_path)
+        self._db_create_query += """
+            DROP TABLE IF EXISTS books;
+            CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
+
+            DROP TABLE IF EXISTS verses;
+            CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
+            """
+
+        super(Bible, self).__init__(file_path, create=False)
 
         # read bible info
-        self._date = self._get_property("date", "")
-        self._title = self._get_property("title", "")
-        self._subject = self._get_property("subject", "")
-        self._language = self._get_property("language", "")
-        self._publisher = self._get_property("publisher", "")
-        self._copyright = self._get_property("copyright", "")
-        self._identifier = self._get_property("identifier", "")
-        self._description = self._get_property("description", "")
+        self._date = self._get_property(0, "date", default="")
+        self._title = self._get_property(0, "title", default="Untitled")
+        self._subject = self._get_property(0, "subject", default="")
+        self._language = self._get_property(0, "language", default="unknown")
+        self._publisher = self._get_property(0, "publisher", default="Unknown Publisher")
+        self._copyright = self._get_property(0, "copyright", default="copyright information unavailable")
+        self._identifier = self._get_property(0, "identifier", default="NONE")
+        self._description = self._get_property(0, "description", default="")
 
-        self._version = self._get_property("version", 1)
+        self._version = self._get_property(0, "version", default=1)
 
     @property
     def date(self):
@@ -255,7 +283,6 @@ class Bible:
 
     def books(self):
         """Returns list of all books"""
-        self._set_factory(book_factory)
 
         return self._db.all("""SELECT 
             `books`.`id`,
@@ -263,22 +290,20 @@ class Bible:
             `books`.`name`,
             `books`.`title`,
             `books`.`abbr`
-            FROM books""")
+            FROM books""", factory=book_factory)
 
     def book(self, book):
         """Returns single book"""
-        self._set_factory(book_factory)
 
         return self._db.get("""SELECT
             `books`.`id`,
             `books`.`osisid`,
             `books`.`name`,
             `books`.`title`,
-            `books`.`abbr` FROM books WHERE id = ?""", (book,))
+            `books`.`abbr` FROM books WHERE id = ?""", (book,), factory=book_factory)
 
     def chapter(self, book, chapter):
         """Returns all verses in chapter"""
-        self._set_factory(verse_factory)
 
         return self._db.all("""SELECT 
                 `verses`.`osisid`,
@@ -290,60 +315,55 @@ class Bible:
             FROM verses
             LEFT JOIN `books` ON `verses`.`book` = `books`.`id`
             WHERE `verses`.`book` = ? AND `verses`.`chapter` = ?
-            ORDER BY `verses`.`verse` ASC""", (book, chapter))
+            ORDER BY `verses`.`verse` ASC""", (book, chapter), factory=verse_factory)
 
     def verse(self, book, chapter, verse):
         """Returns single verse"""
-        self._set_factory(verse_factory)
 
         return self._db.get("""SELECT 
-                `verses`.`osisid`,
-                `verses`.`book`,
-                `verses`.`chapter`,
-                `verses`.`verse`,
-                `verses`.`text`,
-                `books`.`name` as book_name
-            FROM verses
-            LEFT JOIN `books` ON `verses`.`book` = `books`.`id` 
-            WHERE `verses`.`book` = ? AND `verses`.`chapter` = ? AND `verses`.`verse` = ?""",
-                            (book, chapter, verse))
+                                `verses`.`osisid`,
+                                `verses`.`book`,
+                                `verses`.`chapter`,
+                                `verses`.`verse`,
+                                `verses`.`text`,
+                                `books`.`name` as book_name
+                            FROM verses
+                            LEFT JOIN `books` ON `verses`.`book` = `books`.`id`
+                            WHERE `verses`.`book` = ? AND `verses`.`chapter` = ? AND `verses`.`verse` = ?""",
+                            (book, chapter, verse), factory=verse_factory)
 
     def count_verses(self, book, chapter):
         """Returns number of verses in chapter"""
-        self._set_factory()
 
         return self._db.get("SELECT COUNT(*) as count FROM verses WHERE book = ? AND chapter = ?",
                             (book, chapter))["count"]
 
     def count_chapters(self, book):
         """Returns number of chapters in book"""
-        self._set_factory()
 
         return self._db.get("SELECT COUNT(*) as count FROM verses WHERE book = ? AND verse = 1",
                             (book,))["count"]
 
     def match_book(self, keyword):
         """find book by keyword"""
-        self._set_factory(book_factory)
 
         keyword = "%" + keyword + "%"
 
         return self._db.all("""SELECT
-            `books`.`id`,
-            `books`.`osisid`,
-            `books`.`name`,
-            `books`.`title`,
-            `books`.`abbr`
-            FROM books
-            WHERE
-             lowercase(title) LIKE lowercase( ? )
-             OR lowercase(short) LIKE lowercase( ? )
-             OR lowercase(full) LIKE lowercase( ? )
-            """, (keyword, keyword, keyword))
+                            `books`.`id`,
+                            `books`.`osisid`,
+                            `books`.`name`,
+                            `books`.`title`,
+                            `books`.`abbr`
+                            FROM books
+                            WHERE
+                             lowercase(title) LIKE lowercase( ? )
+                             OR lowercase(short) LIKE lowercase( ? )
+                             OR lowercase(full) LIKE lowercase( ? )
+                            """, (keyword, keyword, keyword), factory=book_factory)
 
     def match_reference(self, keyword):
         """find verse by keyword"""
-        self._set_factory(verse_factory)
 
         # default values
         chapter = 1
@@ -375,116 +395,26 @@ class Bible:
         verse = int(verse)
 
         return self._db.all("""SELECT
-                `verses`.`osisid`,
-                `verses`.`book`,
-                `verses`.`chapter`,
-                `verses`.`verse`,
-                `verses`.`text`,
-                `books`.`name` as book_name
-            FROM verses
-            LEFT JOIN `books` ON `verses`.`book` = `books`.`id`
-            WHERE
-                (lowercase(`books`.`title`) LIKE ?
-                OR lowercase(`books`.`name`) LIKE ?
-                OR lowercase(`books`.`abbr`) LIKE ?)
-                AND `verses`.`chapter` = ?
-                AND `verses`.`verse` = ?
-            LIMIT 3""",
-                            (keyword, keyword, keyword, chapter, verse))
-
-    def _set_factory(self, factory=lite.Row):
-        """Set sqlite row factory"""
-        self._db.connection.row_factory = factory
-
-    def _get_property(self, key, default=""):
-        """Get info property"""
-        self._set_factory()
-
-        value = self._db.get("SELECT key, value from properties WHERE key = ?", (key,))
-
-        return value["value"] if value else default
-
-    @staticmethod
-    def validate(file_path):
-        """Check file to be valid grail bible file format
-
-        Args:
-            file_path (str): pat to bible file
-        """
-        # return True
-        # if file not exists
-        if not os.path.isfile(file_path):
-            return False
-
-        # if file doesn't have proper extension
-        if os.path.splitext(file_path)[1] != '.grail-bible':
-            return False
-
-        # check if file have proper structure
-        try:
-            connection = lite.connect(file_path)
-            connection.row_factory = lite.Row
-            c = connection.cursor()
-            flag = True
-
-            c.execute("""SELECT name 
-                FROM sqlite_master 
-                WHERE type='table' AND name in ('books', 'verses', 'properties')
-                ORDER BY name ASC""")
-            tables = c.fetchall()
-
-            if [table['name'] for table in tables] != ['books', 'properties', 'verses']:
-                flag = False
-
-            c.execute("""SELECT 
-                    `properties`.`key`,
-                    `properties`.`value`,
-                    `properties`.`type`
-                FROM properties LIMIT 1""")
-            record = c.fetchone()
-
-            if record.keys() != ['key', 'value', 'type']:
-                flag = False
-
-            c.execute("""SELECT 
-                    `books`.`id`,
-                    `books`.`osisid`,
-                    `books`.`name`,
-                    `books`.`title`,
-                    `books`.`abbr`
-                FROM books LIMIT 1""")
-            record = c.fetchone()
-
-            if record.keys() != ['id', 'osisid', 'name', 'title', 'abbr']:
-                flag = False
-
-            c.execute("""SELECT 
-                    `verses`.`osisid`,
-                    `verses`.`book`,
-                    `verses`.`chapter`,
-                    `verses`.`verse`,
-                    `verses`.`text`
-                FROM verses LIMIT 1""")
-            record = c.fetchone()
-
-            if record.keys() != ['osisid', 'book', 'chapter', 'verse', 'text']:
-                flag = False
-
-            c.execute("SELECT key, value from properties WHERE key = ?", ('version',))
-
-            # check version
-            if int(c.fetchone()['value']) != 1:
-                flag = False
-
-            connection.close()
-
-            return flag
-        except:
-            return False
+                                `verses`.`osisid`,
+                                `verses`.`book`,
+                                `verses`.`chapter`,
+                                `verses`.`verse`,
+                                `verses`.`text`,
+                                `books`.`name` as book_name
+                            FROM verses
+                            LEFT JOIN `books` ON `verses`.`book` = `books`.`id`
+                            WHERE
+                                (lowercase(`books`.`title`) LIKE ?
+                                OR lowercase(`books`.`name`) LIKE ?
+                                OR lowercase(`books`.`abbr`) LIKE ?)
+                                AND `verses`.`chapter` = ?
+                                AND `verses`.`verse` = ?
+                            LIMIT 3""",
+                            (keyword, keyword, keyword, chapter, verse), factroy=verse_factory)
 
 
 class BibleHost:
-    """Manage all installed bibles"""
+    """Manage all installed bibles. Not implemented"""
 
     @staticmethod
     def list():
@@ -509,19 +439,27 @@ class BibleHost:
 
 class Parser:
     """Parse other file formats into grail bible format. Not implemented"""
-    pass
+
+    def __init__(self):
+        raise NotImplementedError()
 
 
 class OSISParser(Parser):
     """Parse OSIS bible. Not implemented"""
-    pass
+
+    def __init__(self):
+        super(OSISParser, self).__init__()
 
 
 class SwordParser(Parser):
     """Parse Sword bible. Not implemented"""
-    pass
+
+    def __init__(self):
+        super(SwordParser, self).__init__()
 
 
 class CSVParser(Parser):
     """Parse CSV bible. Not implemented"""
-    pass
+
+    def __init__(self):
+        super(CSVParser, self).__init__()
