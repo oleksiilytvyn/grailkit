@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
 import os
@@ -14,16 +13,6 @@ def millis_now():
     return int(round(time.time() * 1000))
 
 
-PROPERTY_TYPE = {
-    'NONE': 0,
-    'BOOL': 1,
-    'INT': 2,
-    'FLOAT': 3,
-    'STR': 4,
-    'JSON': 6
-    }
-
-
 class DNAError(DataBaseError):
     """Base class for DNA errors"""
     pass
@@ -34,6 +23,14 @@ class DNA:
     use this class when you don't want to show public methods.
     Otherwise use DNAFile class.
     """
+
+    TYPE_BOOL = 1
+    TYPE_INT = 2
+    TYPE_FLOAT = 3
+    TYPE_STRING = 4
+    TYPE_JSON = 6
+
+    _SUPPORTED_TYPES = (TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_JSON)
 
     # database handler
     _db = None
@@ -180,20 +177,27 @@ class DNA:
             Value of property of an entity
         """
 
-        value = self._db.get("SELECT value FROM `properties` WHERE `entity` = ? AND `key` = ?", (entity_id, key))
+        value = self._db.get("SELECT value, type FROM `properties` WHERE `entity` = ? AND `key` = ?", (entity_id, key))
 
-        # TO-DO: add type handling
-        return value[0] if value else default
+        return self._read_type(value[0], value[1]) if value else default
 
-    def _set_property(self, entity_id, key, value, force_type=0):
+    def _set_property(self, entity_id, key, value, force_type=None):
         """Set a property value of an entity
 
         Args:
             entity_id (int): id of an entity
             key (str): name of property
             value (object): value to assign to property
-            force_type (object): set a type of property
+            force_type (DNA.TYPE): set a type of property
         """
+
+        if force_type is None:
+            force_type = self._get_type(value)
+        elif force_type not in self._SUPPORTED_TYPES:
+            raise DNAError("Property type not supported")
+
+        value = self._write_type(value, force_type)
+
         self._db.execute("INSERT OR IGNORE INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
                          (entity_id, key, value, force_type))
         self._db.execute("UPDATE properties SET entity = ?, key = ?, value = ?, type = ? WHERE entity = ? AND key = ?",
@@ -230,9 +234,8 @@ class DNA:
         raw_props = self._db.all("SELECT key, value, type FROM `properties` WHERE `entity` = ?", (entity_id,))
         props = {}
 
-        # TO-DO: add type handling
         for prop in raw_props:
-            props[prop[0]] = prop[1]
+            props[prop[0]] = self._read_type(prop[1], prop[2])
 
         return props
 
@@ -253,6 +256,48 @@ class DNA:
             entity_id (int): id of an entity
         """
         self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
+
+    def _get_type(self, value):
+
+        builtin_type = type(value)
+        arg_type = None
+
+        if builtin_type == str:
+            arg_type = self.TYPE_STRING
+        elif builtin_type == int:
+            arg_type = self.TYPE_INT
+        elif builtin_type == float:
+            arg_type = self.TYPE_FLOAT
+        elif builtin_type == bool:
+            arg_type = self.TYPE_BOOL
+        elif builtin_type == dict or builtin_type == list:
+            arg_type = self.TYPE_JSON
+
+        return arg_type
+
+    def _write_type(self, arg_value, arg_type):
+
+        value = ""
+
+        if arg_type is self.TYPE_JSON:
+            value = json.dumps(arg_value)
+        elif arg_type in self._SUPPORTED_TYPES and arg_type is not self.TYPE_JSON:
+            value = str(arg_value)
+
+        return value
+
+    def _read_type(self, arg_value, arg_type):
+
+        if arg_type is self.TYPE_JSON:
+            arg_value = json.loads(arg_value)
+        elif arg_type is self.TYPE_INT:
+            arg_value = int(arg_value)
+        elif arg_type is self.TYPE_FLOAT:
+            arg_value = float(arg_value)
+        elif arg_type is self.TYPE_BOOL:
+            arg_value = bool(arg_value)
+
+        return arg_value
 
     def validate(self, file_path):
         """Validate file to be proper grail file
@@ -351,11 +396,11 @@ class DNAEntity:
         Returns:
             number of child entities
         """
-        return len(self._dna_child_ids)
+        return 0
 
     def __iter__(self):
         """Iterate over child items"""
-        return iter(self._dna_parent._entity_childs(self._id))
+        return iter([])
 
     # fields
     @property
@@ -440,7 +485,6 @@ class DNAEntity:
         """Parse sqlite row into DNAEntity
 
         Args:
-            cursor (sqlite3.Cursor): cursor object
             row (sqlite3.Row): row object
         """
 

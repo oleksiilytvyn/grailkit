@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
 import re
@@ -278,7 +277,7 @@ class Bible(DNA):
 
     @property
     def version(self):
-        """Schema version nubmer"""
+        """Schema version number"""
         return self._version
 
     def books(self):
@@ -436,30 +435,3 @@ class BibleHost:
         """Uninstall bible by id"""
         pass
 
-
-class Parser:
-    """Parse other file formats into grail bible format. Not implemented"""
-
-    def __init__(self):
-        raise NotImplementedError()
-
-
-class OSISParser(Parser):
-    """Parse OSIS bible. Not implemented"""
-
-    def __init__(self):
-        super(OSISParser, self).__init__()
-
-
-class SwordParser(Parser):
-    """Parse Sword bible. Not implemented"""
-
-    def __init__(self):
-        super(SwordParser, self).__init__()
-
-
-class CSVParser(Parser):
-    """Parse CSV bible. Not implemented"""
-
-    def __init__(self):
-        super(CSVParser, self).__init__()

@@ -80,13 +80,19 @@ class TestGrailkitDNA(unittest.TestCase):
 
         db_obj.set_property(eid2, "author", "Alex Litvin")
         db_obj.set_property(eid2, "description", "simple cuelist")
-        db_obj.set_property(eid2, "color", "#f00")
+        db_obj.set_property(eid2, "length", 2)
+        db_obj.set_property(eid2, "ratio", 3.1516)
+        db_obj.set_property(eid2, "list", [1, 2, 3, 4])
+
+        self.assertEqual(type(db_obj.get_property(eid2, 'length')), int)
+        self.assertEqual(type(db_obj.get_property(eid2, 'ratio')), float)
+        self.assertEqual(type(db_obj.get_property(eid2, 'list')), list)
 
         self.assertTrue(db_obj.entity_has_childs(eid1))
         self.assertFalse(db_obj.entity_has_childs(eid2))
 
         self.assertEqual(len(db_obj.entities()), 2)
         self.assertEqual(len(db_obj.properties(eid1)), 2)
-        self.assertEqual(len(db_obj.properties(eid2)), 3)
+        self.assertEqual(len(db_obj.properties(eid2)), 5)
 
         db_obj.close()

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
 from grailkit.dna import DNA, DNAEntity
@@ -28,7 +27,7 @@ class Project(DNA):
             create (bool): create file if not exists
         """
 
-        super(Project, self).__init__(file_path, create)
+        super(Project, self).__init__(file_path, create=create)
 
     def items(self): pass
 
@@ -58,9 +57,9 @@ class Project(DNA):
 class Cuelist(DNAEntity):
     """Representation of cuelist"""
 
-    def __init__(self):
+    def __init__(self, parent):
         """Create a cuelist"""
-        super(Cuelist, self).__init__()
+        super(Cuelist, self).__init__(parent)
 
         self._name = "Untitled cuelist"
 
@@ -127,6 +126,6 @@ class Cue(DNAEntity):
         """Abstract data of cue"""
         return self._data
 
-    def __init__(self):
+    def __init__(self, parent):
         """Create a cue instance"""
-        pass
+        super(Cue, self).__init__(parent)
