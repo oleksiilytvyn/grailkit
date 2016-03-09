@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 # Grail SDK
-# Copyright (C) 2015 Oleksii Lytvyn
+# Copyright (C) 2014-2016 Oleksii Lytvyn
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,24 +23,33 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import grailkit
+
+
 setup(
     name='grailkit',
-    version='0.1',
+    version=grailkit.__version__,
     author='Oleksii Lytvyn',
     author_email='grailapplication@gmail.com',
     description=(
         'Grail development kit'),
     long_description=open('README.rst').read(),
-    url='https://bitbucket.org/grailapp/sdk',
+    url='https://bitbucket.org/grailapp/grail-kit',
     platforms='any',
     packages=['grailkit'],
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Multimedia :: Sound/Audio',
         'Topic :: System :: Networking',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+        'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     install_requires=[]
 )

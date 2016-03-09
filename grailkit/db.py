@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.db
+    ~~~~~~~~~~~
 
+    Simplified interace to sqlite database
+"""
 import os
 import re
 import sqlite3 as lite
@@ -8,6 +13,15 @@ from grailkit.core import path
 
 
 def create_factory(object_def, cursor, row):
+    """Create factory
+
+    Args:
+        object_def: callable object
+        cursor (sqlite3.Cursor): database cursor
+        row (sqlite3.Row): database row object
+    Returns:
+        instance of `object_def`
+    """
     return object_def(row, cursor)
 
 

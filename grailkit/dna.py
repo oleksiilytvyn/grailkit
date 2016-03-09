@@ -1,5 +1,11 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.dna
+    ~~~~~~~~~~~~
 
+    Implementation of grail file format.
+    This file format used for all internal grail data.
+"""
 import os
 import json
 import time

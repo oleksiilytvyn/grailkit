@@ -1,7 +1,21 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.bible
+    ~~~~~~~~~~~~~~
 
+    Implements access to bible files.
+
+    Grail bible format consists of standart grail DNA format plus
+    two additional tables: `books` and `verses`
+
+    Sql structure:
+
+    .. code:: bash
+
+        CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
+        CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
+"""
 import re
-
 from grailkit.dna import DNA
 
 
@@ -21,17 +35,17 @@ class BibleError(Exception):
 class Verse:
     """Representation of Bible verse"""
 
-    _osisid = ""
-
-    _book = ""
-    _book_id = 1
-    _chapter = 1
-    _verse = 1
-
-    _text = ""
-
     def __init__(self):
-        pass
+        """Create verse"""
+
+        self._osisid = ""
+
+        self._book = ""
+        self._book_id = 1
+        self._chapter = 1
+        self._verse = 1
+
+        self._text = ""
 
     @property
     def book(self):
@@ -55,7 +69,12 @@ class Verse:
 
     @property
     def reference(self):
-        """Returns complete reference text"""
+        """Returns complete reference text
+
+        Examples:
+            Genesis 1:1
+            1 Corinthians 2:12
+        """
         return "%s %d:%d" % (self._book, self._chapter, self._verse)
 
     @property
@@ -80,7 +99,7 @@ class Verse:
             row: sqlite3 row
 
         Returns:
-            Verse
+            Verse parsed from given sqlite row
         """
         verse = Verse()
         verse.parse(row)
@@ -91,14 +110,14 @@ class Verse:
 class Book:
     """Representation of bible book"""
 
-    _id = 0
-    _abbr = ""
-    _name = ""
-    _title = ""
-    _osisid = ""
-
     def __init__(self):
-        pass
+        """Create book"""
+
+        self._id = 0
+        self._abbr = ""
+        self._name = ""
+        self._title = ""
+        self._osisid = ""
 
     @property
     def id(self):
@@ -151,55 +170,60 @@ class Book:
 
 
 class BibleInfo:
-    """Object that represents a bible file but don't have access to file"""
+    """Read only representation of bible file"""
 
-    _date = ""
-    _title = ""
-    _subject = ""
-    _language = ""
-    _publisher = ""
-    _copyright = ""
-    _identifier = ""
-    _description = ""
+    def __init__(self):
+        """Create a object"""
 
-    _version = 1
+        self._date = ""
+        self._title = ""
+        self._subject = ""
+        self._language = ""
+        self._publisher = ""
+        self._copyright = ""
+        self._identifier = ""
+        self._description = ""
 
-    # database handler
-    _db = None
-
-    def __init__(self, file_path):
-        pass
+        self._version = 1
 
     @property
     def date(self):
+        """Date"""
         return self._date
 
     @property
     def title(self):
+        """Bible title"""
         return self._title
 
     @property
     def subject(self):
+        """Subject of a bible"""
         return self._subject
 
     @property
     def language(self):
+        """Language of bible"""
         return self._language
 
     @property
     def publisher(self):
+        """Publisher information"""
         return self._publisher
 
     @property
     def copyright(self):
+        """Copyright information"""
         return self._copyright
 
     @property
     def identifier(self):
+        """Bible identifier, must be unique"""
         return self._identifier
 
     @property
     def description(self):
+        """A little description of Bible"""
         return self._description
 
     @property
@@ -207,14 +231,16 @@ class BibleInfo:
         """Schema version nubmer"""
         return self._version
 
+    def from_json(self):
+        """Fill properties from json string"""
+        pass
+
 
 class Bible(DNA):
     """Representation of grail bible file.
     This class gives you read only access to file
     """
 
-    # create file from this query
-    # TO-DO: extend query from DNA class
     # file extension
     _file_extension = ".grail-bible"
 
@@ -245,39 +271,47 @@ class Bible(DNA):
 
     @property
     def date(self):
+        """Date"""
         return self._date
 
     @property
     def title(self):
+        """Bible title"""
         return self._title
 
     @property
     def subject(self):
+        """Subject of a bible"""
         return self._subject
 
     @property
     def language(self):
+        """Language of bible"""
         return self._language
 
     @property
     def publisher(self):
+        """Publisher information"""
         return self._publisher
 
     @property
     def copyright(self):
+        """Copyright information"""
         return self._copyright
 
     @property
     def identifier(self):
+        """Bible identifier, must be unique"""
         return self._identifier
 
     @property
     def description(self):
+        """A little description of Bible"""
         return self._description
 
     @property
     def version(self):
-        """Schema version number"""
+        """Schema version nubmer"""
         return self._version
 
     def books(self):
@@ -362,7 +396,11 @@ class Bible(DNA):
                             """, (keyword, keyword, keyword), factory=book_factory)
 
     def match_reference(self, keyword):
-        """find verse by keyword"""
+        """find verse by keyword
+
+        Args:
+            keyword (str): keywords
+        """
 
         # default values
         chapter = 1
