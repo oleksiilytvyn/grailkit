@@ -1,16 +1,28 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.bible_parse
+    ~~~~~~~~~~~~~~~~~~~~
 
+    Parse other bible formats into grail bible format.
+"""
 import os
-import xml.etree.ElementTree as etree
+import xml.etree.ElementTree
 
 from grailkit.dna import DNA
 from grailkit.bible import BibleError
 
 
 class Parser(DNA):
-    """Parse other file formats into grail bible format. Not implemented"""
+    """Basic implementation of parser"""
 
     def __init__(self, file_in, file_out):
+        """Parse `file_in` into grail file `file_out`
+
+        Args:
+            file_in (str): path to input file
+            file_out (str): path to utput file
+        """
+
         self._db_create_query += """
             DROP TABLE IF EXISTS books;
             CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
@@ -28,7 +40,12 @@ class Parser(DNA):
         self.parse_file(file_in)
 
     def set_property(self, key, value):
-        """Set bible property"""
+        """Set bible property
+
+        Args:
+            key (str): property key
+            value (str): property value
+        """
 
         self._set_property(0, key, value, force_type=str)
 
@@ -37,7 +54,7 @@ class Parser(DNA):
 
         Args:
             key (str): property name
-            default: default value if property not exists
+            default (str): default value if property not exists
 
         Returns:
             bible property
@@ -46,15 +63,35 @@ class Parser(DNA):
         return self._get_property(0, key, default=default)
 
     def write_verse(self, osis_id, book_id, chapter, verse, text):
+        """Add verse to file
+
+        Args:
+            osis_id (str): OSIS identifier
+            book_id (int): book number
+            chapter (int): chapter number
+            verse (int): verse number
+            test (str): text of verse
+        """
+
         self._db.execute("INSERT INTO verses VALUES(?, ?, ?, ?, ?)",
                          (osis_id, book_id, chapter, verse, text))
 
     def write_book(self, book_id, osis_id, name, title, abbr):
+        """Add book to file
+
+        Args:
+            book_id (int): book number
+            osis_id (str): OSIS identifier
+            name (str): short book name
+            title (str): full name of book
+            abbr (str): string with abbreviations of book name separated by comma
+        """
         self._db.execute("INSERT INTO books VALUES(?, ?, ?, ?, ?)",
                          (book_id, osis_id, name, title, abbr))
 
     def parse_file(self, file_in):
-        """
+        """Abstract method. Implement this method in sub class.
+
         Args:
             file_in (str): path to file that will be parsed
         """
@@ -64,6 +101,7 @@ class Parser(DNA):
 class OSISParser(Parser):
     """Parse OSIS bible. Not implemented"""
 
+    # OSIS book names, book name and abbreviations in English
     _osis_book_names = {"Gen": ["Genesis", ["Gen", "Ge", "Gn"]],
                         "Exod": ["Exodus", ["Exo", "Ex", "Exod"]],
                         "Lev": ["Leviticus", ["Lev", "Le", "Lv"]],
@@ -173,28 +211,41 @@ class OSISParser(Parser):
                         }
 
     def __init__(self, file_in, file_out):
-        """
+        """Parse a OSIS file into grail file format bible
+
         Args:
-            file_in:
-            file_out:
-
-        Returns:
-
+            file_in (str): input file
+            file_out (str): output file
         """
         super(OSISParser, self).__init__(file_in, file_out)
 
     def _get_book_info(self, osis_id):
+        """Get info of book using OSIS identifier
+
+        Args:
+            osis_id (str): OSIS identifier
+        Returns:
+            array that consists of three items
+            first item is short name of book
+            second item is full name of book
+            and third is abbreviations
+        """
 
         if osis_id in self._osis_book_names:
             book = self._osis_book_names[osis_id]
 
-            return [book[0], book[0], book[1]]
+            return [book[0], book[0], ", ".join(book[1])]
 
         return [osis_id, osis_id, osis_id]
 
     def parse_file(self, file_in):
+        """Parse input file
 
-        tree = etree.parse(file_in)
+        Args:
+            file_in (str): path to file to be parsed
+        """
+
+        tree = ElementTree.parse(file_in)
         root = tree.getroot()
 
         book = 0
@@ -223,13 +274,19 @@ class OSISParser(Parser):
         self.set_property('version', 1)
 
     def _parse_header(self, node):
+        """Parse osis header node
+
+        Args:
+            node: header xml node
+        """
 
         for headnode in node:
             if headnode.tag.split('}')[-1] == 'work':
                 self._parse_header_property(headnode)
 
     def _parse_header_property(self, node):
-        """
+        """Parse header property
+
         Args:
             node: node of header
         """

@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.project
+    ~~~~~~~~~~~~~~~~
 
+    Interface to project file
+"""
 from grailkit.dna import DNA, DNAEntity
 
 
