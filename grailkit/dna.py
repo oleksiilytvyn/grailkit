@@ -68,9 +68,24 @@ class DNA:
         else:
             self._db = DataBaseHost.get(file_path, query=self._db_create_query, create=create)
 
-    def _create(self):
+    def _create(self, name="", parent=0, entity_type=0, index=0):
         """Returns new DNAEntity inside this DNA file"""
-        return DNAEntity(self)
+
+        entity = DNAEntity(self)
+        entity.parent = parent
+        entity.type = entity_type
+        entity.index = index
+        entity.name = name
+
+        cursor = self._db.cursor
+        cursor.execute("""INSERT INTO entities
+                            (id, parent, type, name, created, modified, content, search, sort_order)
+                            VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       (entity.parent, entity.type, entity.name, entity.created, entity.modified,
+                        json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
+        self._db.connection.commit()
+
+        return self._entity(cursor.lastrowid)
 
     def _entity(self, entity_id):
         """Get entity by `entity_id`
@@ -86,44 +101,16 @@ class DNA:
 
         return DNAEntity.from_sqlite(self, raw_entity)
 
-    def _entities(self):
-        """Get list of all entities
+    def _update(self, entity):
+        """update entity"""
 
-        Returns:
-            list of all entities available
-        """
-
-        raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
-                            FROM entities ORDER BY sort_order ASC""")
-
-        entities = []
-
-        for raw in raw_entities:
-            entities.append(DNAEntity.from_sqlite(self, raw))
-
-        return entities
-
-    def _add(self, entity):
-        """Add new entity
-
-        Args:
-            entity: DNAEntity object
-
-        Returns:
-            updated entity object with assigned id
-        """
         cursor = self._db.cursor
-        cursor.execute("""INSERT INTO entities
-                            (id, parent, type, name, created, modified, content, search, sort_order)
-                            VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                       (entity.parent, entity.type, entity.name, entity.created, entity.modified,
-                        json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
-        self._db.connection.commit()
-
-        return cursor.lastrowid
-
-    def _update(self):
-        pass
+        cursor.execute("""UPDATE entities SET
+                        id = ?, parent = ?, type = ?, name = ?, created = ?, modified = ?, content = ?, search = ?,
+                        sort_order = ?
+                        WHERE id = ?""",
+                       (entity.id, entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
+                        json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index, entity.id))
 
     def _remove(self, entity_id):
         """Remove entity by id
@@ -133,11 +120,46 @@ class DNA:
         """
         self._db.execute("DELETE FROM entities WHERE id = ?", (entity_id,))
         self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
+        self._db.connection.commit()
 
-        for child in self._entity_childs(entity_id):
+        for child in self._childs(entity_id):
             self._remove(child.id)
 
-    def _entity_has_childs(self, entity_id):
+    def _entities(self, filter_type=False, filter_parent=False):
+        """Get list of all entities
+
+        Returns:
+            list of all entities available
+        """
+
+        where = ""
+        args = []
+
+        if filter_type is not False or filter_parent is not False:
+            where += "WHERE"
+
+        if filter_parent is not False:
+            where += " parent = ?" + (" AND " if filter_type else "")
+            args.append(filter_parent)
+
+        if filter_type is not False:
+            where += " type = ?"
+            args.append(filter_type)
+
+        raw_entities = self._db.all(
+            """SELECT id, parent, type, name, created, modified, content, search, sort_order
+               FROM entities
+               %s
+               ORDER BY sort_order ASC""" % (where,), args)
+
+        entities = []
+
+        for raw in raw_entities:
+            entities.append(DNAEntity.from_sqlite(self, raw))
+
+        return entities
+
+    def _has_childs(self, entity_id):
         """Check entity child nodes
 
         Args:
@@ -150,7 +172,7 @@ class DNA:
 
         return not not parent
 
-    def _entity_childs(self, entity_id):
+    def _childs(self, entity_id):
         """Get child nodes of entity
 
         Args:
@@ -171,7 +193,7 @@ class DNA:
 
         return entities
 
-    def _get_property(self, entity_id, key, default=None):
+    def _get(self, entity_id, key, default=None):
         """Get property of entity with id `entity_id` and property name `key`
 
         Args:
@@ -185,9 +207,9 @@ class DNA:
 
         value = self._db.get("SELECT value, type FROM `properties` WHERE `entity` = ? AND `key` = ?", (entity_id, key))
 
-        return self._read_type(value[0], value[1]) if value else default
+        return self.__read_type(value[0], value[1]) if value else default
 
-    def _set_property(self, entity_id, key, value, force_type=None):
+    def _set(self, entity_id, key, value, force_type=None):
         """Set a property value of an entity
 
         Args:
@@ -198,11 +220,11 @@ class DNA:
         """
 
         if force_type is None:
-            force_type = self._get_type(value)
+            force_type = self.__get_type(value)
         elif force_type not in self._SUPPORTED_TYPES:
             raise DNAError("Property type not supported")
 
-        value = self._write_type(value, force_type)
+        value = self.__write_type(value, force_type)
 
         self._db.execute("INSERT OR IGNORE INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
                          (entity_id, key, value, force_type))
@@ -211,7 +233,7 @@ class DNA:
 
         return self._db.cursor.lastrowid
 
-    def _has_property(self, entity_id, key):
+    def _has(self, entity_id, key):
         """Check property existence
 
         Args:
@@ -241,11 +263,11 @@ class DNA:
         props = {}
 
         for prop in raw_props:
-            props[prop[0]] = self._read_type(prop[1], prop[2])
+            props[prop[0]] = self.__read_type(prop[1], prop[2])
 
         return props
 
-    def _remove_property(self, entity_id, key):
+    def _unset(self, entity_id, key):
         """Remove property of an entity
 
         Args:
@@ -255,7 +277,7 @@ class DNA:
 
         self._db.execute("DELETE FROM properties WHERE entity = ? AND key = ?", (entity_id, key))
 
-    def _remove_properties(self, entity_id):
+    def _unset_all(self, entity_id):
         """Remove all properties of an entity
 
         Args:
@@ -263,7 +285,7 @@ class DNA:
         """
         self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
 
-    def _get_type(self, value):
+    def __get_type(self, value):
 
         builtin_type = type(value)
         arg_type = None
@@ -281,7 +303,7 @@ class DNA:
 
         return arg_type
 
-    def _write_type(self, arg_value, arg_type):
+    def __write_type(self, arg_value, arg_type):
 
         value = ""
 
@@ -292,7 +314,7 @@ class DNA:
 
         return value
 
-    def _read_type(self, arg_value, arg_type):
+    def __read_type(self, arg_value, arg_type):
 
         if arg_type is self.TYPE_JSON:
             arg_value = json.loads(arg_value)
@@ -347,18 +369,18 @@ class DNAFile(DNA):
         self.create = self._create
         self.entity = self._entity
         self.entities = self._entities
-        self.add = self._add
+        self.update = self._update
         self.remove = self._remove
-        self.entity_childs = self._entity_childs
-        self.entity_has_childs = self._entity_has_childs
+        self.childs = self._childs
+        self.has_childs = self._has_childs
 
         # properties
-        self.has_property = self._has_property
-        self.get_property = self._get_property
-        self.set_property = self._set_property
+        self.has = self._has
+        self.get = self._get
+        self.set = self._set
         self.properties = self._properties
-        self.remove_property = self._remove_property
-        self.remove_properties = self._remove_properties
+        self.unset = self._unset
+        self.unset_all = self._unset_all
 
 
 class DNAEntity:
@@ -380,10 +402,10 @@ class DNAEntity:
         TYPE_CUE,
         TYPE_FILE)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         """ """
         self._id = 0
-        self._type = None
+        self._type = self.TYPE_ABSTRACT
         self._name = ""
         self._parent = 0
         self._search = ""
@@ -396,17 +418,6 @@ class DNAEntity:
 
         if parent is None:
             raise DNAError("DNAEntity cannot be created without parent")
-
-    def __len__(self):
-        """
-        Returns:
-            number of child entities
-        """
-        return 0
-
-    def __iter__(self):
-        """Iterate over child items"""
-        return iter([])
 
     # fields
     @property
@@ -476,16 +487,43 @@ class DNAEntity:
         """Search string"""
         return self._search
 
-    @property
-    def index(self):
-        """Index of entity inside parent entity"""
-        return self._index
-
     @search.setter
     def search(self, value):
         """Search string"""
         self._search = value
         self._modified = millis_now()
+
+    @property
+    def index(self):
+        """Index of entity inside parent entity"""
+        return self._index
+
+    @index.setter
+    def index(self, value):
+        self._index = value
+        self._modified = millis_now()
+
+    def get(self, key, default=None):
+        """Get a property value"""
+        return self._dna_parent._get(self.id, key, default)
+
+    def set(self, key, value, force_type=None):
+        """Set a property"""
+        self._dna_parent._set(self.id, key, value, force_type)
+
+    def has(self, key):
+        """Check if property exists"""
+        return self._dna_parent._has(self.id, key)
+
+    def unset(self, key):
+        """Remove property"""
+        self._dna_parent._unset(self.id, key)
+
+    def properties(self):
+        return self._dna_parent._properties(self.id)
+
+    def update(self):
+        self._dna_parent._update(self)
 
     def _parse(self, row):
         """Parse sqlite row into DNAEntity
@@ -494,15 +532,15 @@ class DNAEntity:
             row (sqlite3.Row): row object
         """
 
-        self._id = row[0]
-        self._parent = row[1]
-        self._type = row[2]
+        self._id = int(row[0])
+        self._parent = int(row[1])
+        self._type = int(row[2])
         self._name = row[3]
-        self._created = row[4]
-        self._modified = row[5]
+        self._created = int(row[4])
+        self._modified = int(row[5])
         self._content = row[6]
         self._search = row[7]
-        self._index = row[8]
+        self._index = int(row[8])
 
     @staticmethod
     def from_sqlite(parent, row):

@@ -47,7 +47,7 @@ class Parser(DNA):
             value (str): property value
         """
 
-        self._set_property(0, key, value, force_type=str)
+        self._set(0, key, value, force_type=str)
 
     def get_property(self, key, default=""):
         """Get bible property
@@ -60,7 +60,7 @@ class Parser(DNA):
             bible property
         """
 
-        return self._get_property(0, key, default=default)
+        return self._get(0, key, default=default)
 
     def write_verse(self, osis_id, book_id, chapter, verse, text):
         """Add verse to file

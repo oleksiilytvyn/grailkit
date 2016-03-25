@@ -3,7 +3,7 @@
     grailkit.db
     ~~~~~~~~~~~
 
-    Simplified interace to sqlite database
+    Simplified interface to sqlite database
 """
 import os
 import re
