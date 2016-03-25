@@ -10,7 +10,7 @@
 
     Sql structure:
 
-    .. code:: bash
+    .. code:: sql
 
         CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
         CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
@@ -258,16 +258,16 @@ class Bible(DNA):
         super(Bible, self).__init__(file_path, create=False)
 
         # read bible info
-        self._date = self._get_property(0, "date", default="")
-        self._title = self._get_property(0, "title", default="Untitled")
-        self._subject = self._get_property(0, "subject", default="")
-        self._language = self._get_property(0, "language", default="unknown")
-        self._publisher = self._get_property(0, "publisher", default="Unknown Publisher")
-        self._copyright = self._get_property(0, "copyright", default="copyright information unavailable")
-        self._identifier = self._get_property(0, "identifier", default="NONE")
-        self._description = self._get_property(0, "description", default="")
+        self._date = self._get(0, "date", default="")
+        self._title = self._get(0, "title", default="Untitled")
+        self._subject = self._get(0, "subject", default="")
+        self._language = self._get(0, "language", default="unknown")
+        self._publisher = self._get(0, "publisher", default="Unknown Publisher")
+        self._copyright = self._get(0, "copyright", default="copyright information unavailable")
+        self._identifier = self._get(0, "identifier", default="NONE")
+        self._description = self._get(0, "description", default="")
 
-        self._version = self._get_property(0, "version", default=1)
+        self._version = self._get(0, "version", default=1)
 
     @property
     def date(self):
