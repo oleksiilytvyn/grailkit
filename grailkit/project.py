@@ -34,9 +34,13 @@ class Project(DNA):
 
         super(Project, self).__init__(file_path, create=create)
 
-    def items(self): pass
+    def items(self):
+        """Get child items"""
+        return []
 
-    def insert(self, index, item): pass
+    def insert(self, index, item):
+        """Insert item at given index"""
+        return item
 
     def append(self, item): pass
 

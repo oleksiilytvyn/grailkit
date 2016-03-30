@@ -2,18 +2,11 @@
 
 from PyQt5.QtWidgets import QDialog
 
+from grailkit.ui import GWidget
 
-class GDialog(QDialog):
+
+class GDialog(QDialog, GWidget):
     """Dialog window"""
 
-    def className( self ):
-        """
-        Returns widget name that used in stylesheet.
-        
-        stylesheet example:
-            GDialog {
-                background: red;
-            }
-        """
+    pass
 
-        return type(self).__name__

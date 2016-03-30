@@ -8,15 +8,10 @@
 """
 import os
 import json
-import time
 import sqlite3 as lite
 
 from grailkit.db import DataBaseHost, DataBaseError
-
-
-def millis_now():
-    """Returns time in milliseconds since epoch"""
-    return int(round(time.time() * 1000))
+from grailkit.util import millis_now
 
 
 class DNAError(DataBaseError):
@@ -30,13 +25,32 @@ class DNA:
     Otherwise use DNAFile class.
     """
 
-    TYPE_BOOL = 1
-    TYPE_INT = 2
-    TYPE_FLOAT = 3
-    TYPE_STRING = 4
-    TYPE_JSON = 6
+    # property types
+    ARG_BOOL = 1
+    ARG_INT = 2
+    ARG_FLOAT = 3
+    ARG_STRING = 4
+    ARG_JSON = 6
 
-    _SUPPORTED_TYPES = (TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_JSON)
+    # list all supported types
+    _SUPPORTED_TYPES = (ARG_BOOL, ARG_INT, ARG_FLOAT, ARG_STRING, ARG_JSON)
+
+    # types of entities
+    TYPE_ABSTRACT = 0
+    TYPE_PROJECT = 1
+    TYPE_LIBRARY = 2
+    TYPE_BIBLE = 3
+    TYPE_CUE = 4
+    TYPE_FILE = 5
+
+    # enumerate all types of entities
+    TYPES = (
+        TYPE_ABSTRACT,
+        TYPE_PROJECT,
+        TYPE_LIBRARY,
+        TYPE_BIBLE,
+        TYPE_CUE,
+        TYPE_FILE)
 
     # database handler
     _db = None
@@ -68,7 +82,7 @@ class DNA:
         else:
             self._db = DataBaseHost.get(file_path, query=self._db_create_query, create=create)
 
-    def _create(self, name="", parent=0, entity_type=0, index=0):
+    def _create(self, name="", parent=0, entity_type=TYPE_ABSTRACT, index=0):
         """Returns new DNAEntity inside this DNA file"""
 
         entity = DNAEntity(self)
@@ -125,7 +139,7 @@ class DNA:
         for child in self._childs(entity_id):
             self._remove(child.id)
 
-    def _entities(self, filter_type=False, filter_parent=False):
+    def _entities(self, filter_type=False, filter_parent=False, filter_keyword=False):
         """Get list of all entities
 
         Returns:
@@ -291,15 +305,15 @@ class DNA:
         arg_type = None
 
         if builtin_type == str:
-            arg_type = self.TYPE_STRING
+            arg_type = self.ARG_STRING
         elif builtin_type == int:
-            arg_type = self.TYPE_INT
+            arg_type = self.ARG_INT
         elif builtin_type == float:
-            arg_type = self.TYPE_FLOAT
+            arg_type = self.ARG_FLOAT
         elif builtin_type == bool:
-            arg_type = self.TYPE_BOOL
+            arg_type = self.ARG_BOOL
         elif builtin_type == dict or builtin_type == list:
-            arg_type = self.TYPE_JSON
+            arg_type = self.ARG_JSON
 
         return arg_type
 
@@ -307,22 +321,22 @@ class DNA:
 
         value = ""
 
-        if arg_type is self.TYPE_JSON:
+        if arg_type is self.ARG_JSON:
             value = json.dumps(arg_value)
-        elif arg_type in self._SUPPORTED_TYPES and arg_type is not self.TYPE_JSON:
+        elif arg_type in self._SUPPORTED_TYPES and arg_type is not self.ARG_JSON:
             value = str(arg_value)
 
         return value
 
     def __read_type(self, arg_value, arg_type):
 
-        if arg_type is self.TYPE_JSON:
+        if arg_type is self.ARG_JSON:
             arg_value = json.loads(arg_value)
-        elif arg_type is self.TYPE_INT:
+        elif arg_type is self.ARG_INT:
             arg_value = int(arg_value)
-        elif arg_type is self.TYPE_FLOAT:
+        elif arg_type is self.ARG_FLOAT:
             arg_value = float(arg_value)
-        elif arg_type is self.TYPE_BOOL:
+        elif arg_type is self.ARG_BOOL:
             arg_value = bool(arg_value)
 
         return arg_value
@@ -386,26 +400,10 @@ class DNAFile(DNA):
 class DNAEntity:
     """Basic entity model, each entity can have many properties + some default fields"""
 
-    TYPE_ABSTRACT = 0
-    TYPE_PROJECT = 1
-    TYPE_LIBRARY = 2
-    TYPE_BIBLE = 3
-    TYPE_CUE = 4
-    TYPE_FILE = 5
-
-    # enumerate all types
-    TYPES = (
-        TYPE_ABSTRACT,
-        TYPE_PROJECT,
-        TYPE_LIBRARY,
-        TYPE_BIBLE,
-        TYPE_CUE,
-        TYPE_FILE)
-
     def __init__(self, parent):
         """ """
         self._id = 0
-        self._type = self.TYPE_ABSTRACT
+        self._type = DNA.TYPE_ABSTRACT
         self._name = ""
         self._parent = 0
         self._search = ""
@@ -520,9 +518,11 @@ class DNAEntity:
         self._dna_parent._unset(self.id, key)
 
     def properties(self):
+        """Returns list of all properties"""
         return self._dna_parent._properties(self.id)
 
     def update(self):
+        """Update this entity and commit changes to database"""
         self._dna_parent._update(self)
 
     def _parse(self, row):
@@ -544,6 +544,7 @@ class DNAEntity:
 
     @staticmethod
     def from_sqlite(parent, row):
+        """Parse entity from sqlite"""
         entity = DNAEntity(parent=parent)
         entity._parse(row)
 

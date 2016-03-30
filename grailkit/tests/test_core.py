@@ -5,7 +5,7 @@ import unittest
 import os
 import shutil
 import tempfile
-import grailkit.core as core
+from grailkit import util
 
 
 class TestGrailkitCore(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestGrailkitCore(unittest.TestCase):
     def test_get_app(self):
         """Test app path"""
 
-        script_path = core.path.get_app()
+        script_path = util.path_app()
         self_path = os.path.abspath('.')
 
         self.assertEqual(script_path, self_path)
@@ -38,7 +38,7 @@ class TestGrailkitCore(unittest.TestCase):
         f.close()
 
         # copy file
-        core.path.copy(path_a, path_b)
+        util.copy_file(path_a, path_b)
 
         self.assertTrue(os.path.isfile(path_b))
 
@@ -49,7 +49,7 @@ class TestGrailkitCore(unittest.TestCase):
         path_b = os.path.join(self.test_dir, 'copy/test.txt')
 
         # copy file
-        core.path.copy(path_a, path_b)
+        util.copy_file(path_a, path_b)
 
         self.assertFalse(os.path.isfile(path_b))
 

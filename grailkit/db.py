@@ -9,7 +9,7 @@ import os
 import re
 import sqlite3 as lite
 
-from grailkit.core import path
+from grailkit import util
 
 
 def create_factory(object_def, cursor, row):
@@ -58,7 +58,7 @@ class DataBase:
 
         if not os.path.isfile(file_path):
             if file_copy:
-                path.copy(file_copy, file_path)
+                util.copy_file(file_copy, file_path)
             else:
                 open(file_path, 'w+')
                 execute_query = True

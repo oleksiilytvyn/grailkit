@@ -166,7 +166,7 @@ class TestGrailkitDNA(unittest.TestCase):
                 cue.set('wait_post', 30)
                 cue.update()
 
-        self._print_childs(dna_file, 0)
+        # self._print_childs(dna_file, 0)
 
     def _print_childs(self, db, parent, indent=''):
 
@@ -174,7 +174,9 @@ class TestGrailkitDNA(unittest.TestCase):
 
             print('\n' + indent + '@', entity.id, entity.name, entity)
 
-            for key in entity.properties():
-                print(indent + "-", key, ':', entity.get(key))
+            properties = entity.properties()
+
+            for key in properties:
+                print(indent + "-", key, ':', properties[key])
 
             self._print_childs(db, entity.id, indent+'  ')
