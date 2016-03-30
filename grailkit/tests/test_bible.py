@@ -32,3 +32,6 @@ class TestGrailkitBible(unittest.TestCase):
         self.assertEqual(db_obj.verse(1, 1, 1).text, "In the beginning God created the heaven and the earth.")
 
         db_obj.close()
+
+    def test_host(self):
+        pass

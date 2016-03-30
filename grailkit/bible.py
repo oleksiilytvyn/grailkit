@@ -15,7 +15,9 @@
         CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
         CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
 """
+import os
 import re
+
 from grailkit.dna import DNA
 
 
@@ -231,9 +233,17 @@ class BibleInfo:
         """Schema version nubmer"""
         return self._version
 
-    def from_json(self):
+    def from_json(self, data):
         """Fill properties from json string"""
-        pass
+
+        self._date = data.date
+        self._title = data.title
+        self._subject = data.subject
+        self._language = data.language
+        self._publisher = data.publisher
+        self._copyright = data.copyright
+        self._identifier = data.identifier
+        self._description = data.description
 
 
 class Bible(DNA):
@@ -311,7 +321,7 @@ class Bible(DNA):
 
     @property
     def version(self):
-        """Schema version nubmer"""
+        """Schema version number"""
         return self._version
 
     def books(self):
@@ -411,18 +421,18 @@ class Bible(DNA):
         # match book
         match = re.search(r'([0-9]+)$', keyword)
         # match book and chapter
-        match_chapter = re.search(r'([0-9]+)([\D]{1})([0-9]+)$', keyword)
+        match_chapter = re.search(r'([0-9]+)([\D])([0-9]+)$', keyword)
         # match book, chapter and verse
-        match_verse = re.search(r'([0-9]+)([\D]{1})([0-9]+)\-([0-9]+)$', keyword)
+        match_verse = re.search(r'([0-9]+)([\D])([0-9]+)\-([0-9]+)$', keyword)
 
         if match_verse:
             chapter = match_verse.group(1)
             verse = match_verse.group(3)
-            keyword = re.sub(r'([0-9]+)([\D]{1})([0-9]+)\-([0-9]+)$', '', keyword)
+            keyword = re.sub(r'([0-9]+)([\D])([0-9]+)\-([0-9]+)$', '', keyword)
         elif match_chapter:
             chapter = match_chapter.group(1)
             verse = match_chapter.group(3)
-            keyword = re.sub(r'([0-9]+)([\D]{1})([0-9]+)$', '', keyword)
+            keyword = re.sub(r'([0-9]+)([\D])([0-9]+)$', '', keyword)
         elif match:
             chapter = match.group(1)
             keyword = re.sub(r'([0-9]+)$', '', keyword)
@@ -453,23 +463,45 @@ class Bible(DNA):
 class BibleHost:
     """Manage all installed bibles. Not implemented"""
 
+    LOCATION = ".grail/bibles/"
+
     @staticmethod
     def list():
         """List all installed bibles"""
-        return []
+
+        items = []
+
+        return items
 
     @staticmethod
-    def get(id):
+    def get(bible_id):
         """Get a bible object"""
-        return Bible()
+
+        path = BibleHost.LOCATION + "%s.json" % (bible_id,)
+
+        if os.path.exists(path) and os.path.isfile(path):
+            info = BibleInfo()
+            info.from_json(path)
+
+            return info
+        else:
+            return None
 
     @staticmethod
-    def install(file):
+    def install(file_path):
         """Install bible from file, it can be any format file supported by parsers"""
+
+        # check file
+        # create a description file
+        # copy file
+
         pass
 
     @staticmethod
-    def uninstall(id):
+    def uninstall(bible_id):
         """Uninstall bible by id"""
-        pass
 
+        # remove description file
+        # remove grail-bible file
+
+        pass
