@@ -1,8 +1,28 @@
 # -*- coding: UTF-8 -*-
 
-from grailkit.ui import GDialog
+import sys
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
+from grailkit.ui import GDialog, GApplication
 
 
 class GMessageDialog(GDialog):
     """Message dialog, replacement of a default dialog"""
-    pass
+
+    def __init__(self, parent=None):
+        super(GMessageDialog, self).__init__(parent)
+
+    def _init_ui(self):
+        pass
+
+
+# test a dialog
+if __name__ == '__main__':
+    app = GApplication(sys.argv)
+    win = GMessageDialog()
+    win.show()
+
+    sys.exit(app.exec_())
