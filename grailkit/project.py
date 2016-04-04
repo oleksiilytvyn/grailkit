@@ -22,7 +22,25 @@ class Project(DNA):
     _created = 0
     _modified = 0
 
-    _items = []
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def author(self):
+        return self._author
+
+    @property
+    def created(self):
+        return self._created
+
+    @property
+    def modified(self):
+        return self._modified
 
     def __init__(self, file_path="", create=False):
         """Open or create a project
@@ -34,32 +52,31 @@ class Project(DNA):
 
         super(Project, self).__init__(file_path, create=create)
 
-    def items(self):
-        """Get child items"""
-        return []
-
-    def insert(self, index, item):
-        """Insert item at given index"""
-        return item
-
-    def append(self, item): pass
-
-    def remove(self, index): pass
+        # read properties
+        # find settings
 
     def __len__(self):
         """Get number of cuelist in project"""
         pass
 
-    def __getitem__(self, key): pass
-
-    def __setitem__(self, key, value): pass
-
-    def __delitem__(self, key): pass
-
-    def __iter__(self):
+    def settings(self):
+        """Get a setting object"""
         pass
 
-    def __reversed__(self):
+    def cuelists(self):
+        """Get all cuelists in project"""
+        return []
+
+    def cuelist(self, index):
+        """Get a cuelist"""
+        return index
+
+    def remove(self, index):
+        """Remove a cuelist"""
+        pass
+
+    def create(self):
+        """Create a cuelist"""
         pass
 
 
@@ -101,9 +118,7 @@ class Cue(DNAEntity):
     _pre_wait = 0
     _post_wait = 0
     _follow = FOLLOW_ON
-
-    _items = []
-    _data = {}
+    _data = None
 
     @property
     def number(self):
@@ -138,3 +153,10 @@ class Cue(DNAEntity):
     def __init__(self, parent):
         """Create a cue instance"""
         super(Cue, self).__init__(parent)
+
+
+class Settings(DNAEntity):
+    """Settings object"""
+
+    def __init__(self, parent):
+        super(Settings, self).__init__(parent)

@@ -42,6 +42,8 @@ class DNA:
     TYPE_BIBLE = 3
     TYPE_CUE = 4
     TYPE_FILE = 5
+    TYPE_SETTINGS = 6
+    TYPE_SONG = 7
 
     # enumerate all types of entities
     TYPES = (
@@ -50,7 +52,9 @@ class DNA:
         TYPE_LIBRARY,
         TYPE_BIBLE,
         TYPE_CUE,
-        TYPE_FILE)
+        TYPE_FILE,
+        TYPE_SETTINGS,
+        TYPE_SONG)
 
     # database handler
     _db = None

@@ -15,12 +15,6 @@ class LibraryError(DNAError):
 class Library(DNA):
     """Manage library"""
 
-    TYPE_SONG = 0
-    TYPE_FILE = 1
-    TYPE_MEDIA = 2
-
-    TYPES = (TYPE_SONG, TYPE_FILE, TYPE_MEDIA)
-
     # file extension
     _file_extension = ".grail-library"
 
@@ -47,6 +41,7 @@ class Library(DNA):
 
     def remove(self, entity_id):
         """Remove entity from library"""
+
         self._remove(entity_id)
 
     def items(self, filter_type=False, filter_keyword=False):
