@@ -21,18 +21,31 @@ class Project(DNA):
     _author = ""
     _created = 0
     _modified = 0
+    _id = 0
 
     @property
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, value):
+        self._name = value
+
     @property
     def description(self):
         return self._description
 
+    @description.setter
+    def description(self, value):
+        self._description = value
+
     @property
     def author(self):
         return self._author
+
+    @author.setter
+    def author(self, value):
+        self._author = value
 
     @property
     def created(self):
@@ -57,27 +70,45 @@ class Project(DNA):
 
     def __len__(self):
         """Get number of cuelist in project"""
-        pass
+        return len(self.cuelists())
 
     def settings(self):
         """Get a setting object"""
-        pass
+        entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
+                                filter_parent=self._id,
+                                factory=Settings)
+
+        if len(entity) == 0:
+            entity = self._create(name="Settings",
+                                  parent=self._id,
+                                  entity_type=DNA.TYPE_SETTINGS,
+                                  factory=Settings)
+            return entity
+
+        return entity[0]
 
     def cuelists(self):
         """Get all cuelists in project"""
-        return []
+        return self._entities(filter_type=DNA.TYPE_CUELIST,
+                              filter_parent=self._id,
+                              factory=Cuelist)
 
-    def cuelist(self, index):
+    def cuelist(self, cuelist_id):
         """Get a cuelist"""
-        return index
+        return self._entity(cuelist_id, factory=Cuelist)
 
-    def remove(self, index):
+    def remove(self, cuelist_id):
         """Remove a cuelist"""
-        pass
+        return self._remove(cuelist_id)
 
-    def create(self):
+    def append(self, name="Untitled cuelist"):
         """Create a cuelist"""
-        pass
+        cuelist = self._create(name=name,
+                               parent=self._id,
+                               entity_type=DNA.TYPE_CUELIST,
+                               factory=Cuelist)
+
+        return cuelist
 
 
 class Cuelist(DNAEntity):
@@ -87,7 +118,36 @@ class Cuelist(DNAEntity):
         """Create a cuelist"""
         super(Cuelist, self).__init__(parent)
 
-        self._name = "Untitled cuelist"
+    def __len__(self):
+        return len(self.cues())
+
+    def cues(self):
+        return self._dna_parent._entities(filter_parent=self._id,
+                                          filter_type=DNA.TYPE_CUE,
+                                          factory=Cue)
+
+    def cue(self, cue_id):
+        return self._dna_parent._entity(cue_id, factory=Cue)
+
+    def append(self, name="Untitled Cue"):
+        """Create a new cue and append to bottom"""
+        cuelist = self._dna_parent._create(name=name,
+                               parent=self._id,
+                               entity_type=DNA.TYPE_CUE,
+                               factory=Cue)
+
+        return cuelist
+
+    def remove(self, cue_id):
+        self._dna_parent._remove(cue_id)
+
+    @staticmethod
+    def from_sqlite(parent, row):
+        """Parse entity from sqlite"""
+        entity = Cuelist(parent=parent)
+        entity._parse(row)
+
+        return entity
 
 
 class Cue(DNAEntity):
@@ -110,15 +170,12 @@ class Cue(DNAEntity):
     COLOR_DEFAULT = "#FFFFFF"
     COLORS = (COLOR_DEFAULT, COLOR_RED, COLOR_ORANGE, COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE, COLOR_GRAY)
 
-    _id = 0
-    _parent = 0
     _number = "1"
     _name = "Untitled cue"
     _color = COLOR_DEFAULT
     _pre_wait = 0
     _post_wait = 0
     _follow = FOLLOW_ON
-    _data = None
 
     @property
     def number(self):
@@ -145,14 +202,26 @@ class Cue(DNAEntity):
         """Execute next cue after this finishes, move cursor to next or do nothing."""
         return self._follow
 
-    @property
-    def data(self):
-        """Abstract data of cue"""
-        return self._data
-
     def __init__(self, parent):
         """Create a cue instance"""
         super(Cue, self).__init__(parent)
+
+    def _parse(self, row):
+        super(Cue, self)._parse(row)
+
+        self._follow = self.get("follow", self.FOLLOW_OFF)
+        self._color = self.get("color", self.COLOR_DEFAULT)
+        self._number = self.get("number", self.index)
+        self._post_wait = self.get("post-wait", 0)
+        self._pre_wait = self.get("pre-wait", 0)
+
+    @staticmethod
+    def from_sqlite(parent, row):
+        """Parse entity from sqlite"""
+        entity = Cue(parent=parent)
+        entity._parse(row)
+
+        return entity
 
 
 class Settings(DNAEntity):
@@ -160,3 +229,11 @@ class Settings(DNAEntity):
 
     def __init__(self, parent):
         super(Settings, self).__init__(parent)
+
+    @staticmethod
+    def from_sqlite(parent, row):
+        """Parse entity from sqlite"""
+        entity = Settings(parent=parent)
+        entity._parse(row)
+
+        return entity

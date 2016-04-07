@@ -125,10 +125,29 @@ class MainWindow(QMainWindow):
     def _show_properties(self, entity_id):
 
         props = self.dna.properties(entity_id)
-        index = 0
+
+        entity = self.dna._entity(entity_id)
+        entity_props = {}
+
+        entity_props['@id'] = entity.id
+        entity_props['@name'] = entity.name
+        entity_props['@type'] = entity.type
+        entity_props['@parent'] = entity.parent_id
+        entity_props['@content'] = entity.content
+        entity_props['@created'] = entity.created
+        entity_props['@modified'] = entity.modified
+        entity_props['@search'] = entity.search
+        entity_props['@index'] = entity.index
 
         self._ui_properties.clearContents()
-        self._ui_properties.setRowCount(len(props))
+        self._ui_properties.setRowCount(len(props) + len(entity_props))
+
+        index = 0
+
+        for key in entity_props:
+            self._ui_properties.setItem(index, 0, QTableWidgetItem(key))
+            self._ui_properties.setItem(index, 1, QTableWidgetItem(str(entity_props[key])))
+            index += 1
 
         for key in props:
             self._ui_properties.setItem(index, 0, QTableWidgetItem(key))
