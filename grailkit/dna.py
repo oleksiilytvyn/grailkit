@@ -37,13 +37,14 @@ class DNA:
 
     # types of entities
     TYPE_ABSTRACT = 0
-    TYPE_PROJECT = 1
-    TYPE_LIBRARY = 2
-    TYPE_BIBLE = 3
-    TYPE_CUE = 4
-    TYPE_FILE = 5
-    TYPE_SETTINGS = 6
-    TYPE_SONG = 7
+    TYPE_BIBLE = 1
+    TYPE_PROJECT = 2
+    TYPE_SETTINGS = 3
+    TYPE_CUELIST = 4
+    TYPE_CUE = 5
+    TYPE_LIBRARY = 6
+    TYPE_FILE = 7
+    TYPE_SONG = 8
 
     # enumerate all types of entities
     TYPES = (
@@ -86,7 +87,7 @@ class DNA:
         else:
             self._db = DataBaseHost.get(file_path, query=self._db_create_query, create=create)
 
-    def _create(self, name="", parent=0, entity_type=TYPE_ABSTRACT, index=0):
+    def _create(self, name="", parent=0, entity_type=TYPE_ABSTRACT, index=0, factory=None):
         """Returns new DNAEntity inside this DNA file"""
 
         entity = DNAEntity(self)
@@ -103,13 +104,14 @@ class DNA:
                         json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
         self._db.connection.commit()
 
-        return self._entity(cursor.lastrowid)
+        return self._entity(cursor.lastrowid, factory)
 
-    def _entity(self, entity_id):
+    def _entity(self, entity_id, factory=None):
         """Get entity by `entity_id`
 
         Args:
             entity_id (int): id of an entity
+            factory: use another class to create entity
 
         Returns:
             DNAEntity with id `entity_id`
@@ -117,7 +119,10 @@ class DNA:
         raw_entity = self._db.get("""SELECT id, parent, type, name, created, modified, content, search, sort_order
                             FROM entities WHERE id = ?""", (entity_id,))
 
-        return DNAEntity.from_sqlite(self, raw_entity)
+        if factory:
+            return factory.from_sqlite(self, raw_entity)
+        else:
+            return DNAEntity.from_sqlite(self, raw_entity)
 
     def _update(self, entity):
         """update entity"""
@@ -143,7 +148,7 @@ class DNA:
         for child in self._childs(entity_id):
             self._remove(child.id)
 
-    def _entities(self, filter_type=False, filter_parent=False, filter_keyword=False):
+    def _entities(self, filter_type=False, filter_parent=False, filter_keyword=False, factory=None):
         """Get list of all entities
 
         Returns:
@@ -172,8 +177,13 @@ class DNA:
 
         entities = []
 
-        for raw in raw_entities:
-            entities.append(DNAEntity.from_sqlite(self, raw))
+        # TO-DO: optimise it by using real sqlite factory
+        if factory:
+            for raw in raw_entities:
+                entities.append(factory.from_sqlite(self, raw))
+        else:
+            for raw in raw_entities:
+                entities.append(DNAEntity.from_sqlite(self, raw))
 
         return entities
 
@@ -190,7 +200,7 @@ class DNA:
 
         return not not parent
 
-    def _childs(self, entity_id):
+    def _childs(self, entity_id, factory=None):
         """Get child nodes of entity
 
         Args:
@@ -206,8 +216,13 @@ class DNA:
 
         entities = []
 
-        for raw in raw_entities:
-            entities.append(DNAEntity.from_sqlite(self, raw))
+        # TO-DO: optimise it by using real sqlite factory
+        if factory:
+            for raw in raw_entities:
+                entities.append(factory.from_sqlite(self, raw))
+        else:
+            for raw in raw_entities:
+                entities.append(DNAEntity.from_sqlite(self, raw))
 
         return entities
 
