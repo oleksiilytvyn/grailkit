@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.util
+    ~~~~~~~~~~~~~
 
+    Utility functions and constants
+"""
 import os
 import sys
 import time

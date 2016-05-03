@@ -1,13 +1,18 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.ui.gballoondialog
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    Floating dialog with pointer and without title bar
+"""
 import sys
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from grailkit.ui import GDialog
 from grailkit.util import OS_MAC
-from grailkit.ui import GDialog, GApplication
 
 
 class GBalloonDialog(GDialog):
@@ -90,6 +95,9 @@ class GBalloonDialog(GDialog):
 
 # test a dialog
 if __name__ == '__main__':
+
+    from grailkit.ui import GApplication
+
     app = GApplication(sys.argv)
     win = GBalloonDialog()
     win.closeOnFocusLost(False)

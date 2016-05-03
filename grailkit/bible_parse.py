@@ -6,7 +6,7 @@
     Parse other bible formats into grail bible format.
 """
 import os
-import xml.etree.ElementTree
+import xml.etree as etree
 
 from grailkit.dna import DNA
 from grailkit.bible import BibleError
@@ -70,7 +70,7 @@ class Parser(DNA):
             book_id (int): book number
             chapter (int): chapter number
             verse (int): verse number
-            test (str): text of verse
+            text (str): text of verse
         """
 
         self._db.execute("INSERT INTO verses VALUES(?, ?, ?, ?, ?)",
@@ -245,7 +245,7 @@ class OSISParser(Parser):
             file_in (str): path to file to be parsed
         """
 
-        tree = ElementTree.parse(file_in)
+        tree = etree.ElementTree.parse(file_in)
         root = tree.getroot()
 
         book = 0

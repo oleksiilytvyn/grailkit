@@ -3,7 +3,7 @@
     grailkit.project
     ~~~~~~~~~~~~~~~~
 
-    Interface to project file
+    Interface to Grail project files
 """
 from grailkit.dna import DNA, DNAEntity
 
@@ -131,12 +131,15 @@ class Cuelist(DNAEntity):
 
     def append(self, name="Untitled Cue"):
         """Create a new cue and append to bottom"""
-        cuelist = self._dna_parent._create(name=name,
-                               parent=self._id,
-                               entity_type=DNA.TYPE_CUE,
-                               factory=Cue)
+        cue = self._dna_parent._create(name=name,
+                                       parent=self._id,
+                                       entity_type=DNA.TYPE_CUE,
+                                       factory=Cue)
 
-        return cuelist
+        return cue
+
+    def insert(self, index, name="Untitled Cue"):
+        pass
 
     def remove(self, cue_id):
         self._dna_parent._remove(cue_id)
@@ -206,7 +209,23 @@ class Cue(DNAEntity):
         """Create a cue instance"""
         super(Cue, self).__init__(parent)
 
+    def insert(self, index):
+        """Create and insert a sub cue"""
+        pass
+
+    def append(self, name):
+        """Create and append sub cue"""
+
+        """Create a new cue and append to bottom"""
+        cue = self._dna_parent._create(name=name,
+                                       parent=self._id,
+                                       entity_type=DNA.TYPE_CUE,
+                                       factory=Cue)
+
+        return cue
+
     def _parse(self, row):
+        """Parse sqlite row"""
         super(Cue, self)._parse(row)
 
         self._follow = self.get("follow", self.FOLLOW_OFF)
@@ -218,6 +237,7 @@ class Cue(DNAEntity):
     @staticmethod
     def from_sqlite(parent, row):
         """Parse entity from sqlite"""
+
         entity = Cue(parent=parent)
         entity._parse(row)
 

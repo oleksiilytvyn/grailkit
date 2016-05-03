@@ -3,7 +3,7 @@
     grailkit.library
     ~~~~~~~~~~~~~~~~
 
-    Interface to library file
+    Interface to Grail library file
 """
 from grailkit.dna import DNA, DNAError
 

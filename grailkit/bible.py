@@ -5,7 +5,7 @@
 
     Implements access to bible files.
 
-    Grail bible format consists of standart grail DNA format plus
+    Grail bible format consists of standard grail DNA format plus
     two additional tables: `books` and `verses`
 
     Sql structure:
