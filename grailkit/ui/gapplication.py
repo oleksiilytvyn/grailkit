@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.ui.gapplication
+    ~~~~~~~~~~~~~~~~~~~~~~~~
 
+    Extended QApplication class
+"""
 import re
 import sys
 

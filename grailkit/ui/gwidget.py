@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.ui.gwidget
+    ~~~~~~~~~~~~~~~~~~~
 
+    Base widget for all Grail Kit UI components
+"""
 from PyQt5.QtWidgets import QWidget
 
 

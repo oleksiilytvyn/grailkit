@@ -1,15 +1,20 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.ui.gsearchedit
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
+    Utility functions and constants
+"""
 import sys
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.ui import GDialog, GApplication
+from grailkit.ui import GWidget
 
 
-class GSearchEdit(QLineEdit):
+class GSearchEdit(QLineEdit, GWidget):
     """Basic edit input for search with clear button"""
 
     keyPressed = pyqtSignal('QKeyEvent')
@@ -56,6 +61,8 @@ class GSearchEdit(QLineEdit):
 
 # test a dialog
 if __name__ == '__main__':
+    from grailkit.ui import GDialog, GApplication
+
     app = GApplication(sys.argv)
     win = GDialog()
     layout = QHBoxLayout()

@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.ui.gaboutdialog
+    ~~~~~~~~~~~~~~~~~~~~~~~~
 
+    Generic about dialog window
+"""
 import sys
 
 from PyQt5.QtCore import *
