@@ -48,6 +48,7 @@ def path_appdata(appname):
     Returns:
         path
     """
+
     if sys.platform == 'win32':
         appdata = os.path.join(os.environ['APPDATA'], appname)
     else:
@@ -66,6 +67,7 @@ def copy_file(source, destination):
     Returns:
         returns True if copy is successful.
     """
+
     directory = os.path.dirname(os.path.realpath(destination))
 
     if not os.path.exists(source):
@@ -82,4 +84,5 @@ def copy_file(source, destination):
 
 def millis_now():
     """Returns time in milliseconds since epoch"""
+
     return int(round(time.time() * 1000))

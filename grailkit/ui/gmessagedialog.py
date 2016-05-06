@@ -26,9 +26,11 @@ class GMessageDialog(GDialog):
 
 # test a dialog
 if __name__ == '__main__':
+
     from grailkit.ui import GApplication
 
     app = GApplication(sys.argv)
+
     win = GMessageDialog()
     win.show()
 
