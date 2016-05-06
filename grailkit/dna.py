@@ -481,67 +481,105 @@ class DNAEntity:
     @property
     def created(self):
         """Time in milliseconds when entity was created"""
+
         return self._created
 
     @property
     def modified(self):
         """Time in milliseconds when entity was modified last time"""
+
         return self._modified
 
     @property
     def content(self):
         """Get contents of item"""
+
         return self._content
 
     @content.setter
     def content(self, content):
         """Set content of item"""
+
         self._content = content
         self._modified = millis_now()
 
     @property
     def search(self):
         """Search string"""
+
         return self._search
 
     @search.setter
     def search(self, value):
         """Search string"""
+
         self._search = value
         self._modified = millis_now()
 
     @property
     def index(self):
         """Index of entity inside parent entity"""
+
         return self._index
 
     @index.setter
     def index(self, value):
+        """Set index of entity
+
+        Args:
+            value (int): index value
+        """
+
         self._index = value
         self._modified = millis_now()
 
     def get(self, key, default=None):
-        """Get a property value"""
+        """Get a property value
+
+        Args:
+            key (str): property name
+            default (object): return `default` if property doesn't exists
+        """
+
         return self._dna_parent._get(self.id, key, default)
 
     def set(self, key, value, force_type=None):
-        """Set a property"""
+        """Set a property
+
+        Args:
+            key (str): property name
+            value (object): value of property
+            force_type: convert value to this type
+        """
+
         self._dna_parent._set(self.id, key, value, force_type)
 
     def has(self, key):
-        """Check if property exists"""
+        """Check if property exists
+
+        Args:
+            key (str): property name
+        """
+
         return self._dna_parent._has(self.id, key)
 
     def unset(self, key):
-        """Remove property"""
+        """Remove property
+
+        Args:
+            key (str): property name
+        """
+
         self._dna_parent._unset(self.id, key)
 
     def properties(self):
         """Returns list of all properties"""
+
         return self._dna_parent._properties(self.id)
 
     def update(self):
         """Update this entity and commit changes to database"""
+
         self._dna_parent._update(self)
 
     def _parse(self, row):

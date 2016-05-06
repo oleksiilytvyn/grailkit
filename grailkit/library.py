@@ -13,7 +13,7 @@ class LibraryError(DNAError):
 
 
 class Library(DNA):
-    """Manage library"""
+    """Manage library file"""
 
     # file extension
     _file_extension = ".grail-library"
@@ -40,15 +40,30 @@ class Library(DNA):
         return item
 
     def remove(self, entity_id):
-        """Remove entity from library"""
+        """Remove entity from library
+
+        Args:
+            entity_id (int): id of entity
+        """
 
         self._remove(entity_id)
 
     def items(self, filter_type=False, filter_keyword=False):
+        """Returns list of library items
+
+        Args:
+            filter_type: limit result set by type, pass False to disable filter
+            filter_keyword (str): limit result set by keyword, pass False to disable filter
+        """
         return self._entities(
             filter_type=filter_type,
             filter_parent=self._root.id,
             filter_keyword=filter_keyword)
 
     def item(self, entity_id):
+        """Return library item by id
+
+        Args:
+            entity_id (int): entity identifier
+        """
         return self._entity(entity_id)

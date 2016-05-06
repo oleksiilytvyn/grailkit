@@ -90,6 +90,7 @@ class GApplication(QApplication):
 
     def moreThanOneInstanceAllowed(self):
         """Allow multiple instances or not"""
+
         return True
 
     def anotherInstanceStarted(self):

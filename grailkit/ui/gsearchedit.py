@@ -51,19 +51,23 @@ class GSearchEdit(QLineEdit, GWidget):
                                 (self.rect().bottom() + 5 - size_hint.height()) / 2)
 
     def keyPressEvent(self, event):
+        """Implements keyPressed signal"""
         super(GSearchEdit, self).keyPressEvent(event)
 
         self.keyPressed.emit(event)
 
     def _text_changed(self, text):
+        """Process text changed event"""
         self._ui_clear_btn.setVisible(len(text) > 0)
 
 
 # test a dialog
 if __name__ == '__main__':
+
     from grailkit.ui import GDialog, GApplication
 
     app = GApplication(sys.argv)
+
     win = GDialog()
     layout = QHBoxLayout()
     layout.addWidget(GSearchEdit())

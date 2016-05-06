@@ -119,18 +119,30 @@ class Cuelist(DNAEntity):
         super(Cuelist, self).__init__(parent)
 
     def __len__(self):
+        """Return count of cues"""
         return len(self.cues())
 
     def cues(self):
+        """Returns list of all cues in Cuelist"""
+
         return self._dna_parent._entities(filter_parent=self._id,
                                           filter_type=DNA.TYPE_CUE,
                                           factory=Cue)
 
     def cue(self, cue_id):
+        """Get cue by id
+
+        Args:
+            cue_id (int): cue identifier
+        """
         return self._dna_parent._entity(cue_id, factory=Cue)
 
     def append(self, name="Untitled Cue"):
-        """Create a new cue and append to bottom"""
+        """Create a new cue and append to the end
+
+        Args:
+            name (str): name of cue
+        """
         cue = self._dna_parent._create(name=name,
                                        parent=self._id,
                                        entity_type=DNA.TYPE_CUE,
@@ -139,9 +151,20 @@ class Cuelist(DNAEntity):
         return cue
 
     def insert(self, index, name="Untitled Cue"):
+        """Create cue and insert at given index
+
+        Args:
+            name (str): name of cue
+            index (int): position index
+        """
         pass
 
     def remove(self, cue_id):
+        """Remove entity by id
+
+        Args:
+            cue_id (int): DNA entity id
+        """
         self._dna_parent._remove(cue_id)
 
     @staticmethod
@@ -173,6 +196,7 @@ class Cue(DNAEntity):
     COLOR_DEFAULT = "#FFFFFF"
     COLORS = (COLOR_DEFAULT, COLOR_RED, COLOR_ORANGE, COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE, COLOR_GRAY)
 
+    # private members
     _number = "1"
     _name = "Untitled cue"
     _color = COLOR_DEFAULT
@@ -206,15 +230,27 @@ class Cue(DNAEntity):
         return self._follow
 
     def __init__(self, parent):
-        """Create a cue instance"""
+        """Create a cue instance
+
+        Args:
+            parent (DNA): parent DNA
+        """
         super(Cue, self).__init__(parent)
 
     def insert(self, index):
-        """Create and insert a sub cue"""
+        """Create and insert a sub cue
+
+        Args:
+            index (int): position index
+        """
         pass
 
     def append(self, name):
-        """Create and append sub cue"""
+        """Create and append sub cue
+
+        Args:
+            name (str): name of sub cue
+        """
 
         """Create a new cue and append to bottom"""
         cue = self._dna_parent._create(name=name,
@@ -248,6 +284,11 @@ class Settings(DNAEntity):
     """Settings object"""
 
     def __init__(self, parent):
+        """Initialize Settings entity
+
+        Args:
+            parent (object): parent DNA
+        """
         super(Settings, self).__init__(parent)
 
     @staticmethod

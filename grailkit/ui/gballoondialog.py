@@ -99,6 +99,7 @@ if __name__ == '__main__':
     from grailkit.ui import GApplication
 
     app = GApplication(sys.argv)
+
     win = GBalloonDialog()
     win.closeOnFocusLost(False)
     win.show()

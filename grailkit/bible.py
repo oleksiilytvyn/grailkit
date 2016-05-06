@@ -505,3 +505,12 @@ class BibleHost:
         # remove grail-bible file
 
         pass
+
+    @staticmethod
+    def verify(path):
+        """Check file to be valid grail-bible file"""
+
+        if not (os.path.exists(path) and os.path.isfile(path)):
+            return False
+
+        return True
