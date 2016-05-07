@@ -1,3 +1,10 @@
+
+.. image:: https://bitbucket.org/repo/nnn7Mr/images/2544725897-grail-kit.png
+   :height: 200px
+   :width: 200px
+   :scale: 100%
+   :alt: grailkit
+
 Grail Kit
 =========
 
