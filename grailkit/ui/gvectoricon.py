@@ -6,10 +6,12 @@
     Like regular QIcon but vector + extended functionality
 """
 
+from PyQt5.QtGui import QIcon
+
 from grailkit.ui import GWidget
 
 
-class GVectorIcon(GWidget):
+class GVectorIcon(QIcon, GWidget):
 
     def __init__(self, parent=None):
         super(GVectorIcon, self).__init__(parent)

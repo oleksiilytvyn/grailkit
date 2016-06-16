@@ -11,6 +11,8 @@ import sys
 from PyQt5.QtCore import QSharedMemory, QFile, Qt
 from PyQt5.QtWidgets import QApplication, QStyleFactory
 
+import grailkit.resources
+
 
 class GApplication(QApplication):
     """Base class for all grail applications"""
@@ -50,7 +52,7 @@ class GApplication(QApplication):
         """
 
         data = ""
-        stream = QFile(":/stylesheet/app.qss")
+        stream = QFile(":/gk/ui.qss")
 
         if stream.open(QFile.ReadOnly):
             data = str(stream.readAll())
@@ -64,7 +66,7 @@ class GApplication(QApplication):
     def quit(self):
         """Quit application and close all connections"""
 
-        self.shared_memory.detach()
+        self._shared_memory.detach()
         super(GApplication, self).quit()
         sys.exit()
 
@@ -78,13 +80,13 @@ class GApplication(QApplication):
         Returns: Boolean
         """
 
-        self.shared_memory = QSharedMemory(self.applicationName())
+        self._shared_memory = QSharedMemory(self.applicationName())
 
-        if self.shared_memory.attach():
+        if self._shared_memory.attach():
             self.anotherInstanceStarted()
             return True
         else:
-            self.shared_memory.create(1)
+            self._shared_memory.create(1)
 
         return False
 

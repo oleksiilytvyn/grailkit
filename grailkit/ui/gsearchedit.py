@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import *
 from grailkit.ui import GWidget
 
 
-class GSearchEdit(QLineEdit, GWidget):
+class GSearchEdit(QLineEdit):
     """Basic edit input for search with clear button"""
 
     keyPressed = pyqtSignal('QKeyEvent')
@@ -22,20 +22,36 @@ class GSearchEdit(QLineEdit, GWidget):
     def __init__(self, parent=None):
         super(GSearchEdit, self).__init__(parent)
 
+        self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.textChanged.connect(self._text_changed)
 
         self._ui_clear_btn = QToolButton(self)
         self._ui_clear_btn.setIconSize(QSize(14, 14))
-        self._ui_clear_btn.setIcon(QIcon(':/icons/search-clear.png'))
+        self._ui_clear_btn.setIcon(QIcon(':/gk/icon/search-clear.png'))
         self._ui_clear_btn.setCursor(Qt.ArrowCursor)
-        self._ui_clear_btn.setStyleSheet("border: none; padding: 0px;")
         self._ui_clear_btn.hide()
-
         self._ui_clear_btn.clicked.connect(self.clear)
 
         frame_width = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
-        self.setStyleSheet("QLineEdit { padding-right: %spx; height: 21px;} " %
-                           str(self._ui_clear_btn.sizeHint().width() + frame_width + 1))
+        # To-Do: move styles to qss file
+        self.setStyleSheet("""
+                QLineEdit {
+                    border: none;
+                    border-radius: 11px;
+                    padding: 1px 8px;
+                    margin: 0;
+                    background: #e9e9e9;
+                    min-height: 20px;
+                    height: 20px;
+                    padding-right: %spx;
+                    }
+
+                    QLineEdit QToolButton {
+                        border: none;
+                        padding: 0;
+                        background: none;
+                        }
+                """ % str(self._ui_clear_btn.sizeHint().width() / 2 + frame_width + 1))
 
         size_hint = self.minimumSizeHint()
 
@@ -47,7 +63,7 @@ class GSearchEdit(QLineEdit, GWidget):
         """Redraw some elements"""
 
         size_hint = self._ui_clear_btn.sizeHint()
-        self._ui_clear_btn.move(self.rect().right() - size_hint.width(),
+        self._ui_clear_btn.move(self.rect().right() - size_hint.width() / 2,
                                 (self.rect().bottom() + 5 - size_hint.height()) / 2)
 
     def keyPressEvent(self, event):
@@ -60,6 +76,9 @@ class GSearchEdit(QLineEdit, GWidget):
         """Process text changed event"""
         self._ui_clear_btn.setVisible(len(text) > 0)
 
+    def className(self):
+        return "GSearchEdit"
+
 
 # test a dialog
 if __name__ == '__main__':
@@ -71,6 +90,8 @@ if __name__ == '__main__':
     win = GDialog()
     layout = QHBoxLayout()
     layout.addWidget(GSearchEdit())
+    layout.setContentsMargins(0, 0, 0, 0)
+    win.setStyleSheet("background: #626364;")
     win.setLayout(layout)
     win.show()
 

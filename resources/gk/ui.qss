@@ -1,0 +1,200 @@
+/**
+ * @section Button
+ */
+
+GAboutDialog QPushButton,
+GAboutDialog QToolButton {
+    background: #e6e6e6;
+    color: #31343a;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 12px;
+    margin: 3px;
+    }
+
+GAboutDialog QToolButton {
+    padding: 2px;
+    }
+
+/**
+ * @section scrollbar
+ */
+
+QScrollBar:horizontal {
+    background: transparent;
+    border: none;
+    height: 8px;
+    margin: 4px 4px 4px 0;
+    }
+
+    QScrollBar:vertical {
+        background: transparent;
+        border: none;
+        width: 8px;
+        margin: 4px 4px 4px 0;
+        }
+
+    QScrollBar::handle:horizontal {
+        background: rgba(0, 0, 0, 0.6);
+        min-width: 20px;
+        border-radius: 3px;
+        }
+
+    QScrollBar::handle:vertical {
+        background: rgba(0, 0, 0, 0.6);
+        min-height: 20px;
+        border-radius: 3px;
+        }
+
+    QScrollBar::add-line:vertical {
+        background: transparent;
+        border: none;
+        height: 0px;
+        width: 0px;
+        subcontrol-position: bottom;
+        subcontrol-origin: margin;
+        }
+
+    QScrollBar::sub-line:vertical {
+        background: transparent;
+        border: none;
+        height: 0px;
+        width: 0px;
+        subcontrol-position: top;
+        subcontrol-origin: margin;
+        }
+
+    QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+        width: 0px;
+        height: 0px;
+        background: none;
+        border: none;
+        }
+
+    QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+        width: 0px;
+        height: 0px;
+        background: none;
+        border: none;
+        }
+
+/**
+ * @section GSearchEdit
+ */
+
+GSearchEdit {
+    border: none;
+    border-radius: 11px;
+    padding: 1px 8px;
+    background: #e9e9e9;
+    min-height: 20px;
+    height: 20px;
+    }
+
+    GSearchEdit QToolButton {
+        margin-right: 18px;
+        border: none;
+        padding: 0;
+        }
+
+/**
+ * @section GListWidget
+ */
+
+GListWidget {
+    border: none;
+    background-color: #626364;
+    alternate-background-color: #676869;
+    show-decoration-selected: 1;
+    outline: 0;
+    }
+
+    GListWidget::item {
+        color: #e6e6e6;
+        margin: 0;
+        padding: 4px 12px;
+        border-bottom: 1px solid #626364;
+        qproperty-wordWrap: true;
+        }
+
+    GListWidget::item:selected {
+        background: #8a9fbb;
+        border-bottom: 1px solid #8a9fbb;
+        color: #e6e6e6;
+        }
+
+/**
+ * @section GWelcomeWidget
+ */
+
+GWelcomeWidget {
+    }
+
+    GWelcomeWidget #g_welcome_title {
+        qproperty-alignment: AlignCenter AlignCenter;
+        text-align: center;
+        font-size: 24px;
+        margin: 0 0 6px 0;
+        color: #f1f1f1;
+        }
+
+    GWelcomeWidget #g_welcome_description {
+        text-align: center;
+        font-size: 14px;
+        qproperty-alignment: AlignCenter AlignCenter;
+        font-weight: 300;
+        color: #929292;
+        margin: 0 0 24px 0;
+        }
+
+/**
+ * @section
+ */
+
+QWelcomeAction {
+    background: #2f2f2f;
+    }
+
+    #q_welcome_action_title {
+        font-size: 14px;
+        margin-left: 70px;
+        margin-bottom: 3px;
+        color: #f1f1f1;
+        }
+
+    #q_welcome_action_text {
+        font-size: 14px;
+        color: #929292;
+        margin-left: 70px;
+        }
+
+/**
+ * @section GAboutDialog
+ */
+
+GAboutDialog {
+    background: #484a51;
+    }
+
+    GAboutDialog #g_about_title {
+        font-size: 20pt;
+        color: #f1f1f1;
+        }
+
+    GAboutDialog #g_about_description {
+        background: #484a51;
+        border: none;
+        color: #a3a3a6;
+        }
+
+/**
+ * @section GBalloonDialog
+ */
+
+GBalloonDialog {}
+
+/**
+ * @section GMessageDialog
+ */
+
+GMessageDialog {}

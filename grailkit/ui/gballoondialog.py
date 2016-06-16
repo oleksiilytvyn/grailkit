@@ -5,7 +5,6 @@
 
     Floating dialog with pointer and without title bar
 """
-import sys
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -22,6 +21,7 @@ class GBalloonDialog(GDialog):
         super(GBalloonDialog, self).__init__(parent)
 
         self._close_on_focus_lost = True
+        self._background_color = QColor(255, 255, 255)
 
         self.setWindowFlags(Qt.Widget | Qt.FramelessWindowHint | Qt.X11BypassWindowManagerHint)
         self.setAttribute(Qt.WA_NoSystemBackground, True)
@@ -65,7 +65,7 @@ class GBalloonDialog(GDialog):
         rounded_rect.addPolygon(triangle)
 
         painter.setOpacity(1)
-        painter.fillPath(rounded_rect, QBrush(Qt.white))
+        painter.fillPath(rounded_rect, QBrush(self._background_color))
 
         painter.restore()
         painter.end()
@@ -92,16 +92,27 @@ class GBalloonDialog(GDialog):
         self.raise_()
         self.move(point.x() - self.width() / 2, point.y() - self.height() + 12)
 
+    def setBackgroundColor(self, color):
+        """Set a color of whole dialog
+
+        Args:
+            color (QColor): background color of widget
+        """
+
+        self._background_color = color
+
 
 # test a dialog
 if __name__ == '__main__':
 
+    import sys
     from grailkit.ui import GApplication
 
     app = GApplication(sys.argv)
 
     win = GBalloonDialog()
     win.closeOnFocusLost(False)
+    win.setBackgroundColor(QColor(72, 74, 81))
     win.show()
 
     sys.exit(app.exec_())
