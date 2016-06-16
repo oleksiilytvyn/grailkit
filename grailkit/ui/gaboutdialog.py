@@ -29,9 +29,9 @@ class GAboutDialog(GDialog):
         self.url_report = ""
         self.url_help = ""
 
-        self._init_ui()
+        self.__ui__()
 
-    def _init_ui(self):
+    def __ui__(self):
 
         self._ui_pixmap = QApplication.style().standardIcon(QStyle.SP_MessageBoxInformation)
 
@@ -41,11 +41,11 @@ class GAboutDialog(GDialog):
         self._ui_icon.setGeometry(48, 52, 64, 64)
 
         self._ui_title = QLabel(self._title, self)
-        self._ui_title.setStyleSheet("font-size: 20pt;")
+        self._ui_title.setObjectName("g_about_title")
         self._ui_title.setGeometry(160, 34, 311, 26)
 
         self._ui_description = QPlainTextEdit(self._description, self)
-        self._ui_description.setStyleSheet("background: transparent;")
+        self._ui_description.setObjectName("g_about_description")
         self._ui_description.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._ui_description.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._ui_description.setReadOnly(True)
@@ -76,6 +76,20 @@ class GAboutDialog(GDialog):
         self.setGeometry(100, 100, 484, 224)
         self.setFixedSize(484, 224)
 
+    def setIcon(self, icon):
+        """Set icon"""
+        pass
+
+    def setTitle(self, title):
+        """Set a title text"""
+
+        self._ui_title.setText(title)
+
+    def setDescription(self, text):
+        """Set a description text"""
+
+        self._ui_description.setPlainText(text)
+
     def help(self):
         """Open a web page"""
         url = QUrl(self.url_help)
@@ -90,10 +104,15 @@ class GAboutDialog(GDialog):
 if __name__ == '__main__':
 
     from grailkit.ui import GApplication
+    from grailkit import __version__ as version
 
     app = GApplication(sys.argv)
 
     win = GAboutDialog()
+    win.url_help = "http://grailapp.com/help"
+    win.url_report = "http://grailapp.com/report"
+    win.setTitle("GrailKit")
+    win.setDescription("Version %s, 2015-2016 Olexii Lytvyn" % (version, ))
     win.show()
 
     sys.exit(app.exec_())
