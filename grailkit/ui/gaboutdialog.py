@@ -24,7 +24,9 @@ class GAboutDialog(GDialog):
 
         self._title = title
         self._description = description
-        self._icon = icon
+        self._icon = None
+
+        self.setIcon(icon)
 
         self.url_report = ""
         self.url_help = ""
@@ -78,7 +80,14 @@ class GAboutDialog(GDialog):
 
     def setIcon(self, icon):
         """Set icon"""
-        pass
+
+        size = 64
+
+        if isinstance(icon, QIcon):
+            self._icon = icon.pixmap(size)
+
+        if isinstance(icon, QPixmap):
+            self._icon = icon.scaledToWidth(size)
 
     def setTitle(self, title):
         """Set a title text"""
@@ -92,13 +101,16 @@ class GAboutDialog(GDialog):
 
     def help(self):
         """Open a web page"""
+
         url = QUrl(self.url_help)
         QDesktopServices.openUrl(url)
 
     def report(self):
         """Open a web page"""
+
         url = QUrl(self.url_report)
         QDesktopServices.openUrl(url)
+
 
 # test a dialog
 if __name__ == '__main__':

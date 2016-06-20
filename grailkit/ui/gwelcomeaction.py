@@ -6,9 +6,9 @@
     Action button widget for GWelcomeWidget
 """
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import QPoint, QSize
+from PyQt5.QtGui import QIcon, QPixmap, QPainter
+from PyQt5.QtWidgets import QAbstractButton, QLabel, QVBoxLayout
 
 from grailkit.ui import GWidget
 
@@ -42,9 +42,12 @@ class GWelcomeAction(QAbstractButton, GWidget):
         self.setLayout(self._ui_layout)
 
     def sizeHint(self):
+        """Default size of widget"""
+
         return QSize(64, 64)
 
     def paintEvent(self, paint):
+        """Custom painting"""
 
         p = QPainter(self)
         p.save()
@@ -70,15 +73,47 @@ class GWelcomeAction(QAbstractButton, GWidget):
             self._icon = icon.scaledToWidth(size)
 
     def setTitle(self, title):
-        """Set a title of action"""
+        """Set a title of action
+
+        Args:
+            title (str): set a title of action
+        """
 
         self._title = title
         self._ui_title.setText(self._title)
 
     def setText(self, text):
-        """Set a description text of this action"""
+        """Set a description text of this action
+
+        Args:
+            text (str): text of action
+        """
 
         super(GWelcomeAction, self).setText("")
 
         self._text = text
         self._ui_text.setText(self._text)
+
+    def title(self):
+        """Get title of action
+
+        Returns: str
+        """
+
+        return self._title
+
+    def text(self):
+        """Get a text of action
+
+        Returns: str
+        """
+
+        return self._text
+
+    def icon(self):
+        """Get a icon of action
+
+        Returns: QIcon
+        """
+
+        return QIcon(self._icon)

@@ -72,12 +72,13 @@ class GApplication(QApplication):
 
     def unhandledException(self, exctype, value, traceback_object):
         """Re-implement this method to catch exceptions"""
+
         self._sys_exception_handler(exctype, value, traceback_object)
 
     def isAlreadyRunning(self):
-        """Check for another instances of Grail
+        """Check for another instances of this application
 
-        Returns: Boolean
+        Returns: bool
         """
 
         self._shared_memory = QSharedMemory(self.applicationName())
@@ -91,7 +92,10 @@ class GApplication(QApplication):
         return False
 
     def moreThanOneInstanceAllowed(self):
-        """Allow multiple instances or not"""
+        """Allow multiple instances or not
+
+        Returns: bool
+        """
 
         return True
 

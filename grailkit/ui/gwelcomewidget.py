@@ -7,14 +7,13 @@
     for user to choose from.
 """
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QSizePolicy
 
 from grailkit.ui import GWidget, GWelcomeAction
 
 
 class GWelcomeWidget(GWidget):
+    """"""
 
     def __init__(self, parent=None):
         super(GWelcomeWidget, self).__init__(parent)
@@ -86,6 +85,7 @@ class GWelcomeWidget(GWidget):
 if __name__ == '__main__':
 
     import sys
+    from PyQt5.QtWidgets import QHBoxLayout, QApplication, QStyle
     from grailkit.ui import GApplication, GDialog
 
     app = GApplication(sys.argv)
@@ -96,9 +96,11 @@ if __name__ == '__main__':
     widget.setTitle("Welcome to GrailKit 0.1.0")
     widget.setDescription("Choose some action below")
 
-    widget.addWidget(GWelcomeAction("Create", "Write a new document", QApplication.style().standardIcon(QStyle.SP_FileIcon)))
+    widget.addWidget(
+        GWelcomeAction("Create", "Write a new document", QApplication.style().standardIcon(QStyle.SP_FileIcon)))
     widget.addWidget(GWelcomeAction("Open", "Edit existing one", QApplication.style().standardIcon(QStyle.SP_DirIcon)))
-    widget.addWidget(GWelcomeAction("Save", "Save current file", QApplication.style().standardIcon(QStyle.SP_DialogSaveButton)))
+    widget.addWidget(
+        GWelcomeAction("Save", "Save current file", QApplication.style().standardIcon(QStyle.SP_DialogSaveButton)))
 
     layout = QHBoxLayout()
     layout.setContentsMargins(0, 0, 0, 0)
