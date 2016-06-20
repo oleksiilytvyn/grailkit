@@ -11,7 +11,6 @@ from grailkit.ui import GWidget
 
 
 class GDialog(QDialog, GWidget):
-    """Dialog window"""
+    """Abstract dialog window"""
 
     pass
-

@@ -198,3 +198,11 @@ GBalloonDialog {}
  */
 
 GMessageDialog {}
+
+    GMessageDialog #g_message_title {
+        font-weight: bold;
+        }
+
+    GMessageDialog #g_message_text {
+        color: #666;
+        }

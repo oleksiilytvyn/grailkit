@@ -6,9 +6,9 @@
     Floating dialog with pointer and without title bar
 """
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt, QPointF, QSize, QEvent, QObject
+from PyQt5.QtGui import QPolygonF, QColor, QPainter, QPainterPath, QBrush
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 
 from grailkit.ui import GDialog
 from grailkit.util import OS_MAC
@@ -79,15 +79,26 @@ class GBalloonDialog(GDialog):
         return QObject.eventFilter(self, target, event)
 
     def sizeHint(self):
-        """Default size"""
+        """Default minimum size"""
+
         return QSize(300, 300)
 
     def closeOnFocusLost(self, value):
-        """Close dialog when it looses focus"""
+        """Close dialog when it looses focus
+
+        Args:
+            value (bool): close this dialog when it looses focus or not
+        """
+
         self._close_on_focus_lost = value
 
     def showAt(self, point):
-        """Show dialog at given point"""
+        """Show dialog tip at given point
+
+        Args:
+            point (QPoint): point to show at
+        """
+
         self.show()
         self.raise_()
         self.move(point.x() - self.width() / 2, point.y() - self.height() + 12)

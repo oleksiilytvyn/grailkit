@@ -7,14 +7,14 @@
 """
 import sys
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QStyle, QToolButton, QLineEdit
 
 from grailkit.ui import GWidget
 
 
-class GSearchEdit(QLineEdit):
+class GSearchEdit(QLineEdit, GWidget):
     """Basic edit input for search with clear button"""
 
     keyPressed = pyqtSignal('QKeyEvent')
@@ -33,7 +33,7 @@ class GSearchEdit(QLineEdit):
         self._ui_clear_btn.clicked.connect(self.clear)
 
         frame_width = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
-        # To-Do: move styles to qss file
+        # To-Do: move styles to qss file if possible
         self.setStyleSheet("""
                 QLineEdit {
                     border: none;
@@ -68,22 +68,22 @@ class GSearchEdit(QLineEdit):
 
     def keyPressEvent(self, event):
         """Implements keyPressed signal"""
+
         super(GSearchEdit, self).keyPressEvent(event)
 
         self.keyPressed.emit(event)
 
     def _text_changed(self, text):
         """Process text changed event"""
-        self._ui_clear_btn.setVisible(len(text) > 0)
 
-    def className(self):
-        return "GSearchEdit"
+        self._ui_clear_btn.setVisible(len(text) > 0)
 
 
 # test a dialog
 if __name__ == '__main__':
 
     from grailkit.ui import GDialog, GApplication
+    from PyQt5.QtWidgets import QHBoxLayout
 
     app = GApplication(sys.argv)
 

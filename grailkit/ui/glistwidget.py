@@ -6,9 +6,8 @@
     Simple list widget
 """
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QScrollBar, QListWidget, QListWidgetItem, QHBoxLayout, QAbstractItemView
 
 from grailkit.ui import GWidget
 
@@ -25,7 +24,7 @@ class GListWidget(QListWidget, GWidget):
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setAlternatingRowColors(True)
 
-        # Fix a items overlapping issue
+        # Fix items overlapping issue
         self.setStyleSheet("QListWidget::item {padding: 4px 12px;}")
 
         self._scrollbar_original = self.verticalScrollBar()
