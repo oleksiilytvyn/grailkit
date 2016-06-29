@@ -13,6 +13,6 @@ from PyQt5.QtWidgets import *
 from grailkit.ui import GWidget
 
 
-class GSwitch(GWidget):
+class GSwitch(QAbstractButton, GWidget):
 
     pass

@@ -5,14 +5,19 @@ from grailkit.ui.gapplication import GApplication
 
 # widgets
 from grailkit.ui.gwidget import GWidget
+from grailkit.ui.gswitch import GSwitch
+from grailkit.ui.glistwidget import GListWidget, GListItem
+from grailkit.ui.gvectoricon import GVectorIcon
+from grailkit.ui.gcolorwidget import GColorWidget
+from grailkit.ui.gwelcomeaction import GWelcomeAction
+from grailkit.ui.gwelcomewidget import GWelcomeWidget
+from grailkit.ui.gsourcelistwidget import GSourceListWidget
 
 # dialogs
 from grailkit.ui.gdialog import GDialog
 from grailkit.ui.gframeless import GFrameless
-from grailkit.ui.glistwidget import GListWidget
 from grailkit.ui.gaboutdialog import GAboutDialog
 from grailkit.ui.gmessagedialog import GMessageDialog
 from grailkit.ui.gballoondialog import GBalloonDialog
-from grailkit.ui.gsourcelistwidget import GSourceListWidget
-from grailkit.ui.gwelcomeaction import GWelcomeAction
-from grailkit.ui.gwelcomewidget import GWelcomeWidget
+from grailkit.ui.gprogressdialog import GProgressDialog
+from grailkit.ui.gtransformwidget import GTransformWidget

@@ -24,6 +24,8 @@ class GApplication(QApplication):
         self._shared_memory = None
         self._sys_exception_handler = sys.excepthook
 
+        self.lastWindowClosed.connect(self.quit)
+
         # set a exception handler
         sys.excepthook = self.unhandledException
 
@@ -66,8 +68,11 @@ class GApplication(QApplication):
     def quit(self):
         """Quit application and close all connections"""
 
-        self._shared_memory.detach()
+        if self._shared_memory and self._shared_memory.isAttached():
+            self._shared_memory.detach()
+
         super(GApplication, self).quit()
+
         sys.exit()
 
     def unhandledException(self, exctype, value, traceback_object):
