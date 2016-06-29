@@ -206,3 +206,24 @@ GMessageDialog {}
     GMessageDialog #g_message_text {
         color: #666;
         }
+
+/**
+ * @section GMessageDialog
+ */
+
+GProgressDialog {}
+
+    GProgressDialog #g_progress_title {
+        font-weight: bold;
+        }
+
+    GProgressDialog #g_progress_text {
+        color: #666;
+        font-size: 12pt;
+        }
+
+        GProgressDialog QToolButton {
+            border: none;
+            padding: 0;
+            background: none;
+            }

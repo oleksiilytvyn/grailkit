@@ -301,7 +301,7 @@ class GMessageDialog(GDialog):
         self.setFixedSize(self.size().width(), self.size().height())
 
     @staticmethod
-    def warning(self, parent=None, title="Warning", text=""):
+    def warning(parent=None, title="Warning", text=""):
         """Warning dialog"""
 
         buttons = [GMessageDialog.Ok]
@@ -309,7 +309,7 @@ class GMessageDialog(GDialog):
         return GMessageDialog(parent, title, text, GMessageDialog.Warning, buttons)
 
     @staticmethod
-    def critical(self, parent=None, title="Critical Problem", text=""):
+    def critical(parent=None, title="Critical Problem", text=""):
         """Warning dialog"""
 
         buttons = [GMessageDialog.Ok]
@@ -318,7 +318,7 @@ class GMessageDialog(GDialog):
 
 
     @staticmethod
-    def question(self, parent=None, title="Are you sure?", text=""):
+    def question(parent=None, title="Are you sure?", text=""):
         """Warning dialog"""
 
         buttons = [GMessageDialog.Ok]
@@ -327,7 +327,7 @@ class GMessageDialog(GDialog):
 
 
     @staticmethod
-    def information(self, parent=None, title="Information", text=""):
+    def information(parent=None, title="Information", text=""):
         """Warning dialog"""
 
         buttons = [GMessageDialog.Ok]
