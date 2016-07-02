@@ -145,7 +145,7 @@ class GMessageDialog(GDialog):
 
         self.setLayout(self._ui_layout)
         self.setWindowTitle(self._title if not OS_MAC else "")
-        self.setMinimumSize(420, 160)
+        self.setMinimumSize(420, 80)
         self._update_size()
         self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
 

@@ -82,10 +82,28 @@ class DNA:
             DNAError: if file can't be parsed or not exists
         """
 
+        self._changed = False
+        self._location = file_path
+
         if not self.validate(file_path) and not create:
             raise DNAError("Grail file could not be opened.")
         else:
             self._db = DataBaseHost.get(file_path, query=self._db_create_query, create=create)
+
+    @property
+    def location(self):
+        """Returns path to file"""
+        return self._location
+
+    @property
+    def filename(self):
+        """Returns path to file"""
+        return os.path.splitext(os.path.basename(self._location))[0]
+
+    @property
+    def changed(self):
+        """Return True if some changes not saved"""
+        return self._changed
 
     def _create(self, name="", parent=0, entity_type=TYPE_ABSTRACT, index=0, factory=None):
         """Returns new DNAEntity inside this DNA file"""
@@ -380,6 +398,18 @@ class DNA:
             return False
 
         return True
+
+    def save(self):
+        """Save all changes"""
+
+        # to-do: implement this
+        pass
+
+    def save_copy(self, file_path):
+        """Save a copy of this file"""
+
+        # to-do: implement this
+        pass
 
     def close(self):
         """Close connection"""

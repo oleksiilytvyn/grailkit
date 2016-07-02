@@ -18,18 +18,23 @@ class Library(DNA):
     # file extension
     _file_extension = ".grail-library"
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, create=False):
         """Open or create a project
 
         Args:
             file_path (str): path to file
         """
-        super(Library, self).__init__(file_path, create=False)
+        super(Library, self).__init__(file_path, create=create)
+
+        if create:
+            self._create("Grail Library",
+                         parent=0,
+                         entity_type=DNA.TYPE_LIBRARY)
 
         root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
 
         if len(root) == 0:
-            raise LibraryError("Library entity not found in %s file" % (file_path,))
+            raise LibraryError("Library entity not found in file %s" % (file_path,))
 
         self._root = root
 

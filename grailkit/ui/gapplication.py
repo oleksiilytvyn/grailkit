@@ -23,15 +23,13 @@ class GApplication(QApplication):
 
         self._shared_memory = None
         self._sys_exception_handler = sys.excepthook
+        self._stylesheet_file = None
+        self._stylesheet = ""
 
         self.lastWindowClosed.connect(self.quit)
 
         # set a exception handler
         sys.excepthook = self.unhandledException
-
-        # prevent from running more than one instance
-        if not self.moreThanOneInstanceAllowed() and self.isAlreadyRunning():
-            self.quit()
 
         # fix for retina displays
         try:
@@ -46,6 +44,10 @@ class GApplication(QApplication):
 
         self.setStyleSheet(self._get_stylesheet())
 
+        # prevent from running more than one instance
+        if not self.moreThanOneInstanceAllowed() and self.isAlreadyRunning():
+            self.quit()
+
     def _get_stylesheet(self):
         """
         Get the application stylesheet
@@ -53,17 +55,32 @@ class GApplication(QApplication):
         Returns: string
         """
 
+        self._stylesheet = self._read_stylesheet(":/gk/ui.qss") + self._read_stylesheet(self._stylesheet_file)
+        return self._stylesheet
+
+    def _read_stylesheet(self, file_path):
+        """Read and return stylesheet file contents"""
+
+        if not file_path:
+            return ""
+
         data = ""
-        stream = QFile(":/gk/ui.qss")
+        stream = QFile(file_path)
 
         if stream.open(QFile.ReadOnly):
             data = str(stream.readAll())
             stream.close()
 
-        data = re.sub(r'\\n', '', data)
-        data = re.sub(r'\\t', '', data)
+        return re.sub(r'(\\n)|(\\r)|(\\t)', '', data)[2:-1]
 
-        return data[2:-1]
+    def setStyleSheetFile(self, file_path):
+        """Set a global style from a file"""
+
+        self._stylesheet_file = file_path
+        self.setStyleSheet(self._get_stylesheet())
+
+    def getStyleSheet(self):
+        return self._stylesheet
 
     def quit(self):
         """Quit application and close all connections"""

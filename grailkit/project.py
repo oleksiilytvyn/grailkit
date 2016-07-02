@@ -5,7 +5,7 @@
 
     Interface to Grail project files
 """
-from grailkit.dna import DNA, DNAEntity
+from grailkit.dna import DNA, DNAFile, DNAEntity
 
 
 class ProjectError(Exception):
@@ -13,7 +13,7 @@ class ProjectError(Exception):
     pass
 
 
-class Project(DNA):
+class Project(DNAFile):
     """Representation of a project"""
 
     _name = "Untitled project"
@@ -55,7 +55,7 @@ class Project(DNA):
     def modified(self):
         return self._modified
 
-    def __init__(self, file_path="", create=False):
+    def __init__(self, file_path, create=False):
         """Open or create a project
 
         Args:
@@ -64,6 +64,13 @@ class Project(DNA):
         """
 
         super(Project, self).__init__(file_path, create=create)
+
+        entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
+                                filter_parent=self._id,
+                                factory=Settings)
+
+        if create and len(entity) == 0:
+            self._create_project()
 
         # read properties
         # find settings
@@ -109,6 +116,74 @@ class Project(DNA):
                                factory=Cuelist)
 
         return cuelist
+
+    def _create_project(self):
+        # settings
+        settings = self.create()
+        settings.name = "settings"
+
+        settings.set('display.background', '#000000')
+
+        settings.set('display.text.align', 1)
+        settings.set('display.text.valign', 1)
+        settings.set('display.text.case', 'uppercase')
+
+        settings.set('display.font.family', 'Helvetica')
+        settings.set('display.font.size', '32pt')
+        settings.set('display.font.weight', 'normal')
+        settings.set('display.font.style', 'normal')
+        settings.set('display.font.color', '#FFFFFF')
+
+        settings.set('display.shadow.x', 0)
+        settings.set('display.shadow.y', 2)
+        settings.set('display.shadow.blur', 10)
+        settings.set('display.shadow.color', '#000000')
+
+        settings.set('display.padding.left', 10)
+        settings.set('display.padding.right', 10)
+        settings.set('display.padding.top', 10)
+        settings.set('display.padding.bottom', 10)
+        settings.set('display.padding.box', 10)
+
+        settings.set('display.composition.x', 0)
+        settings.set('display.composition.y', 0)
+        settings.set('display.composition.width', 1920)
+        settings.set('display.composition.height', 1080)
+
+        settings.set('display.geometry.x', 1920)
+        settings.set('display.geometry.y', 0)
+        settings.set('display.geometry.width', 1920)
+        settings.set('display.geometry.height', 1080)
+
+        settings.set('display.disabled', False)
+        settings.set('display.display', 'DISPLAY//2')
+        settings.set('display.testcard', False)
+        settings.set('display.fullscreen', True)
+        settings.update()
+
+        # project
+        project = self.create()
+        project.name = "Grail Project"
+        project.set('author', 'Alex Litvin')
+        project.set('description', 'Simple Grail project for testing purposes')
+        project.update()
+
+        # cuelist
+        for cuelist_index in range(5):
+            cuelist = self.create(parent=project.id)
+            cuelist.name = "%d'st Cuelist" % (cuelist_index,)
+            cuelist.set('color', '#FF0000')
+            cuelist.set('description', 'Simple cuelist')
+            cuelist.update()
+
+            for cue_index in range(5):
+                cue = self.create(parent=cuelist.id)
+                cue.name = "Cue %d in list %d" % (cue_index, cuelist_index)
+                cue.set('color', '#00FF00')
+                cue.set('continue', 0)
+                cue.set('wait_pre', 100)
+                cue.set('wait_post', 30)
+                cue.update()
 
 
 class Cuelist(DNAEntity):
