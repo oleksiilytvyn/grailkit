@@ -8,13 +8,13 @@
 import sys
 
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QStyle, QToolButton, QLineEdit
+from PyQt5.QtGui import QIcon, QPainter
+from PyQt5.QtWidgets import QStyle, QToolButton, QLineEdit, QStyleOption
 
 from grailkit.ui import GWidget
 
 
-class GSearchEdit(QLineEdit, GWidget):
+class GSearchEdit(QLineEdit):
     """Basic edit input for search with clear button"""
 
     keyPressed = pyqtSignal('QKeyEvent')
@@ -36,21 +36,9 @@ class GSearchEdit(QLineEdit, GWidget):
         # To-Do: move styles to qss file if possible
         self.setStyleSheet("""
                 QLineEdit {
-                    border: none;
-                    border-radius: 11px;
-                    padding: 1px 8px;
-                    margin: 0;
-                    background: #e9e9e9;
-                    min-height: 20px;
-                    height: 20px;
+                    background-color: #e9e9e9;
                     padding-right: %spx;
                     }
-
-                    QLineEdit QToolButton {
-                        border: none;
-                        padding: 0;
-                        background: none;
-                        }
                 """ % str(self._ui_clear_btn.sizeHint().width() / 2 + frame_width + 1))
 
         size_hint = self.minimumSizeHint()
@@ -62,9 +50,11 @@ class GSearchEdit(QLineEdit, GWidget):
     def resizeEvent(self, event):
         """Redraw some elements"""
 
-        size_hint = self._ui_clear_btn.sizeHint()
-        self._ui_clear_btn.move(self.rect().right() - size_hint.width() / 2,
-                                (self.rect().bottom() + 5 - size_hint.height()) / 2)
+        size = self.rect()
+        btn_size = self._ui_clear_btn.sizeHint()
+
+        self._ui_clear_btn.move(size.width() - btn_size.width() - 4,
+                                size.height() / 2 - btn_size.height() / 2 + 2)
 
     def keyPressEvent(self, event):
         """Implements keyPressed signal"""
@@ -78,6 +68,10 @@ class GSearchEdit(QLineEdit, GWidget):
 
         self._ui_clear_btn.setVisible(len(text) > 0)
 
+    def className(self):
+        """Returns widget name that used in stylesheet."""
+
+        return "GSearchEdit"
 
 # test a dialog
 if __name__ == '__main__':

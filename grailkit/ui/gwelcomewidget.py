@@ -7,6 +7,8 @@
     for user to choose from.
 """
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QSizePolicy
 
 from grailkit.ui import GWidget, GWelcomeAction
@@ -18,10 +20,17 @@ class GWelcomeWidget(GWidget):
     def __init__(self, parent=None):
         super(GWelcomeWidget, self).__init__(parent)
 
+        self._icon = None
+
         self.__ui__()
+        self.setIconVisible(False)
 
     def __ui__(self):
         """Create ui"""
+
+        self._ui_icon = QLabel(self)
+        self._ui_icon.setAlignment(Qt.AlignCenter)
+        self._ui_icon.setGeometry(0, 0, 64, 64)
 
         self._ui_title = QLabel("Welcome")
         self._ui_title.setObjectName("g_welcome_title")
@@ -44,6 +53,7 @@ class GWelcomeWidget(GWidget):
         self._ui_layout.setContentsMargins(0, 0, 0, 0)
 
         self._ui_layout.addStretch(1)
+        self._ui_layout.addWidget(self._ui_icon)
         self._ui_layout.addWidget(self._ui_title)
         self._ui_layout.addWidget(self._ui_description)
         self._ui_layout.addWidget(self._ui_actions)
@@ -63,6 +73,25 @@ class GWelcomeWidget(GWidget):
     def setDescription(self, text):
 
         self._ui_description.setText(text)
+
+    def setIcon(self, icon):
+
+        size = 128
+
+        if isinstance(icon, QIcon):
+            self._icon = icon.pixmap(size)
+
+        if isinstance(icon, QPixmap):
+            self._icon = icon.scaledToWidth(size)
+
+        self._ui_icon.setPixmap(self._icon)
+
+    def setIconVisible(self, flag):
+
+        if flag:
+            self._ui_icon.show()
+        else:
+            self._ui_icon.hide()
 
     def resizeEvent(self, event):
         """Align widgets"""

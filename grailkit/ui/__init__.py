@@ -6,6 +6,7 @@ from grailkit.ui.gapplication import GApplication
 # widgets
 from grailkit.ui.gwidget import GWidget
 from grailkit.ui.gswitch import GSwitch
+from grailkit.ui.gsearchedit import GSearchEdit
 from grailkit.ui.glistwidget import GListWidget, GListItem
 from grailkit.ui.gvectoricon import GVectorIcon
 from grailkit.ui.gcolorwidget import GColorWidget
