@@ -55,7 +55,9 @@ class GApplication(QApplication):
         Returns: string
         """
 
-        self._stylesheet = self._read_stylesheet(":/gk/ui.qss") + self._read_stylesheet(self._stylesheet_file)
+        self._stylesheet = self._read_stylesheet(":/gk/ui.qss")
+        self._stylesheet += self._read_stylesheet(self._stylesheet_file)
+
         return self._stylesheet
 
     def _read_stylesheet(self, file_path):
@@ -74,12 +76,18 @@ class GApplication(QApplication):
         return re.sub(r'(\\n)|(\\r)|(\\t)', '', data)[2:-1]
 
     def setStyleSheetFile(self, file_path):
-        """Set a global style from a file"""
+        """Set a global style from a file
+
+        Args:
+            file_path (str): path to stylesheet file
+        """
 
         self._stylesheet_file = file_path
         self.setStyleSheet(self._get_stylesheet())
 
     def getStyleSheet(self):
+        """Returns application stylesheet"""
+
         return self._stylesheet
 
     def quit(self):
