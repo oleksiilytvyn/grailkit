@@ -17,20 +17,44 @@
 """
 import os
 import re
+import glob
+import json
 
+from grailkit.util import path_appdata, copy_file
 from grailkit.dna import DNA
 
 
 def verse_factory(cursor, row):
+    """Parse sqlite row into Verse object
+
+    Args:
+        cursor: sqlite3 cursor
+        row: row data
+
+    Returns:
+        Verse object parsed from sqlite row
+    """
+
     return Verse.from_sqlite(row)
 
 
 def book_factory(cursor, row):
+    """Parse sqlite row into Book object
+
+    Args:
+        cursor: sqlite3 cursor
+        row: row data
+
+    Returns:
+        Book object parsed from sqlite row
+    """
+
     return Book.from_sqlite(row)
 
 
 class BibleError(Exception):
     """Base error thrown when a bible could to be read."""
+
     pass
 
 
@@ -41,32 +65,34 @@ class Verse:
         """Create verse"""
 
         self._osisid = ""
-
         self._book = ""
         self._book_id = 1
         self._chapter = 1
         self._verse = 1
-
         self._text = ""
 
     @property
     def book(self):
         """Book name"""
+
         return self._book
 
     @property
     def book_id(self):
         """Book id (int)"""
+
         return self._book
 
     @property
     def chapter(self):
         """Chapter number (int)"""
+
         return self._chapter
 
     @property
     def verse(self):
         """Verse number (int)"""
+
         return self._verse
 
     @property
@@ -77,15 +103,18 @@ class Verse:
             Genesis 1:1
             1 Corinthians 2:12
         """
+
         return "%s %d:%d" % (self._book, self._chapter, self._verse)
 
     @property
     def text(self):
         """Text of verse"""
+
         return self._text
 
     def parse(self, row):
         """Parse sqlite row into verse"""
+
         self._book = row[5]
         self._book_id = row[1]
         self._chapter = row[2]
@@ -103,6 +132,7 @@ class Verse:
         Returns:
             Verse parsed from given sqlite row
         """
+
         verse = Verse()
         verse.parse(row)
 
@@ -124,26 +154,31 @@ class Book:
     @property
     def id(self):
         """Book abbreviations"""
+
         return self._id
 
     @property
     def abbr(self):
         """Book abbreviations"""
+
         return self._abbr
 
     @property
     def name(self):
         """Name of book"""
+
         return self._name
 
     @property
     def title(self):
         """Full name of book, it might be bigger than name"""
+
         return self._title
 
     @property
     def osisid(self):
-        """OASIS identifier, can be used for cross-referencing"""
+        """OSIS identifier, can be used for cross-referencing"""
+
         return self._osisid
 
     def parse(self, row):
@@ -165,6 +200,7 @@ class Book:
         Returns:
             Book
         """
+
         book = Book()
         book.parse(row)
 
@@ -233,17 +269,28 @@ class BibleInfo:
         """Schema version nubmer"""
         return self._version
 
-    def from_json(self, data):
-        """Fill properties from json string"""
+    @staticmethod
+    def from_json(data):
+        """Fill properties from json string
 
-        self._date = data.date
-        self._title = data.title
-        self._subject = data.subject
-        self._language = data.language
-        self._publisher = data.publisher
-        self._copyright = data.copyright
-        self._identifier = data.identifier
-        self._description = data.description
+        Args:
+            data (object): parsed json object
+        Returns:
+            BibleInfo object
+        """
+
+        info = BibleInfo()
+
+        info._date = data['date']
+        info._title = data['title']
+        info._subject = data['subject']
+        info._language = data['language']
+        info._publisher = data['publisher']
+        info._copyright = data['copyright']
+        info._identifier = data['identifier']
+        info._description = data['description']
+
+        return info
 
 
 class Bible(DNA):
@@ -281,47 +328,56 @@ class Bible(DNA):
 
     @property
     def date(self):
-        """Date"""
+        """Date of publication"""
+
         return self._date
 
     @property
     def title(self):
         """Bible title"""
+
         return self._title
 
     @property
     def subject(self):
         """Subject of a bible"""
+
         return self._subject
 
     @property
     def language(self):
         """Language of bible"""
+
         return self._language
 
     @property
     def publisher(self):
         """Publisher information"""
+
         return self._publisher
 
     @property
     def copyright(self):
         """Copyright information"""
+
         return self._copyright
 
     @property
     def identifier(self):
         """Bible identifier, must be unique"""
+
         return self._identifier
 
     @property
     def description(self):
         """A little description of Bible"""
+
         return self._description
 
     @property
     def version(self):
         """Schema version number"""
+
         return self._version
 
     def books(self):
@@ -459,58 +515,144 @@ class Bible(DNA):
                             LIMIT 3""",
                             (keyword, keyword, keyword, chapter, verse), factroy=verse_factory)
 
+    def json_info(self):
+        """Create json information string"""
+
+        data = {
+            "date": self._date,
+            "title": self._title,
+            "subject": self._subject,
+            "language": self._language,
+            "publisher": self._publisher,
+            "copyright": self._copyright,
+            "identifier": self._identifier,
+            "description": self._description
+            }
+
+        return json.dumps(data)
+
+
+class BibleHostError(Exception):
+    """BibleHost errors"""
+
+    pass
+
 
 class BibleHost:
-    """Manage all installed bibles. Not implemented"""
+    """Manage all installed bibles."""
 
-    LOCATION = ".grail/bibles/"
+    _location = os.path.join(path_appdata("grail-shared"), "bibles/")
+    _list = {}
 
-    @staticmethod
-    def list():
-        """List all installed bibles"""
+    @classmethod
+    def setup(cls):
+        """Gather information about installed bibles"""
 
-        items = []
+        for f in glob.glob(cls._location + "*.json"):
+            file = open(f, "r")
+            info = BibleInfo.from_json(json.load(file))
+            file.close()
 
-        return items
+            cls._list[info.identifier] = info
 
-    @staticmethod
-    def get(bible_id):
-        """Get a bible object"""
+    @classmethod
+    def list(cls):
+        """List all installed bibles
 
-        path = BibleHost.LOCATION + "%s.json" % (bible_id,)
+        Returns:
+            list of BibleInfo objects
+        """
 
-        if os.path.exists(path) and os.path.isfile(path):
-            info = BibleInfo()
-            info.from_json(path)
+        return cls._list
 
-            return info
-        else:
-            return None
+    @classmethod
+    def get(cls, bible_id):
+        """Get a bible object
 
-    @staticmethod
-    def install(file_path):
-        """Install bible from file, it can be any format file supported by parsers"""
+        Args:
+            bible_id (str): bible identifier
+        Returns:
+            Bible object if exists otherwise None
+        """
 
-        # check file
+        if bible_id in cls._list:
+            return cls._list[bible_id]
+
+        return None
+
+    @classmethod
+    def install(cls, file_path, replace=False):
+        """Install bible from file, grail-bible format only
+
+        Args:
+            file_path (str): path to bible file
+            replace (bool): if bible already installed replace it by another version
+        Returns:
+            True if installed or False if bible
+        Raises:
+            BibleHostError raised if bible identifier already exists
+        """
+
+        if not cls.verify(file_path):
+            return False
+
+        try:
+            bible = Bible(file_path)
+            bible_path = os.path.join(cls._location, bible.identifier + '.grail-bible')
+        except BibleError:
+            return False
+
+        if os.path.exists(bible_path) and os.path.isfile(bible_path) and not replace:
+            raise BibleHostError("Bible with id %s already installed" % (bible.identifier,))
+
+        # just copy file to new location
+        copy_file(file_path, bible_path)
         # create a description file
-        # copy file
+        cls._create_descriptor(bible)
+        bible.close()
 
-        pass
+        return True
 
-    @staticmethod
-    def uninstall(bible_id):
-        """Uninstall bible by id"""
+    @classmethod
+    def uninstall(cls, bible_id):
+        """Uninstall bible by id
 
-        # remove description file
-        # remove grail-bible file
+        Args:
+            bible_id (str): bible identifier
+        """
 
-        pass
+        if bible_id in cls._list:
+            del cls._list[bible_id]
 
-    @staticmethod
-    def verify(path):
-        """Check file to be valid grail-bible file"""
+        os.remove(os.path.join(cls._location, bible_id + ".json"))
+        os.remove(os.path.join(cls._location, bible_id + ".grail-bible"))
 
-        if not (os.path.exists(path) and os.path.isfile(path)):
+    @classmethod
+    def verify(cls, file_path):
+        """Check file to be valid grail-bible file
+
+        Args:
+            file_path: path to bible file
+        Returns:
+            True if bible file is valid
+        """
+
+        if not (os.path.exists(file_path) and os.path.isfile(file_path)):
             return False
 
         return True
+
+    @classmethod
+    def _create_descriptor(cls, bible):
+        """Create a description file for a bible"""
+
+        data = bible.json_info()
+
+        file = open(os.path.join(cls._location, bible.identifier + ".json"), "w")
+        file.write(data)
+        file.close()
+
+        bible_info = BibleInfo()
+        bible_info.from_json(json.loads(data))
+
+        cls._list[bible_info.identifier] = bible_info

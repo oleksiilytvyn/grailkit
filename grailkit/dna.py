@@ -108,6 +108,8 @@ class DNA:
     def _create(self, name="", parent=0, entity_type=TYPE_ABSTRACT, index=0, factory=None):
         """Returns new DNAEntity inside this DNA file"""
 
+        self._changed = True
+
         entity = DNAEntity(self)
         entity.parent = parent
         entity.type = entity_type
@@ -145,6 +147,8 @@ class DNA:
     def _update(self, entity):
         """update entity"""
 
+        self._changed = True
+
         cursor = self._db.cursor
         cursor.execute("""UPDATE entities SET
                         id = ?, parent = ?, type = ?, name = ?, created = ?, modified = ?, content = ?, search = ?,
@@ -159,6 +163,8 @@ class DNA:
         Args:
             entity_id (int): id of an entity
         """
+        self._changed = True
+
         self._db.execute("DELETE FROM entities WHERE id = ?", (entity_id,))
         self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
         self._db.connection.commit()
@@ -269,6 +275,7 @@ class DNA:
             value (object): value to assign to property
             force_type (DNA.TYPE): set a type of property
         """
+        self._changed = True
 
         if force_type is None:
             force_type = self.__get_type(value)
@@ -325,6 +332,7 @@ class DNA:
             entity_id (int): id of an entity
             key (str): name of property
         """
+        self._changed = True
 
         self._db.execute("DELETE FROM properties WHERE entity = ? AND key = ?", (entity_id, key))
 
@@ -334,7 +342,23 @@ class DNA:
         Args:
             entity_id (int): id of an entity
         """
+        self._changed = True
+
         self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
+
+    def _rename(self, entity_id, old_key, new_key):
+        """Rename property key
+
+        Args:
+            entity_id (int): id of an entity
+            old_key (str): old property key
+            new_key (str): new property key
+        """
+
+        self._changed = True
+
+        self._db.execute("UPDATE properties SET key = ? WHERE entity = ? AND key = ?",
+                         (new_key, entity_id, old_key))
 
     def __get_type(self, value):
 
@@ -402,18 +426,21 @@ class DNA:
     def save(self):
         """Save all changes"""
 
-        # to-do: implement this
-        pass
+        self._db.commit()
+        self._changed = False
 
     def save_copy(self, file_path):
         """Save a copy of this file"""
 
-        # to-do: implement this
-        pass
+        self._db.commit()
+        self._changed = False
+        self._db.copy(file_path)
 
     def close(self):
         """Close connection"""
+
         self._db.close()
+        self._changed = False
 
 
 class DNAFile(DNA):
@@ -444,6 +471,7 @@ class DNAFile(DNA):
         self.properties = self._properties
         self.unset = self._unset
         self.unset_all = self._unset_all
+        self.rename = self._rename
 
 
 class DNAEntity:

@@ -39,20 +39,20 @@ def path_app():
     return os.path.abspath(apppath)
 
 
-def path_appdata(appname):
+def path_appdata(app_name):
     """Returns appdata path for any platform
 
     Args:
-        appname: name of application
+        app_name: name of application
 
     Returns:
         path
     """
 
     if sys.platform == 'win32':
-        appdata = os.path.join(os.environ['APPDATA'], appname)
+        appdata = os.path.join(os.environ['APPDATA'], app_name)
     else:
-        appdata = os.path.expanduser(os.path.join("~", "." + appname))
+        appdata = os.path.expanduser(os.path.join("~", "." + app_name))
 
     return os.path.abspath(appdata)
 

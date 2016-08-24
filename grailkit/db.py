@@ -155,7 +155,22 @@ class DataBase:
             factory (sqlite3.Row): factory object
         """
 
-        self.connection.row_factory = factory
+        self._connection.row_factory = factory
+
+    def copy(self, file_path):
+        """Copy database to new file"""
+
+        db = lite.connect(file_path)
+        query = "".join(line for line in self._connection.iterdump())
+
+        db.executescript(query)
+        db.commit()
+        db.close()
+
+    def commit(self):
+        """Save changes"""
+
+        self._connection.commit()
 
     def close(self):
         """Close connection"""

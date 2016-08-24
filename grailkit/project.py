@@ -373,3 +373,63 @@ class Settings(DNAEntity):
         entity._parse(row)
 
         return entity
+
+
+class SettingsFile(DNA):
+    """Represents a flat structure grail file with only properties"""
+
+    def __init__(self, file_path, create=False):
+        """Open or create a settings file
+
+        Args:
+            file_path (str): path to file
+            create (bool): create file if not exists
+        """
+
+        super(SettingsFile, self).__init__(file_path, create=create)
+
+    def has(self, key):
+        """Check if property exists"""
+
+        return self._has(0, key)
+
+    def get(self, key, default=None):
+        """Get a property value"""
+
+        return self._get(0, key, default)
+
+    def set(self, key, value, force_type=None):
+        """Set value of property"""
+
+        result = self._set(0, key, value, force_type)
+        self._db.commit()
+
+        return result
+
+    def properties(self):
+
+        return self._properties(0)
+
+    def unset(self, key):
+        """Remove property"""
+
+        result = self._unset(0, key)
+        self._db.commit()
+
+        return result
+
+    def unset_all(self):
+        """Remove all properties"""
+        
+        result = self._unset_all(0)
+        self._db.commit()
+
+        return result
+
+    def rename(self, old_key, new_key):
+        """Rename property key"""
+
+        result = self._rename(0, old_key, new_key)
+        self._db.commit()
+
+        return result
