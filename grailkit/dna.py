@@ -85,7 +85,7 @@ class DNA:
         self._changed = False
         self._location = file_path
 
-        if not self.validate(file_path) and not create:
+        if not file_path or not self.validate(file_path) and not create:
             raise DNAError("Grail file could not be opened.")
         else:
             self._db = DataBaseHost.get(file_path, query=self._db_create_query, create=create)
