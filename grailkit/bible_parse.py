@@ -303,7 +303,7 @@ class OSISParser(Parser):
                 'description': ''
             }
 
-            # chick if this property is valid
+            # check if this property is valid
             if name in ids:
                 key = ids[name] if ids[name] != "" else name
                 value = prop.text if prop.text else ""
@@ -315,6 +315,7 @@ class SwordParser(Parser):
     """Parse Sword bible. Not implemented"""
 
     # TO-DO: implement this class
+
     def __init__(self, file_in, file_out):
         super(SwordParser, self).__init__(file_in, file_out)
 
@@ -323,5 +324,6 @@ class CSVParser(Parser):
     """Parse CSV bible. Not implemented"""
 
     # TO-DO: implement this class
+
     def __init__(self, file_in, file_out):
         super(CSVParser, self).__init__(file_in, file_out)

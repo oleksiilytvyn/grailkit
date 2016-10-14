@@ -213,6 +213,7 @@ class BibleInfo:
     def __init__(self):
         """Create a object"""
 
+        self._file = ""
         self._date = ""
         self._title = ""
         self._subject = ""
@@ -223,6 +224,11 @@ class BibleInfo:
         self._description = ""
 
         self._version = 1
+
+    @property
+    def file(self):
+        """Date"""
+        return self._file
 
     @property
     def date(self):
@@ -274,13 +280,14 @@ class BibleInfo:
         """Fill properties from json string
 
         Args:
-            data (object): parsed json object
+            data (dict): parsed json object
         Returns:
             BibleInfo object
         """
 
         info = BibleInfo()
 
+        info._file = data['file'] or ""
         info._date = data['date']
         info._title = data['title']
         info._subject = data['subject']
@@ -315,6 +322,7 @@ class Bible(DNA):
         super(Bible, self).__init__(file_path, create=False)
 
         # read bible info
+        self._file = file_path
         self._date = self._get(0, "date", default="")
         self._title = self._get(0, "title", default="Untitled")
         self._subject = self._get(0, "subject", default="")
@@ -325,6 +333,12 @@ class Bible(DNA):
         self._description = self._get(0, "description", default="")
 
         self._version = self._get(0, "version", default=1)
+
+    @property
+    def file(self):
+        """Path to file"""
+
+        return self._file
 
     @property
     def date(self):
@@ -461,7 +475,7 @@ class Bible(DNA):
                              OR lowercase(full) LIKE lowercase( ? )
                             """, (keyword, keyword, keyword), factory=book_factory)
 
-    def match_reference(self, keyword):
+    def match_reference(self, keyword, limit=3):
         """find verse by keyword
 
         Args:
@@ -512,13 +526,14 @@ class Bible(DNA):
                                 OR lowercase(`books`.`abbr`) LIKE ?)
                                 AND `verses`.`chapter` = ?
                                 AND `verses`.`verse` = ?
-                            LIMIT 3""",
-                            (keyword, keyword, keyword, chapter, verse), factroy=verse_factory)
+                            LIMIT ?""",
+                            (keyword, keyword, keyword, chapter, verse, limit), factory=verse_factory)
 
     def json_info(self):
         """Create json information string"""
 
         data = {
+            "file": self._file,
             "date": self._date,
             "title": self._title,
             "subject": self._subject,
@@ -566,8 +581,8 @@ class BibleHost:
         return cls._list
 
     @classmethod
-    def get(cls, bible_id):
-        """Get a bible object
+    def info(cls, bible_id):
+        """Get a bible info object
 
         Args:
             bible_id (str): bible identifier
@@ -579,6 +594,17 @@ class BibleHost:
             return cls._list[bible_id]
 
         return None
+
+    @classmethod
+    def get(cls, bible_id):
+        """Get a Bible by identifier"""
+
+        bible = cls.info(bible_id)
+
+        if bible:
+            return Bible(bible.file)
+        else:
+            return None
 
     @classmethod
     def install(cls, file_path, replace=False):

@@ -8,7 +8,7 @@
 import re
 import sys
 
-from PyQt5.QtCore import QSharedMemory, QFile, Qt
+from PyQt5.QtCore import QSharedMemory, QFile, Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QStyleFactory
 
 import grailkit.resources
@@ -133,3 +133,11 @@ class GApplication(QApplication):
         """Re-implement this method to show dialog when application is already running."""
 
         pass
+
+def AppInstance():
+    """Get instance of Application
+
+    Returns: instance of QCoreApplication or GApplication
+    """
+
+    return QCoreApplication.instance()
