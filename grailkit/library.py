@@ -5,10 +5,13 @@
 
     Interface to Grail library file
 """
+
 from grailkit.dna import DNA, DNAError
 
 
 class LibraryError(DNAError):
+    """Library error of any kind"""
+
     pass
 
 
@@ -31,18 +34,30 @@ class Library(DNA):
                          parent=0,
                          entity_type=DNA.TYPE_LIBRARY)
 
-        root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
-
-        if len(root) == 0:
+        if len(self.root()) == 0:
             raise LibraryError("Library entity not found in file %s" % (file_path,))
 
-        self._root = root
+    def create(self, name, entity_type=False):
+        """Create new library entity
 
-    def create(self):
-        """Create new library entity"""
-        item = self._create(parent=self._root.id)
+        Returns: new item
+        """
+
+        item = self._create(name,
+                            parent=self.root().id,
+                            entity_type=entity_type)
 
         return item
+
+    def root(self):
+        """Get a library entity
+
+        Returns: root item of library
+        """
+
+        root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
+
+        return root
 
     def remove(self, entity_id):
         """Remove entity from library
@@ -60,9 +75,10 @@ class Library(DNA):
             filter_type: limit result set by type, pass False to disable filter
             filter_keyword (str): limit result set by keyword, pass False to disable filter
         """
+
         return self._entities(
             filter_type=filter_type,
-            filter_parent=self._root.id,
+            filter_parent=self.root().id,
             filter_keyword=filter_keyword)
 
     def item(self, entity_id):
@@ -71,4 +87,14 @@ class Library(DNA):
         Args:
             entity_id (int): entity identifier
         """
+
         return self._entity(entity_id)
+
+    def find(self, keyword, filter_type=False, filter_parent=False):
+        """Find entities by keyword in library and return list of entities found"""
+
+        return self._entities(
+            filter_type=filter_type,
+            filter_parent=filter_parent,
+            filter_keyword=keyword
+            )
