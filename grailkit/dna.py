@@ -16,6 +16,7 @@ from grailkit.util import millis_now
 
 class DNAError(DataBaseError):
     """Base class for DNA errors"""
+
     pass
 
 
@@ -43,14 +44,16 @@ class DNA:
     TYPE_CUELIST = 4
     TYPE_CUE = 5
     TYPE_LIBRARY = 6
-    TYPE_FILE = 7
-    TYPE_SONG = 8
+    TYPE_LIBRARY_ITEM = 7
+    TYPE_FILE = 8
+    TYPE_SONG = 9
 
     # enumerate all types of entities
     TYPES = (
         TYPE_ABSTRACT,
         TYPE_PROJECT,
         TYPE_LIBRARY,
+        TYPE_LIBRARY_ITEM,
         TYPE_BIBLE,
         TYPE_CUE,
         TYPE_FILE,
@@ -182,6 +185,13 @@ class DNA:
         where = ""
         args = []
 
+        if filter_keyword:
+            keyword = filter_keyword.lstrip().rstrip().lower()
+            where = """lowercase(name) LIKE lowercase(?)
+                    OR lowercase(search) LIKE lowercase(?)"""
+            args.append(keyword)
+            args.append(keyword)
+
         if filter_type is not False or filter_parent is not False:
             where += "WHERE"
 
@@ -199,17 +209,7 @@ class DNA:
                %s
                ORDER BY sort_order ASC""" % (where,), args)
 
-        entities = []
-
-        # TO-DO: optimise it by using real sqlite factory
-        if factory:
-            for raw in raw_entities:
-                entities.append(factory.from_sqlite(self, raw))
-        else:
-            for raw in raw_entities:
-                entities.append(DNAEntity.from_sqlite(self, raw))
-
-        return entities
+        return self.__factory(factory, raw_entities)
 
     def _has_childs(self, entity_id):
         """Check entity child nodes
@@ -238,17 +238,7 @@ class DNA:
                                 WHERE parent = ?
                                 ORDER BY sort_order ASC""", (entity_id,))
 
-        entities = []
-
-        # TO-DO: optimise it by using real sqlite factory
-        if factory:
-            for raw in raw_entities:
-                entities.append(factory.from_sqlite(self, raw))
-        else:
-            for raw in raw_entities:
-                entities.append(DNAEntity.from_sqlite(self, raw))
-
-        return entities
+        return self.__factory(factory, raw_entities)
 
     def _get(self, entity_id, key, default=None):
         """Get property of entity with id `entity_id` and property name `key`
@@ -402,6 +392,21 @@ class DNA:
 
         return arg_value
 
+    def __factory(self, factory, raw_entities):
+        """Return list of entities created by factory from raw_entities"""
+
+        entities = []
+
+        # TO-DO: optimise it by using real sqlite factory
+        if factory:
+            for raw in raw_entities:
+                entities.append(factory.from_sqlite(self, raw))
+        else:
+            for raw in raw_entities:
+                entities.append(DNAEntity.from_sqlite(self, raw))
+
+        return entities
+
     def validate(self, file_path):
         """Validate file to be proper grail file
 
@@ -474,11 +479,108 @@ class DNAFile(DNA):
         self.rename = self._rename
 
 
+class SettingsFile(DNA):
+    """Represents a grail file with properties only"""
+
+    def __init__(self, file_path, create=False):
+        """Open or create a settings file
+
+        Args:
+            file_path (str): path to file
+            create (bool): create file if not exists
+        """
+
+        super(SettingsFile, self).__init__(file_path, create=create)
+
+    def has(self, key):
+        """Check if property exists
+
+        Args:
+            key (str): property key
+        Returns: True if property exists
+        """
+
+        return self._has(0, key)
+
+    def get(self, key, default=None):
+        """Get a property value
+
+        Args:
+            key (str): property key
+            default (object): Object that will be returned if property doesn't exists
+        Returns: property value or default if isn't exists
+        """
+
+        return self._get(0, key, default)
+
+    def set(self, key, value, force_type=None):
+        """Set value of property
+
+        Args:
+            key (str): property key
+            value (object): property value object
+            force_type: If set to not None, value with this type will be saved
+        Returns: True if operation is succeeded
+        """
+
+        result = self._set(0, key, value, force_type)
+        self._db.commit()
+
+        return result
+
+    def properties(self):
+        """Get a all properties
+
+        Returns: dist object of all properties
+        """
+
+        return self._properties(0)
+
+    def unset(self, key):
+        """Remove property by key value
+
+        Args:
+            key (str): property key
+        Returns: True if operation is succeeded
+        """
+
+        result = self._unset(0, key)
+        self._db.commit()
+
+        return result
+
+    def unset_all(self):
+        """Remove all properties
+
+        Returns: True if operation succeeded"""
+
+        result = self._unset_all(0)
+        self._db.commit()
+
+        return result
+
+    def rename(self, old_key, new_key):
+        """Rename property key
+
+        Returns: True if operation is succeeded
+        """
+
+        result = self._rename(0, old_key, new_key)
+        self._db.commit()
+
+        return result
+
+
 class DNAEntity:
     """Basic entity model, each entity can have many properties + some default fields"""
 
     def __init__(self, parent):
-        """ """
+        """Entity representation inside DNA
+
+        Args:
+            parent (DNA): parent DNA object
+        """
+
         self._id = 0
         self._type = DNA.TYPE_ABSTRACT
         self._name = ""
@@ -664,3 +766,162 @@ class DNAEntity:
         entity._parse(row)
 
         return entity
+
+
+class SettingsEntity(DNAEntity):
+    """Settings object"""
+
+    def __init__(self, parent):
+        """Initialize Settings entity
+
+        Args:
+            parent (object): parent DNA object
+        """
+
+        super(SettingsEntity, self).__init__(parent)
+
+    @staticmethod
+    def from_sqlite(parent, row):
+        """Parse entity from sqlite"""
+
+        entity = SettingsEntity(parent=parent)
+        entity._parse(row)
+
+        return entity
+
+
+class SongEntity(DNAEntity):
+
+    def __init__(self, parent):
+        super(SongEntity, self).__init__(parent)
+
+        # grail songs unique id
+        self._uid = 0
+        self._name = "Untitled"
+        self._artist = "Unknown"
+        self._album = "Unknown"
+        self._artwork = None
+        self._track = 1
+        self._year = 0
+        self._genre = "Unknown"
+        self._language = "en"
+        self._lyrics = ""
+
+    @property
+    def year(self):
+        """Search string"""
+
+        return self._year
+
+    @year.setter
+    def year(self, value):
+        """year string"""
+
+        self._year = value
+        self._modified = millis_now()
+
+    @property
+    def artist(self):
+        """Search string"""
+
+        return self._artist
+
+    @artist.setter
+    def artist(self, value):
+        """year string"""
+
+        self._artist = value
+        self._modified = millis_now()
+
+    @property
+    def album(self):
+        """Search string"""
+
+        return self._album
+
+    @album.setter
+    def album(self, value):
+        """year string"""
+
+        self._album = value
+        self._modified = millis_now()
+
+    @property
+    def track(self):
+        """Search string"""
+
+        return self._track
+
+    @track.setter
+    def track(self, value):
+        """year string"""
+
+        self._track = value
+        self._modified = millis_now()
+
+    @property
+    def genre(self):
+        """Search string"""
+
+        return self._genre
+
+    @genre.setter
+    def genre(self, value):
+        """year string"""
+
+        self._genre = value
+        self._modified = millis_now()
+
+    @property
+    def language(self):
+        """Search string"""
+
+        return self.language
+
+    @language.setter
+    def language(self, value):
+        """year string"""
+
+        self._language = value
+        self._modified = millis_now()
+
+    @property
+    def lyrics(self):
+        """Search string"""
+
+        return self._lyrics
+
+    @lyrics.setter
+    def lyrics(self, value):
+        """year string"""
+
+        self._lyrics = value
+        self._modified = millis_now()
+
+    def _parse(self, row):
+        """Parse sqlite row into SongEntity
+
+        Args:
+            row (sqlite3.Row): row object
+        """
+
+        super(SongEntity, self)._parse(row)
+
+        # parse contents into song info
+        content = json.loads(self._content)
+
+        self._year = content['year']
+        self._track = content['track']
+        self._album = content['album']
+        self._artwork = None
+        self._language = content['language']
+        self._lyrics = content['lyrics']
+        self._genre = content['genre']
+        self._artist = content['artist']
+
+
+class VerseEntity(DNAEntity):
+
+    """Representation of bible verse"""
+
+    pass

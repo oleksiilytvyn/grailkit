@@ -20,6 +20,7 @@ import re
 import glob
 import json
 
+from grailkit import PATH_SHARED
 from grailkit.util import path_appdata, copy_file
 from grailkit.dna import DNA
 
@@ -485,7 +486,6 @@ class Bible(DNA):
         # default values
         chapter = 1
         verse = 1
-
         keyword = keyword.lstrip().rstrip().lower()
 
         # match book
@@ -556,7 +556,7 @@ class BibleHostError(Exception):
 class BibleHost:
     """Manage all installed bibles."""
 
-    _location = os.path.join(path_appdata("grail-shared"), "bibles/")
+    _location = os.path.join(PATH_SHARED, "bibles/")
     _list = {}
 
     @classmethod

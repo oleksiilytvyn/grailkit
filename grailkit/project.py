@@ -5,16 +5,17 @@
 
     Interface to Grail project files
 """
-from grailkit.dna import DNA, DNAFile, DNAEntity
+from grailkit.dna import DNA, DNAFile, DNAEntity, SettingsEntity
 
 
 class ProjectError(Exception):
     """Base class for all project related exceptions"""
+
     pass
 
 
 class Project(DNAFile):
-    """Representation of a project"""
+    """Representation of a project file"""
 
     _name = "Untitled project"
     _description = ""
@@ -25,34 +26,50 @@ class Project(DNAFile):
 
     @property
     def name(self):
+        """Project name"""
+
         return self._name
 
     @name.setter
     def name(self, value):
+        """Project name setter"""
+
         self._name = value
 
     @property
     def description(self):
+        """Project description"""
+
         return self._description
 
     @description.setter
     def description(self, value):
+        """Project description setter"""
+
         self._description = value
 
     @property
     def author(self):
+        """Project author"""
+
         return self._author
 
     @author.setter
     def author(self, value):
+        """Project author setter"""
+
         self._author = value
 
     @property
     def created(self):
+        """Date on witch project was created"""
+
         return self._created
 
     @property
     def modified(self):
+        """Date of last edit on project"""
+
         return self._modified
 
     def __init__(self, file_path, create=False):
@@ -67,7 +84,7 @@ class Project(DNAFile):
 
         entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
                                 filter_parent=self._id,
-                                factory=Settings)
+                                factory=SettingsEntity)
 
         if create and len(entity) == 0:
             self._create_project()
@@ -83,13 +100,13 @@ class Project(DNAFile):
         """Get a setting object"""
         entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
                                 filter_parent=self._id,
-                                factory=Settings)
+                                factory=SettingsEntity)
 
         if len(entity) == 0:
             entity = self._create(name="Settings",
                                   parent=self._id,
                                   entity_type=DNA.TYPE_SETTINGS,
-                                  factory=Settings)
+                                  factory=SettingsEntity)
             return entity
 
         return entity[0]
@@ -123,7 +140,6 @@ class Project(DNAFile):
         settings.name = "settings"
 
         settings.set('display.background', '#000000')
-
         settings.set('display.text.align', 1)
         settings.set('display.text.valign', 1)
         settings.set('display.text.case', 'uppercase')
@@ -327,7 +343,7 @@ class Cue(DNAEntity):
             name (str): name of sub cue
         """
 
-        """Create a new cue and append to bottom"""
+        # Create a new cue and append to bottom
         cue = self._dna_parent._create(name=name,
                                        parent=self._id,
                                        entity_type=DNA.TYPE_CUE,
@@ -336,7 +352,12 @@ class Cue(DNAEntity):
         return cue
 
     def _parse(self, row):
-        """Parse sqlite row"""
+        """Parse sqlite row
+
+        Args:
+            row: sqlite3 row object
+        """
+
         super(Cue, self)._parse(row)
 
         self._follow = self.get("follow", self.FOLLOW_OFF)
@@ -347,7 +368,13 @@ class Cue(DNAEntity):
 
     @staticmethod
     def from_sqlite(parent, row):
-        """Parse entity from sqlite"""
+        """Parse entity from sqlite
+
+        Args:
+            parent: parent DNA object
+            row: sqlite3 row object
+        Returns: entity instance
+        """
 
         entity = Cue(parent=parent)
         entity._parse(row)
@@ -355,81 +382,6 @@ class Cue(DNAEntity):
         return entity
 
 
-class Settings(DNAEntity):
-    """Settings object"""
+class SongCue(Cue):
 
-    def __init__(self, parent):
-        """Initialize Settings entity
-
-        Args:
-            parent (object): parent DNA
-        """
-        super(Settings, self).__init__(parent)
-
-    @staticmethod
-    def from_sqlite(parent, row):
-        """Parse entity from sqlite"""
-        entity = Settings(parent=parent)
-        entity._parse(row)
-
-        return entity
-
-
-class SettingsFile(DNA):
-    """Represents a flat structure grail file with only properties"""
-
-    def __init__(self, file_path, create=False):
-        """Open or create a settings file
-
-        Args:
-            file_path (str): path to file
-            create (bool): create file if not exists
-        """
-
-        super(SettingsFile, self).__init__(file_path, create=create)
-
-    def has(self, key):
-        """Check if property exists"""
-
-        return self._has(0, key)
-
-    def get(self, key, default=None):
-        """Get a property value"""
-
-        return self._get(0, key, default)
-
-    def set(self, key, value, force_type=None):
-        """Set value of property"""
-
-        result = self._set(0, key, value, force_type)
-        self._db.commit()
-
-        return result
-
-    def properties(self):
-
-        return self._properties(0)
-
-    def unset(self, key):
-        """Remove property"""
-
-        result = self._unset(0, key)
-        self._db.commit()
-
-        return result
-
-    def unset_all(self):
-        """Remove all properties"""
-        
-        result = self._unset_all(0)
-        self._db.commit()
-
-        return result
-
-    def rename(self, old_key, new_key):
-        """Rename property key"""
-
-        result = self._rename(0, old_key, new_key)
-        self._db.commit()
-
-        return result
+    pass

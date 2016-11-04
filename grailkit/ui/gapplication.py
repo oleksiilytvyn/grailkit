@@ -134,6 +134,7 @@ class GApplication(QApplication):
 
         pass
 
+
 def AppInstance():
     """Get instance of Application
 
