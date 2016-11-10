@@ -8,3 +8,5 @@ pipelines:
             # run tests
           - python --version
           - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'
+            # build
+          - python setup.py build
