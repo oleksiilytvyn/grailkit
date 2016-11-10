@@ -47,7 +47,7 @@ class GSwitch(QAbstractButton, GWidget):
         flag_path = QPainterPath()
 
         pen_color = QColor()
-        pen_color.setNamedColor("#626364")
+        pen_color.setNamedColor("#444444")
 
         pen = QPen()
         pen.setWidth(1)
@@ -62,9 +62,7 @@ class GSwitch(QAbstractButton, GWidget):
             flag_path.addRoundedRect(QRectF(3, 3, width /2 - 3, height - 6), 3, 3)
 
         p.drawPath(path)
-
         p.fillPath(flag_path, switch_color)
-        p.drawPath(flag_path)
 
         p.end()
 
@@ -84,7 +82,7 @@ class GSwitch(QAbstractButton, GWidget):
 
         self._state = state
 
-    def getState(self):
+    def state(self):
         """Get state of switch"""
 
         return self._state
@@ -103,11 +101,10 @@ if __name__ == "__main__":
     layout = QHBoxLayout()
     layout.addWidget(label)
     layout.addWidget(switch)
-    layout.addWidget(QPushButton("button"))
 
     win = GDialog()
     win.setLayout(layout)
+    win.setStyleSheet("GDialog {background: #2f2f2f;}QLabel {color: #e6e6e6;}")
     win.show()
 
     sys.exit(app.exec_())
-
