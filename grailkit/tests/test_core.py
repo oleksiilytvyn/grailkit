@@ -22,7 +22,7 @@ class TestGrailkitCore(unittest.TestCase):
         """Test app path"""
 
         script_path = util.path_app()
-        self_path = os.path.abspath('.')
+        self_path = os.path.abspath('./grailkit/tests')
 
         self.assertEqual(script_path, self_path)
 
