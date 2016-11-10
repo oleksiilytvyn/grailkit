@@ -34,10 +34,10 @@ class Library(DNA):
                          parent=0,
                          entity_type=DNA.TYPE_LIBRARY)
 
-        if len(self.root()) == 0:
+        if not self.root():
             raise LibraryError("Library entity not found in file %s" % (file_path,))
 
-    def create(self, name, entity_type=False):
+    def create(self, name, entity_type=DNA.TYPE_ABSTRACT):
         """Create new library entity
 
         Returns: new item
@@ -45,7 +45,8 @@ class Library(DNA):
 
         item = self._create(name,
                             parent=self.root().id,
-                            entity_type=entity_type)
+                            entity_type=entity_type,
+                            factory=False)
 
         return item
 
@@ -57,7 +58,7 @@ class Library(DNA):
 
         root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
 
-        return root
+        return root[0] if len(root) > 0 else None
 
     def remove(self, entity_id):
         """Remove entity from library
@@ -96,5 +97,4 @@ class Library(DNA):
         return self._entities(
             filter_type=filter_type,
             filter_parent=filter_parent,
-            filter_keyword=keyword
-            )
+            filter_keyword=keyword)

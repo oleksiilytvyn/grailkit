@@ -175,7 +175,7 @@ class DNA:
         for child in self._childs(entity_id):
             self._remove(child.id)
 
-    def _entities(self, filter_type=False, filter_parent=False, filter_keyword=False, factory=None):
+    def _entities(self, filter_type=False, filter_parent=False, filter_keyword=False, sort=False, factory=None):
         """Get list of all entities
 
         Returns:
@@ -185,15 +185,15 @@ class DNA:
         where = ""
         args = []
 
+        if filter_type or filter_parent or filter_keyword:
+            where += "WHERE "
+
         if filter_keyword:
-            keyword = filter_keyword.lstrip().rstrip().lower()
-            where = """lowercase(name) LIKE lowercase(?)
+            keyword = "%" + str(filter_keyword).lstrip().rstrip().lower() + "%"
+            where += """ lowercase(name) LIKE lowercase(?)
                     OR lowercase(search) LIKE lowercase(?)"""
             args.append(keyword)
             args.append(keyword)
-
-        if filter_type is not False or filter_parent is not False:
-            where += "WHERE"
 
         if filter_parent is not False:
             where += " parent = ?" + (" AND " if filter_type else "")
@@ -203,11 +203,15 @@ class DNA:
             where += " type = ?"
             args.append(filter_type)
 
-        raw_entities = self._db.all(
-            """SELECT id, parent, type, name, created, modified, content, search, sort_order
-               FROM entities
-               %s
-               ORDER BY sort_order ASC""" % (where,), args)
+        # To-do: implement item sorting
+
+        sql = """
+                SELECT id, parent, type, name, created, modified, content, search, sort_order
+                FROM entities
+                %s
+                ORDER BY sort_order ASC""" % (where,)
+
+        raw_entities = self._db.all(sql, args)
 
         return self.__factory(factory, raw_entities)
 

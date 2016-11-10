@@ -11,6 +11,7 @@ from grailkit.dna import SettingsEntity
 
 
 class TestGrailkitProject(unittest.TestCase):
+
     def setUp(self):
         # Create a temporary directory
         self.test_dir = tempfile.mkdtemp()

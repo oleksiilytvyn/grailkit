@@ -26,12 +26,11 @@ class GAboutDialog(GDialog):
         self._description = description
         self._icon = None
 
-        self.setIcon(icon)
-
         self.url_report = ""
         self.url_help = ""
 
         self.__ui__()
+        self.setIcon(icon)
 
     def __ui__(self):
 
@@ -88,6 +87,9 @@ class GAboutDialog(GDialog):
 
         if isinstance(icon, QPixmap):
             self._icon = icon.scaledToWidth(size)
+
+        if self._icon:
+            self._ui_icon.setPixmap(self._icon)
 
     def setTitle(self, title):
         """Set a title text"""
