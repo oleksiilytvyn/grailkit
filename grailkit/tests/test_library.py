@@ -3,9 +3,12 @@
 import unittest
 
 import os
+import json
 import shutil
 import tempfile
 
+import grailkit
+from grailkit.dna import DNA
 from grailkit.library import Library
 
 
@@ -25,9 +28,13 @@ class TestGrailkitProject(unittest.TestCase):
         lib = Library(path, create=True)
 
         for i in range(10):
-            lib.create("Item #%d" % (i,))
+            lib.create("Item #%d" % (i,), entity_type=DNA.TYPE_FILE)
 
-        found = lib.find(keyword="5")
+        song = lib.create("First song", entity_type=DNA.TYPE_SONG)
+        song.lyrics = "Hello world!"
+        song.genre = "Experimental"
 
-        self.assertEqual(len(lib.items()), 10)
-        self.assertEqual(found[0].name, "Item #5")
+        found = lib.items(filter_keyword="song")
+
+        self.assertEqual(len(lib.items()), 11)
+        self.assertEqual(found[0].name, "First song")

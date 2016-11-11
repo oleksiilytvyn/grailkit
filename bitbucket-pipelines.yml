@@ -1,12 +1,9 @@
 # This is a simple configuration to test Grailkit components
-image: python:3.5.1
+image: python:3.3
 
 pipelines:
   default:
     - step:
         script:
             # run tests
-          - python --version
           - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'
-            # build
-          - python setup.py build
