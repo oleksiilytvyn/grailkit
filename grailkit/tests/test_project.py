@@ -6,8 +6,8 @@ import os
 import shutil
 import tempfile
 
-from grailkit.project import Project, Cuelist, Cue
-from grailkit.dna import SettingsEntity
+from grailkit.project import Project
+from grailkit.dna import SettingsEntity, CueEntity, CuelistEntity
 
 
 class TestGrailkitProject(unittest.TestCase):

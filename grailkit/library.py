@@ -37,7 +37,7 @@ class Library(DNA):
         if not self.root():
             raise LibraryError("Library entity not found in file %s" % (file_path,))
 
-    def create(self, name, entity_type=DNA.TYPE_ABSTRACT):
+    def create(self, name, entity_type=DNA.TYPE_ABSTRACT, factory=None):
         """Create new library entity
 
         Returns: new item
@@ -46,7 +46,7 @@ class Library(DNA):
         item = self._create(name,
                             parent=self.root().id,
                             entity_type=entity_type,
-                            factory=False)
+                            factory=factory)
 
         return item
 
@@ -69,18 +69,28 @@ class Library(DNA):
 
         self._remove(entity_id)
 
-    def items(self, filter_type=False, filter_keyword=False):
+    def remove_all(self):
+        """Remove all entities from library"""
+
+        for entity in self.items():
+            self._remove(entity.id)
+
+    def items(self, filter_type=False, filter_keyword=False, offset=0, limit=0):
         """Returns list of library items
 
         Args:
             filter_type: limit result set by type, pass False to disable filter
             filter_keyword (str): limit result set by keyword, pass False to disable filter
+            offset (int): start index
+            limit (int): limit items result set
         """
 
         return self._entities(
             filter_type=filter_type,
             filter_parent=self.root().id,
-            filter_keyword=filter_keyword)
+            filter_keyword=filter_keyword,
+            offset=offset,
+            limit=limit)
 
     def item(self, entity_id):
         """Return library item by id
@@ -90,11 +100,3 @@ class Library(DNA):
         """
 
         return self._entity(entity_id)
-
-    def find(self, keyword, filter_type=False, filter_parent=False):
-        """Find entities by keyword in library and return list of entities found"""
-
-        return self._entities(
-            filter_type=filter_type,
-            filter_parent=filter_parent,
-            filter_keyword=keyword)
