@@ -5,7 +5,8 @@
 
     Base widget for all Grail Kit UI components
 """
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtGui import QPainter
+from PyQt5.QtWidgets import QWidget, QStyleOption, QStyle
 
 
 class GWidget(QWidget):

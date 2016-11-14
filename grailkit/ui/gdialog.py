@@ -14,7 +14,7 @@ class GDialog(QDialog, GWidget):
     """Abstract dialog window"""
 
     def __init__(self, parent=None):
-    	super(GDialog, self).__init__(parent)
+        super(GDialog, self).__init__(parent)
 
     def moveToCenter(self):
         """Move window to the center of current screen"""

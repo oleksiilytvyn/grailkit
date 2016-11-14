@@ -153,21 +153,28 @@ GWelcomeWidget {
  * @section
  */
 
-QWelcomeAction {
-    background: #2f2f2f;
+GWelcomeAction {
+    border: none;
+    border-radius: 5px;
     }
+
+    GWelcomeAction:hover {
+        background: #222;
+        }
 
     #q_welcome_action_title {
         font-size: 14px;
         margin-left: 70px;
         margin-bottom: 3px;
         color: #f1f1f1;
+        background: none;
         }
 
     #q_welcome_action_text {
         font-size: 14px;
         color: #929292;
         margin-left: 70px;
+        background: none;
         }
 
 /**

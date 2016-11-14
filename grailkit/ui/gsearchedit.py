@@ -18,6 +18,7 @@ class GSearchEdit(QLineEdit):
     """Basic edit input for search with clear button"""
 
     keyPressed = pyqtSignal('QKeyEvent')
+    focusOut = pyqtSignal('QFocusEvent')
 
     def __init__(self, parent=None):
         super(GSearchEdit, self).__init__(parent)
@@ -62,6 +63,11 @@ class GSearchEdit(QLineEdit):
         super(GSearchEdit, self).keyPressEvent(event)
 
         self.keyPressed.emit(event)
+
+    def focusOutEvent(self, event):
+        super(GSearchEdit, self).focusOutEvent(event)
+
+        self.focusOut.emit(event)
 
     def _text_changed(self, text):
         """Process text changed event"""

@@ -7,7 +7,7 @@
     for user to choose from.
 """
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QSizePolicy
 
@@ -19,6 +19,9 @@ class GWelcomeWidget(GWidget):
 
     def __init__(self, parent=None):
         super(GWelcomeWidget, self).__init__(parent)
+
+        app = QCoreApplication.instance()
+        self.setStyleSheet(app._get_stylesheet())
 
         self._icon = None
 
@@ -41,7 +44,7 @@ class GWelcomeWidget(GWidget):
         self._ui_description.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self._ui_actions_layout = QVBoxLayout()
-        self._ui_actions_layout.setSpacing(2)
+        self._ui_actions_layout.setSpacing(14)
         self._ui_actions_layout.setContentsMargins(0, 0, 0, 0)
 
         self._ui_actions = QWidget()
@@ -54,6 +57,7 @@ class GWelcomeWidget(GWidget):
 
         self._ui_layout.addStretch(1)
         self._ui_layout.addWidget(self._ui_icon)
+        self._ui_layout.addSpacing(12)
         self._ui_layout.addWidget(self._ui_title)
         self._ui_layout.addWidget(self._ui_description)
         self._ui_layout.addWidget(self._ui_actions)

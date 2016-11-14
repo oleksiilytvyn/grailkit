@@ -23,6 +23,8 @@ class GListWidget(QListWidget, GWidget):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setAlternatingRowColors(True)
+        self.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
 
         # Fix items overlapping issue
         self.setStyleSheet("QListWidget::item {padding: 4px 12px;}")
@@ -61,6 +63,14 @@ class GListItem(QListWidgetItem):
 
     def __init__(self, parent=None):
         super(GListItem, self).__init__(parent)
+
+        self._data = None
+
+    def setObject(self, data):
+        self._data = data
+
+    def object(self):
+        return self._data
 
 
 # test a widget

@@ -8,12 +8,12 @@
 
 from PyQt5.QtCore import QPoint, QSize
 from PyQt5.QtGui import QIcon, QPixmap, QPainter
-from PyQt5.QtWidgets import QAbstractButton, QLabel, QVBoxLayout
+from PyQt5.QtWidgets import QPushButton, QLabel, QVBoxLayout, QStyleOption, QStyle
 
 from grailkit.ui import GWidget
 
 
-class GWelcomeAction(QAbstractButton, GWidget):
+class GWelcomeAction(QPushButton, GWidget):
 
     def __init__(self, title="Action", text="Take some action", icon=None, parent=None):
         super(GWelcomeAction, self).__init__(parent)
@@ -21,6 +21,7 @@ class GWelcomeAction(QAbstractButton, GWidget):
         self._icon = None
         self._title = title
         self._text = text
+        self._icon_size = 48
 
         self._ui_title = QLabel(self._title)
         self._ui_title.setObjectName("q_welcome_action_title")
@@ -46,16 +47,19 @@ class GWelcomeAction(QAbstractButton, GWidget):
 
         return QSize(64, 64)
 
-    def paintEvent(self, paint):
+    def paintEvent(self, event):
         """Custom painting"""
 
+        o = QStyleOption()
+        o.initFrom(self)
+
         p = QPainter(self)
-        p.save()
+        self.style().drawPrimitive(QStyle.PE_Widget, o, p, self)
 
         if self._icon:
-            p.drawPixmap(QPoint(0, 5), self._icon)
+            p.drawPixmap(QPoint(64 / 2 - self._icon_size / 2, self.height() / 2 - self._icon_size / 2), self._icon)
 
-        p.restore()
+        p.end()
 
     def setIcon(self, icon):
         """Set action icon
@@ -64,13 +68,11 @@ class GWelcomeAction(QAbstractButton, GWidget):
             icon (QIcon, QPixmap): icon of action
         """
 
-        size = 56
-
         if isinstance(icon, QIcon):
-            self._icon = icon.pixmap(size)
+            self._icon = icon.pixmap(self._icon_size)
 
         if isinstance(icon, QPixmap):
-            self._icon = icon.scaledToWidth(size)
+            self._icon = icon.scaledToWidth(self._icon_size)
 
     def setTitle(self, title):
         """Set a title of action

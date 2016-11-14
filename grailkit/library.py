@@ -75,7 +75,7 @@ class Library(DNA):
         for entity in self.items():
             self._remove(entity.id)
 
-    def items(self, filter_type=False, filter_keyword=False, offset=0, limit=0):
+    def items(self, filter_type=False, filter_keyword=False, sort=False, reverse=False, offset=0, limit=0):
         """Returns list of library items
 
         Args:
@@ -89,6 +89,8 @@ class Library(DNA):
             filter_type=filter_type,
             filter_parent=self.root().id,
             filter_keyword=filter_keyword,
+            sort=sort,
+            reverse=reverse,
             offset=offset,
             limit=limit)
 
