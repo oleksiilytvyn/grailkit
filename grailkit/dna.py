@@ -267,7 +267,7 @@ class SongEntity(DNAEntity):
     def year(self, value):
         """year string"""
 
-        self._year = value
+        self._year = int(value)
         self._modified = millis_now()
 
     @property
@@ -306,7 +306,7 @@ class SongEntity(DNAEntity):
     def track(self, value):
         """year string"""
 
-        self._track = value
+        self._track = int(value)
         self._modified = millis_now()
 
     @property
@@ -383,8 +383,8 @@ class SongEntity(DNAEntity):
             else:
                 return default
 
-        self._year = json_key(content, 'year', 2000)
-        self._track = json_key(content, 'track', 1)
+        self._year = int(json_key(content, 'year', 2000))
+        self._track = int(json_key(content, 'track', 1))
         self._album = json_key(content, 'album', 'Unknown')
         self._artwork = None
         self._language = json_key(content, 'language', '')
@@ -774,7 +774,7 @@ class DNA:
             self._remove(child.id)
 
     def _entities(self, filter_type=False, filter_parent=False, filter_keyword=False,
-                  sort=False, offset=0, limit=0, factory=None):
+                  sort=False, reverse=False, offset=0, limit=0, factory=None):
         """Get list of all entities
 
         Args:
@@ -812,15 +812,17 @@ class DNA:
                 SELECT id, parent, type, name, created, modified, content, search, sort_order
                 FROM entities
                 %s
-                ORDER BY sort_order ASC
-                """ % ('WHERE' + ' AND '.join(where) if len(where) > 0 else '',)
+                ORDER BY %s %s
+                """ % ('WHERE' + ' AND '.join(where) if len(where) > 0 else '',
+                       sort if isinstance(sort, str) else "sort_order",
+                       "DESC" if reverse else "ASC")
 
         if limit > 0:
-            sql += "LIMIT ?"
+            sql += " LIMIT ? "
             args.append(limit)
 
         if offset > 0:
-            sql += "OFFSET ?"
+            sql += " OFFSET ? "
             args.append(offset)
 
         raw_entities = self._db.all(sql, args)
