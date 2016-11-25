@@ -8,8 +8,7 @@ import shutil
 import tempfile
 
 import grailkit
-from grailkit.dna import DNA
-from grailkit.library import Library
+from grailkit.dna import DNA, Library
 
 
 class TestGrailkitProject(unittest.TestCase):

@@ -27,6 +27,7 @@ def create_factory(object_def, cursor, row):
 
 class DataBaseError(Exception):
     """Base class for DataBase Errors"""
+
     pass
 
 
@@ -210,7 +211,10 @@ class DataBaseHost:
 
     @staticmethod
     def close():
-        """Close all connections"""
+        """Close all connections
+
+        Returns: True if all connections closed successfully
+        """
 
         for key in DataBaseHost._list:
             DataBaseHost._list[key].close()

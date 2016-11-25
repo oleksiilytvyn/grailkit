@@ -217,6 +217,7 @@ class OSISParser(Parser):
             file_in (str): input file
             file_out (str): output file
         """
+
         super(OSISParser, self).__init__(file_in, file_out)
 
     def _get_book_info(self, osis_id):
@@ -301,7 +302,7 @@ class OSISParser(Parser):
                 'rights': 'copyright',
                 'identifier': '',
                 'description': ''
-            }
+                }
 
             # check if this property is valid
             if name in ids:

@@ -3,7 +3,8 @@
     grailkit.osc
     ~~~~~~~~~~~~
 
-    OSC protocol implementation in pure python
+    OSC protocol implementation in pure python,
+    Code from OSC project (https://bitbucket.org/grailapp/osc)
 """
 import time
 import struct
@@ -1138,6 +1139,8 @@ class OSCServer(socketserver.UDPServer):
             address: typle (host, port)
             message: OSCMessage or OSCBundle
             date: int number which represents time of message
+        Raises:
+            NotImplementedError
         """
 
         raise NotImplementedError("Re-implement this method")
@@ -1145,6 +1148,18 @@ class OSCServer(socketserver.UDPServer):
 
 class OSCReceiver(OSCServer):
     """Receive messages only from some clients"""
+
+    def handle(self, address, message, date):
+        """Handle receiving of OSCMessage or OSCBundle
+
+        Args:
+            address: typle (host, port)
+            message: OSCMessage or OSCBundle
+            date: int number which represents time of message
+        Raises:
+            NotImplementedError
+        """
+        super(OSCReceiver, self).handle(address, message, date)
 
     def __init__(self, address, port):
         """Initialize OSCReceiver class
@@ -1190,10 +1205,11 @@ class OSCBlockingServer(OSCServer):
 
     Each message will be handled sequentially on the same thread.
     Use this is you don't care about latency in your message handling or don't
-    have a multiprocess/multithread environment (really?).
+    have a multiprocess/multithreaded environment.
     """
 
-    pass
+    def handle(self, address, message, date):
+        pass
 
 
 class OSCThreadingServer(socketserver.ThreadingMixIn, OSCServer):
@@ -1203,7 +1219,8 @@ class OSCThreadingServer(socketserver.ThreadingMixIn, OSCServer):
     Use this when lightweight operations are done by each message handlers.
     """
 
-    pass
+    def handle(self, address, message, date):
+        pass
 
 
 class OSCForkingServer(socketserver.ForkingMixIn, OSCServer):
@@ -1214,4 +1231,5 @@ class OSCForkingServer(socketserver.ForkingMixIn, OSCServer):
     and forking a whole new process for each of them is worth it.
     """
 
-    pass
+    def handle(self, address, message, date):
+        pass

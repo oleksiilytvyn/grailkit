@@ -10,6 +10,7 @@ import sys
 import time
 import shutil
 import platform
+import gettext
 
 # Platform constants
 OS_ANY = True
@@ -86,3 +87,10 @@ def millis_now():
     """Returns time in milliseconds since epoch"""
 
     return int(round(time.time() * 1000))
+
+
+def __(message):
+    """Translate string using gettext"""
+
+    # to-do: implement this function
+    return gettext.gettext(message)
