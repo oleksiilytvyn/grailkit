@@ -5,6 +5,7 @@ dist/*
 build/*
 __pycache__/*
 .idea/*
+grailkit.egg-info/*
 
 *~
 *.db

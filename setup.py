@@ -35,8 +35,10 @@ setup(
         'Grail development kit'),
     long_description=open('README.rst').read(),
     url='https://bitbucket.org/grailapp/grail-kit',
+    download_url='https://bitbucket.org/grailapp/grail-kit/get/default.zip',
     platforms='any',
     packages=['grailkit'],
+    keywords=['qt', 'framework', 'grail', 'dev kit', 'osc'],
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -46,10 +48,12 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-        'Topic :: Multimedia :: Sound/Audio',
         'Topic :: System :: Networking',
+        'Topic :: Multimedia :: Sound/Audio',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-        'Topic :: Software Development :: Libraries :: Python Modules'
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Environment :: X11 Applications :: Qt'
     ],
     install_requires=['PyQt5']
 )
