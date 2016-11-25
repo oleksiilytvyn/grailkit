@@ -19,9 +19,24 @@ class DNAError(DataBaseError):
 
     pass
 
+#
+# Entities
+#
+
 
 class DNAEntity:
-    """Basic entity model, each entity can have many properties + some default fields"""
+    """DNA entity definition class
+    Each entity must have fields:
+        id (int): identification number of entity;
+        type (int): type of entity;
+        name (str): name or label of entity;
+        parent (int): parent entity identifier;
+        search (str): string field that contains info for search;
+        content (json): content of entity, can be uniform;
+        created (int): time when entity is created;
+        modified (int): time whe entity was last time modified;
+        index (int): index of entity, in case of ordered lists of entities;
+    """
 
     def __init__(self, parent):
         """Entity representation inside DNA
@@ -29,6 +44,9 @@ class DNAEntity:
         Args:
             parent (DNA): parent DNA object
         """
+
+        if parent is None:
+            raise DNAError("DNAEntity can't be created without parent")
 
         self._id = 0
         self._type = DNA.TYPE_ABSTRACT
@@ -42,39 +60,43 @@ class DNAEntity:
 
         self._dna_parent = parent
 
-        if parent is None:
-            raise DNAError("DNAEntity cannot be created without parent")
-
     # fields
     @property
     def id(self):
         """Entity identifier"""
+
         return self._id
 
     @property
     def parent_id(self):
         """Parent identifier"""
+
         return self._parent
 
     @parent_id.setter
     def parent_id(self, parent):
         """Set parent identifier"""
+
         self._parent = parent
         self._modified = millis_now()
 
     @property
     def name(self):
         """Name of entity"""
+
         return self._name
 
     @name.setter
     def name(self, name):
+        """Name of entity"""
+
         self._name = name
         self._modified = millis_now()
 
     @property
     def type(self):
         """Entity type"""
+
         return self._type
 
     @type.setter
@@ -191,6 +213,11 @@ class DNAEntity:
 
         self._dna_parent._update(self)
 
+    def remove(self):
+        """Remove this entity"""
+
+        self._dna_parent._remove(self._id)
+
     def _parse(self, row):
         """Parse sqlite row into DNAEntity
 
@@ -201,16 +228,17 @@ class DNAEntity:
         self._id = int(row[0])
         self._parent = int(row[1])
         self._type = int(row[2])
-        self._name = row[3]
+        self._name = str(row[3])
         self._created = int(row[4])
         self._modified = int(row[5])
         self._content = row[6]
-        self._search = row[7]
+        self._search = str(row[7])
         self._index = int(row[8])
 
     @staticmethod
     def from_sqlite(parent, row):
         """Parse entity from sqlite"""
+
         entity = DNAEntity(parent=parent)
         entity._parse(row)
 
@@ -224,7 +252,7 @@ class SettingsEntity(DNAEntity):
         """Initialize Settings entity
 
         Args:
-            parent (object): parent DNA object
+            parent (DNA): parent DNA object
         """
 
         super(SettingsEntity, self).__init__(parent)
@@ -605,6 +633,10 @@ class CueEntity(DNAEntity):
 
         return entity
 
+#
+# Files
+#
+
 
 class DNA:
     """Base class for parsing grail file,
@@ -624,39 +656,43 @@ class DNA:
 
     # types of entities
     TYPE_ABSTRACT = 0
-    TYPE_BIBLE = 1
-    TYPE_PROJECT = 2
-    TYPE_SETTINGS = 3
-    TYPE_CUELIST = 4
-    TYPE_CUE = 5
-    TYPE_LIBRARY = 6
-    TYPE_LIBRARY_ITEM = 7
-    TYPE_FILE = 8
-    TYPE_SONG = 9
+    TYPE_BIBLE = 10
+    TYPE_VERSE = 11
+    TYPE_BOOK = 12
+    TYPE_PROJECT = 20
+    TYPE_SETTINGS = 21
+    TYPE_CUELIST = 22
+    TYPE_CUE = 23
+    TYPE_LIBRARY = 24
+    TYPE_FILE = 25
+    TYPE_SONG = 26
 
     # enumerate all types of entities
     TYPES = (
         TYPE_ABSTRACT,
-        TYPE_PROJECT,
-        TYPE_LIBRARY,
-        TYPE_LIBRARY_ITEM,
         TYPE_BIBLE,
-        TYPE_CUE,
-        TYPE_CUELIST,
-        TYPE_FILE,
+        TYPE_VERSE,
+        TYPE_BOOK,
+        TYPE_PROJECT,
         TYPE_SETTINGS,
-        TYPE_SONG)
+        TYPE_CUELIST,
+        TYPE_CUE,
+        TYPE_LIBRARY,
+        TYPE_FILE,
+        TYPE_SONG
+        )
 
     TYPES_FACTORIES = {
         TYPE_ABSTRACT: DNAEntity,
-        TYPE_PROJECT: DNAEntity,
-        TYPE_LIBRARY: DNAEntity,
-        TYPE_LIBRARY_ITEM: DNAEntity,
-        TYPE_BIBLE: DNAEntity,
-        TYPE_CUE: CueEntity,
-        TYPE_CUELIST: CuelistEntity,
-        TYPE_FILE: FileEntity,
+        # TYPE_BIBLE: DNAEntity,
+        # TYPE_VERSE: DNAEntity,
+        # TYPE_BOOK: DNAEntity,
+        # TYPE_PROJECT: DNAEntity,
         TYPE_SETTINGS: SettingsEntity,
+        TYPE_CUELIST: CuelistEntity,
+        TYPE_CUE: CueEntity,
+        # TYPE_LIBRARY: DNAEntity,
+        TYPE_FILE: FileEntity,
         TYPE_SONG: SongEntity
         }
 
@@ -696,16 +732,19 @@ class DNA:
     @property
     def location(self):
         """Returns path to file"""
+
         return self._location
 
     @property
     def filename(self):
         """Returns path to file"""
+
         return os.path.splitext(os.path.basename(self._location))[0]
 
     @property
     def changed(self):
-        """Return True if some changes not saved"""
+        """Return True if changes not saved"""
+
         return self._changed
 
     def _create(self, name="", parent=0, entity_type=TYPE_ABSTRACT, index=0, factory=None):
@@ -737,7 +776,7 @@ class DNA:
             factory: use another class to create entity
 
         Returns:
-            DNAEntity with id `entity_id`
+            DNAEntity with id `entity_id` if entity exists otherwise returns Null
         """
         raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
                             FROM entities WHERE id = ?""", (entity_id,))
@@ -746,7 +785,11 @@ class DNA:
         return entities[0] if len(entities) > 0 else None
 
     def _update(self, entity):
-        """update entity"""
+        """update entity
+
+        Args:
+            entity (DNAEntity): entity object
+        """
 
         self._changed = True
 
@@ -782,6 +825,9 @@ class DNA:
             filter_parent (int): filter by id of parent entity
             filter_keyword (str): filter by name
             sort (str): property to sort by
+            reverse (bool): reverse order of items
+            offset (int): offset a result set
+            limit (int): limit result set
             factory (object): factory object
 
         Returns:
@@ -840,7 +886,7 @@ class DNA:
         """
         parent = self._db.get("SELECT id FROM entities WHERE parent = ?", (entity_id,))
 
-        return not not parent
+        return bool(parent)
 
     def _childs(self, entity_id, factory=None):
         """Get child nodes of entity
@@ -882,6 +928,8 @@ class DNA:
             key (str): name of property
             value (object): value to assign to property
             force_type (DNA.TYPE): set a type of property
+        Returns:
+            id of last inserted row
         """
         self._changed = True
 
@@ -913,7 +961,7 @@ class DNA:
         value = self._db.get("SELECT value FROM `properties` WHERE `entity` = ? AND `key` = ?",
                              (entity_id, key))
 
-        return not not value
+        return bool(value)
 
     def _properties(self, entity_id):
         """Get list of all properties linked to entity
@@ -925,6 +973,7 @@ class DNA:
             properties list of an entity
         """
 
+        # to-do: use factory to speed up this query
         raw_props = self._db.all("SELECT key, value, type FROM `properties` WHERE `entity` = ?", (entity_id,))
         props = {}
 
@@ -969,6 +1018,13 @@ class DNA:
                          (new_key, entity_id, old_key))
 
     def __get_type(self, value):
+        """Get type of value
+
+        Args:
+            value: any object
+        Returns:
+            argument type
+        """
 
         builtin_type = type(value)
         arg_type = None
@@ -987,6 +1043,15 @@ class DNA:
         return arg_type
 
     def __write_type(self, arg_value, arg_type):
+        """Create a string representation of value given
+
+        Args:
+            arg_value: any object
+            arg_type: type of object to convert to
+
+        Returns:
+            string representation of value
+        """
 
         value = ""
 
@@ -998,6 +1063,15 @@ class DNA:
         return value
 
     def __read_type(self, arg_value, arg_type):
+        """Parse string from db into correct object
+
+        Args:
+            arg_value: raw value
+            arg_type: value type
+
+        Returns:
+            object from raw value
+        """
 
         if arg_type is self.ARG_JSON:
             arg_value = json.loads(arg_value)
@@ -1031,13 +1105,16 @@ class DNA:
 
         return entities
 
-    def __get_factory(self, type):
-        """Map types to entities"""
+    def __get_factory(self, entity_type):
+        """Map types to entities
 
-        if type in DNA.TYPES_FACTORIES:
-            return DNA.TYPES_FACTORIES[type]
+        Args:
+            entity_type (int): type of entity defined by type field
+        Returns:
+            DNAEntity or DNAEntity subclass corresponding to type as defined in DNA.TYPES_FACTORIES
+        """
 
-        return DNAEntity
+        return DNA.TYPES_FACTORIES[entity_type] if entity_type in DNA.TYPES_FACTORIES else DNAEntity
 
     def validate(self, file_path):
         """Validate file to be proper grail file
@@ -1067,7 +1144,11 @@ class DNA:
         self._changed = False
 
     def save_copy(self, file_path):
-        """Save a copy of this file"""
+        """Save a copy of this file
+
+        Args:
+            file_path (str): path to file
+        """
 
         self._db.commit()
         self._changed = False
@@ -1201,3 +1282,301 @@ class SettingsFile(DNA):
         self._db.commit()
 
         return result
+
+#
+# Project
+#
+
+
+class ProjectError(DNAError):
+    """Base class for all project related exceptions"""
+
+    pass
+
+
+class Project(DNAFile):
+    """Representation of a project file"""
+
+    _name = "Untitled project"
+    _description = ""
+    _author = ""
+    _created = 0
+    _modified = 0
+    _id = 0
+
+    @property
+    def name(self):
+        """Project name"""
+
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        """Project name setter"""
+
+        self._name = value
+
+    @property
+    def description(self):
+        """Project description"""
+
+        return self._description
+
+    @description.setter
+    def description(self, value):
+        """Project description setter"""
+
+        self._description = value
+
+    @property
+    def author(self):
+        """Project author"""
+
+        return self._author
+
+    @author.setter
+    def author(self, value):
+        """Project author setter"""
+
+        self._author = value
+
+    @property
+    def created(self):
+        """Date on witch project was created"""
+
+        return self._created
+
+    @property
+    def modified(self):
+        """Date of last edit on project"""
+
+        return self._modified
+
+    def __init__(self, file_path, create=False):
+        """Open or create a project
+
+        Args:
+            file_path (str): path to file
+            create (bool): create file if not exists
+        """
+
+        super(Project, self).__init__(file_path, create=create)
+
+        entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
+                                filter_parent=self._id,
+                                factory=SettingsEntity)
+
+        if create and len(entity) == 0:
+            self._create_project()
+
+        # read properties
+        # find settings
+
+    def __len__(self):
+        """Get number of cuelist in project"""
+        return len(self.cuelists())
+
+    def settings(self):
+        """Get a setting object"""
+        entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
+                                filter_parent=self._id,
+                                factory=SettingsEntity)
+
+        if len(entity) == 0:
+            entity = self._create(name="Settings",
+                                  parent=self._id,
+                                  entity_type=DNA.TYPE_SETTINGS,
+                                  factory=SettingsEntity)
+            return entity
+
+        return entity[0]
+
+    def cuelists(self):
+        """Get all cuelists in project"""
+        return self._entities(filter_type=DNA.TYPE_CUELIST,
+                              filter_parent=self._id,
+                              factory=CuelistEntity)
+
+    def cuelist(self, cuelist_id):
+        """Get a cuelist"""
+        return self._entity(cuelist_id, factory=CuelistEntity)
+
+    def remove(self, cuelist_id):
+        """Remove a cuelist"""
+        return self._remove(cuelist_id)
+
+    def append(self, name="Untitled cuelist"):
+        """Create a cuelist"""
+        cuelist = self._create(name=name,
+                               parent=self._id,
+                               entity_type=DNA.TYPE_CUELIST,
+                               factory=CuelistEntity)
+
+        return cuelist
+
+    def _create_project(self):
+        # settings
+        settings = self._create(entity_type=DNA.TYPE_SETTINGS)
+        settings.name = "settings"
+
+        settings.set('display.background', '#000000')
+        settings.set('display.text.align', 1)
+        settings.set('display.text.valign', 1)
+        settings.set('display.text.case', 'uppercase')
+
+        settings.set('display.font.family', 'Helvetica')
+        settings.set('display.font.size', '32pt')
+        settings.set('display.font.weight', 'normal')
+        settings.set('display.font.style', 'normal')
+        settings.set('display.font.color', '#FFFFFF')
+
+        settings.set('display.shadow.x', 0)
+        settings.set('display.shadow.y', 2)
+        settings.set('display.shadow.blur', 10)
+        settings.set('display.shadow.color', '#000000')
+
+        settings.set('display.padding.left', 10)
+        settings.set('display.padding.right', 10)
+        settings.set('display.padding.top', 10)
+        settings.set('display.padding.bottom', 10)
+        settings.set('display.padding.box', 10)
+
+        settings.set('display.composition.x', 0)
+        settings.set('display.composition.y', 0)
+        settings.set('display.composition.width', 1920)
+        settings.set('display.composition.height', 1080)
+
+        settings.set('display.geometry.x', 1920)
+        settings.set('display.geometry.y', 0)
+        settings.set('display.geometry.width', 1920)
+        settings.set('display.geometry.height', 1080)
+
+        settings.set('display.disabled', False)
+        settings.set('display.display', 'DISPLAY//2')
+        settings.set('display.testcard', False)
+        settings.set('display.fullscreen', True)
+        settings.update()
+
+        # project
+        project = self._create(entity_type=DNA.TYPE_PROJECT)
+        project.name = "Grail Project"
+        project.set('author', 'Alex Litvin')
+        project.set('description', 'Simple Grail project for testing purposes')
+        project.update()
+
+        # cuelist
+        for cuelist_index in range(5):
+            cuelist = self.append("%d'st Cuelist" % (cuelist_index,))
+            cuelist.set('color', '#FF0000')
+            cuelist.set('description', 'Simple cuelist')
+            cuelist.update()
+
+            for cue_index in range(5):
+                cue = self._create(parent=cuelist.id, entity_type=DNA.TYPE_CUE)
+                cue.name = "Cue %d in list %d" % (cue_index, cuelist_index)
+                cue.set('color', '#00FF00')
+                cue.set('continue', 0)
+                cue.set('wait_pre', 100)
+                cue.set('wait_post', 30)
+                cue.update()
+
+#
+# Library
+#
+
+
+class LibraryError(DNAError):
+    """Library error of any kind"""
+
+    pass
+
+
+class Library(DNA):
+    """Manage library file"""
+
+    # file extension
+    _file_extension = ".grail-library"
+
+    def __init__(self, file_path, create=False):
+        """Open or create a project
+
+        Args:
+            file_path (str): path to file
+        """
+        super(Library, self).__init__(file_path, create=create)
+
+        if not self.root() and create:
+            self._create("Grail Library",
+                         parent=0,
+                         entity_type=DNA.TYPE_LIBRARY)
+
+        if not self.root():
+            raise LibraryError("Library entity not found in file %s" % (file_path,))
+
+    def create(self, name, entity_type=DNA.TYPE_ABSTRACT, factory=None):
+        """Create new library entity
+
+        Returns: new item
+        """
+
+        item = self._create(name,
+                            parent=self.root().id,
+                            entity_type=entity_type,
+                            factory=factory)
+
+        return item
+
+    def root(self):
+        """Get a library entity
+
+        Returns: root item of library
+        """
+
+        root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
+
+        return root[0] if len(root) > 0 else None
+
+    def remove(self, entity_id):
+        """Remove entity from library
+
+        Args:
+            entity_id (int): id of entity
+        """
+
+        self._remove(entity_id)
+
+    def remove_all(self):
+        """Remove all entities from library"""
+
+        for entity in self.items():
+            self._remove(entity.id)
+
+    def items(self, filter_type=False, filter_keyword=False, sort='name', reverse=False, offset=0, limit=0):
+        """Returns list of library items
+
+        Args:
+            filter_type: limit result set by type, pass False to disable filter
+            filter_keyword (str): limit result set by keyword, pass False to disable filter
+            sort (str): sort field
+            reverse (bool): reverse results order
+            offset (int): start index
+            limit (int): limit items result set
+        """
+
+        return self._entities(
+            filter_type=filter_type,
+            filter_parent=self.root().id,
+            filter_keyword=filter_keyword,
+            sort=sort,
+            reverse=reverse,
+            offset=offset,
+            limit=limit)
+
+    def item(self, entity_id):
+        """Return library item by id
+
+        Args:
+            entity_id (int): entity identifier
+        """
+
+        return self._entity(entity_id)

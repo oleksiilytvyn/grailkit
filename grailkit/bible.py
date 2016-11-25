@@ -21,7 +21,7 @@ import glob
 import json
 
 from grailkit import PATH_SHARED
-from grailkit.util import path_appdata, copy_file
+from grailkit.util import copy_file
 from grailkit.dna import DNA
 
 
@@ -71,6 +71,12 @@ class Verse:
         self._chapter = 1
         self._verse = 1
         self._text = ""
+
+    @property
+    def type(self):
+        """DNA type"""
+
+        return DNA.TYPE_VERSE
 
     @property
     def book(self):
@@ -151,6 +157,12 @@ class Book:
         self._name = ""
         self._title = ""
         self._osisid = ""
+
+    @property
+    def type(self):
+        """DNA type"""
+
+        return DNA.TYPE_BOOK
 
     @property
     def id(self):
@@ -597,14 +609,17 @@ class BibleHost:
 
     @classmethod
     def get(cls, bible_id):
-        """Get a Bible by identifier"""
+        """Get a Bible by identifier
+
+        Args:
+            bible_id (str): bible identifier string
+        Returns:
+            Bible object if bible exists under given identifier
+        """
 
         bible = cls.info(bible_id)
 
-        if bible:
-            return Bible(bible.file)
-        else:
-            return None
+        return Bible(bible.file) if bible else None
 
     @classmethod
     def install(cls, file_path, replace=False):
@@ -670,7 +685,11 @@ class BibleHost:
 
     @classmethod
     def _create_descriptor(cls, bible):
-        """Create a description file for a bible"""
+        """Create a description file for a bible
+
+        Args:
+            bible (Bible): bible object
+        """
 
         data = bible.json_info()
 

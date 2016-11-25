@@ -6,8 +6,7 @@ import os
 import shutil
 import tempfile
 
-from grailkit.project import Project
-from grailkit.dna import SettingsEntity, CueEntity, CuelistEntity
+from grailkit.dna import Project, SettingsEntity, CueEntity, CuelistEntity
 
 
 class TestGrailkitProject(unittest.TestCase):
@@ -39,6 +38,6 @@ class TestGrailkitProject(unittest.TestCase):
         cuelist = proj.append("Test Cuelist")
 
         self.assertEqual(cuelist.name, "Test Cuelist")
-        self.assertEqual(len(proj), 1)
+        self.assertEqual(len(proj), 6)
 
         cuelist.append("Cue")
