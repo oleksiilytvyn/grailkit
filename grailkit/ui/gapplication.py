@@ -98,8 +98,6 @@ class GApplication(QApplication):
 
         super(GApplication, self).quit()
 
-        sys.exit()
-
     def unhandledException(self, exctype, value, traceback_object):
         """Re-implement this method to catch exceptions"""
 
