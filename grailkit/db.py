@@ -176,7 +176,12 @@ class DataBase:
     def close(self):
         """Close connection"""
 
-        self._connection.commit()
+        try:
+            self._connection.commit()
+        except lite.ProgrammingError:
+            # to-do: add logging message: unable to commit, connection was closed
+            pass
+
         self._connection.close()
 
 

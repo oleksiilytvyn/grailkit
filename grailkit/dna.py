@@ -19,6 +19,51 @@ class DNAError(DataBaseError):
 
     pass
 
+
+class DNASignal:
+    """Callback mechanism"""
+
+    def __init__(self, *args):
+        """
+
+        Args:
+            *args: template of arguments
+        """
+
+        self._fns = []
+
+    def connect(self, fn):
+        """Add function to list of callbacks
+
+        Args:
+            fn (callable): function to call on emit
+        """
+
+        if not callable(fn):
+            raise DNAError("Given function is not callable")
+
+        self._fns.append(fn)
+
+    def disconnect(self, fn):
+        """Remove function from list, if it previously added to it
+
+        Args:
+            fn (callable): function to remove
+        """
+
+        if fn in self._fns:
+            self._fns.remove(fn)
+
+    def emit(self, *args):
+        """Emit signal
+
+        Args:
+            *args: arguments to pass to callbacks
+        """
+
+        for fn in self._fns:
+            fn(*args)
+
 #
 # Entities
 #
@@ -710,6 +755,11 @@ class DNA:
     # file extension
     _file_extension = ".grail"
 
+    # signals
+    property_changed = DNASignal(int, str, str)
+    entity_changed = DNASignal(int)
+    entity_removed = DNASignal(int)
+
     def __init__(self, file_path, create=False):
         """Open a *.grail file
 
@@ -766,6 +816,33 @@ class DNA:
                         json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
         self._db.connection.commit()
 
+        # emit entity changed
+        self.entity_changed.emit(cursor.lastrowid)
+
+        return self._entity(cursor.lastrowid, factory)
+
+    def _copy(self, entity, factory=None):
+        """Create entity from existing one"""
+
+        # copy entity
+        cursor = self._db.cursor
+        cursor.execute("""INSERT INTO entities
+                          (id, parent, type, name, created, modified, content, search, sort_order)
+                          SELECT
+                          NULL, parent, type, name, created, modified, content, search, sort_order
+                          FROM entities
+                          WHERE id = ?""", (entity.id,))
+        self._db.connection.commit()
+
+        # copy properties
+        cursor.execute("""INSERT INTO properties
+                          (entity, key, value, type)
+                          SELECT
+                          ?, key, value, type
+                          FROM properties
+                          WHERE entity = ?""", (cursor.lastrowid, entity.id,))
+        self._db.connection.commit()
+
         return self._entity(cursor.lastrowid, factory)
 
     def _entity(self, entity_id, factory=None):
@@ -801,6 +878,8 @@ class DNA:
                        (entity.id, entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
                         json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index, entity.id))
 
+        self.entity_changed.emit(entity.id)
+
     def _remove(self, entity_id):
         """Remove entity by id
 
@@ -812,6 +891,9 @@ class DNA:
         self._db.execute("DELETE FROM entities WHERE id = ?", (entity_id,))
         self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
         self._db.connection.commit()
+
+        # emit entity changed signal
+        self.entity_removed.emit(entity_id)
 
         for child in self._childs(entity_id):
             self._remove(child.id)
@@ -945,6 +1027,8 @@ class DNA:
         self._db.execute("UPDATE properties SET entity = ?, key = ?, value = ?, type = ? WHERE entity = ? AND key = ?",
                          (entity_id, key, value, force_type, entity_id, key))
 
+        self.property_changed.emit(entity_id, key, value)
+
         return self._db.cursor.lastrowid
 
     def _has(self, entity_id, key):
@@ -1016,6 +1100,9 @@ class DNA:
 
         self._db.execute("UPDATE properties SET key = ? WHERE entity = ? AND key = ?",
                          (new_key, entity_id, old_key))
+
+        # emit property changed signal
+        self.property_changed.emit(entity_id, new_key, self._get(entity_id, new_key))
 
     def __get_type(self, value):
         """Get type of value
@@ -1175,6 +1262,7 @@ class DNAFile(DNA):
 
         # entities
         self.create = self._create
+        self.copy = self._copy
         self.entity = self._entity
         self.entities = self._entities
         self.update = self._update
