@@ -258,6 +258,11 @@ class DNAEntity:
 
         self._dna_parent._update(self)
 
+    def copy(self, name=False, parent=False, entity_type=False, index=False, factory=None):
+        """Copy this entity to this origin"""
+
+        return self._dna_parent._copy(self, name, parent, entity_type, index, factory)
+
     def remove(self):
         """Remove this entity"""
 
@@ -821,29 +826,36 @@ class DNA:
 
         return self._entity(cursor.lastrowid, factory)
 
-    def _copy(self, entity, factory=None):
+    def _copy(self, entity, name=False, parent=False, entity_type=False, index=False, factory=None):
         """Create entity from existing one"""
+
+        if name:
+            entity.name = name
+
+        if parent:
+            entity.parent = parent
+
+        if entity_type:
+            entity.type = entity_type
+
+        if index:
+            entity.index = index
 
         # copy entity
         cursor = self._db.cursor
         cursor.execute("""INSERT INTO entities
-                          (id, parent, type, name, created, modified, content, search, sort_order)
-                          SELECT
-                          NULL, parent, type, name, created, modified, content, search, sort_order
-                          FROM entities
-                          WHERE id = ?""", (entity.id,))
+                            (id, parent, type, name, created, modified, content, search, sort_order)
+                            VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       (entity.parent, entity.type, entity.name, entity.created, entity.modified,
+                        json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
         self._db.connection.commit()
 
-        # copy properties
-        cursor.execute("""INSERT INTO properties
-                          (entity, key, value, type)
-                          SELECT
-                          ?, key, value, type
-                          FROM properties
-                          WHERE entity = ?""", (cursor.lastrowid, entity.id,))
-        self._db.connection.commit()
+        entity_id = cursor.lastrowid
 
-        return self._entity(cursor.lastrowid, factory)
+        for key, value in entity.properties().items():
+            self._set(entity_id, key, value)
+
+        return self._entity(entity_id, factory)
 
     def _entity(self, entity_id, factory=None):
         """Get entity by `entity_id`
