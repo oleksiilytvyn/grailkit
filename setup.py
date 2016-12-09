@@ -55,5 +55,5 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Environment :: X11 Applications :: Qt'
     ],
-    install_requires=['PyQt5']
+    install_requires=['PyQt5', 'pyserial']
 )
