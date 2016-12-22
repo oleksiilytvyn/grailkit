@@ -10,7 +10,7 @@ import os
 from grailkit.util import path_appdata
 
 # library version
-__version__ = '0.1.1'
+__version__ = '0.2'
 
 # path to shader folder
 PATH_SHARED = path_appdata("grail-shared")

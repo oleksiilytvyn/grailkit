@@ -8,8 +8,13 @@
 import os
 import re
 import sqlite3 as lite
+import logging
+from logging import NullHandler
 
 from grailkit import util
+
+
+logging.getLogger(__name__).addHandler(NullHandler())
 
 
 def create_factory(object_def, cursor, row):
@@ -66,6 +71,7 @@ class DataBase:
 
         self._connection = lite.connect(file_path)
         self._connection.row_factory = lite.Row
+        self._location = file_path
 
         def lowercase(char):
             return char.lower()
@@ -93,6 +99,12 @@ class DataBase:
         """Returns sqlite3 connection cursor"""
 
         return self._connection.cursor()
+
+    @property
+    def location(self):
+        """Returns location of database file"""
+
+        return self._location
 
     def get(self, query, data=tuple(), factory=None):
         """Execute query and return first record
@@ -179,8 +191,7 @@ class DataBase:
         try:
             self._connection.commit()
         except lite.ProgrammingError:
-            # to-do: add logging message: unable to commit, connection was closed
-            pass
+            logging.info("Unable to commit into %s, connection was closed" % (self._location, ))
 
         self._connection.close()
 

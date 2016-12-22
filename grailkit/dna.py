@@ -30,19 +30,29 @@ class DNASignal:
             *args: template of arguments
         """
 
-        self._fns = []
+        self._args = [type(x) for x in args]
+        self._fns = {}
 
-    def connect(self, fn):
+    def __len__(self):
+        """Returns number of connected slots"""
+
+        return len(self._fns)
+
+    def connect(self, fn, name=False):
         """Add function to list of callbacks
 
         Args:
             fn (callable): function to call on emit
+            name (str): give name to slot
         """
 
         if not callable(fn):
             raise DNAError("Given function is not callable")
 
-        self._fns.append(fn)
+        if not name:
+            name = len(self._fns)
+
+        self._fns[name] = fn
 
     def disconnect(self, fn):
         """Remove function from list, if it previously added to it
@@ -51,18 +61,25 @@ class DNASignal:
             fn (callable): function to remove
         """
 
-        if fn in self._fns:
-            self._fns.remove(fn)
+        for key, value in self._fns.items():
+            if fn == value:
+                del self._fns[key]
 
-    def emit(self, *args):
+    def emit(self, *args, **kwargs):
         """Emit signal
+        If `name` argument was given only slot with this name will be called
 
         Args:
             *args: arguments to pass to callbacks
+            name (str): give name of slot to be called
         """
 
-        for fn in self._fns:
-            fn(*args)
+        if 'name' in kwargs and kwargs['name']:
+            self._fns[kwargs['name']](*args)
+            return True
+
+        for key in self._fns:
+            self._fns[key](*args)
 
 #
 # Entities
@@ -71,7 +88,7 @@ class DNASignal:
 
 class DNAEntity:
     """DNA entity definition class
-    Each entity must have fields:
+    Each entity must have following fields:
         id (int): identification number of entity;
         type (int): type of entity;
         name (str): name or label of entity;
@@ -105,7 +122,6 @@ class DNAEntity:
 
         self._dna_parent = parent
 
-    # fields
     @property
     def id(self):
         """Entity identifier"""
@@ -285,11 +301,11 @@ class DNAEntity:
         self._search = str(row[7])
         self._index = int(row[8])
 
-    @staticmethod
-    def from_sqlite(parent, row):
+    @classmethod
+    def from_sqlite(cls, parent, row):
         """Parse entity from sqlite"""
 
-        entity = DNAEntity(parent=parent)
+        entity = cls(parent=parent)
         entity._parse(row)
 
         return entity
@@ -306,15 +322,6 @@ class SettingsEntity(DNAEntity):
         """
 
         super(SettingsEntity, self).__init__(parent)
-
-    @staticmethod
-    def from_sqlite(parent, row):
-        """Parse entity from sqlite"""
-
-        entity = SettingsEntity(parent=parent)
-        entity._parse(row)
-
-        return entity
 
 
 class SongEntity(DNAEntity):
@@ -470,38 +477,10 @@ class SongEntity(DNAEntity):
         self._genre = json_key(content, 'genre', 'Unknown')
         self._artist = json_key(content, 'artist', 'Unknown')
 
-    @staticmethod
-    def from_sqlite(parent, row):
-        """Parse entity from sqlite
-
-        Args:
-            parent: parent DNA object
-            row: sqlite3 row object
-        Returns: entity instance
-        """
-
-        entity = SongEntity(parent=parent)
-        entity._parse(row)
-
-        return entity
-
 
 class FileEntity(DNAEntity):
 
-    @staticmethod
-    def from_sqlite(parent, row):
-        """Parse entity from sqlite
-
-        Args:
-            parent: parent DNA object
-            row: sqlite3 row object
-        Returns: entity instance
-        """
-
-        entity = FileEntity(parent=parent)
-        entity._parse(row)
-
-        return entity
+    pass
 
 
 class CuelistEntity(DNAEntity):
@@ -559,14 +538,6 @@ class CuelistEntity(DNAEntity):
             cue_id (int): DNA entity id
         """
         self._dna_parent._remove(cue_id)
-
-    @staticmethod
-    def from_sqlite(parent, row):
-        """Parse entity from sqlite"""
-        entity = CuelistEntity(parent=parent)
-        entity._parse(row)
-
-        return entity
 
 
 class CueEntity(DNAEntity):
@@ -667,21 +638,6 @@ class CueEntity(DNAEntity):
         self._number = self.get("number", self.index)
         self._post_wait = self.get("post-wait", 0)
         self._pre_wait = self.get("pre-wait", 0)
-
-    @staticmethod
-    def from_sqlite(parent, row):
-        """Parse entity from sqlite
-
-        Args:
-            parent: parent DNA object
-            row: sqlite3 row object
-        Returns: entity instance
-        """
-
-        entity = CueEntity(parent=parent)
-        entity._parse(row)
-
-        return entity
 
 #
 # Files
@@ -808,7 +764,7 @@ class DNA:
         self._changed = True
 
         entity = DNAEntity(self)
-        entity.parent = parent
+        entity.parent_id = parent
         entity.type = entity_type
         entity.index = index
         entity.name = name
@@ -817,7 +773,7 @@ class DNA:
         cursor.execute("""INSERT INTO entities
                             (id, parent, type, name, created, modified, content, search, sort_order)
                             VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                       (entity.parent, entity.type, entity.name, entity.created, entity.modified,
+                       (entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
                         json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
         self._db.connection.commit()
 
@@ -833,7 +789,7 @@ class DNA:
             entity.name = name
 
         if parent:
-            entity.parent = parent
+            entity.parent_id = parent
 
         if entity_type:
             entity.type = entity_type
@@ -846,7 +802,7 @@ class DNA:
         cursor.execute("""INSERT INTO entities
                             (id, parent, type, name, created, modified, content, search, sort_order)
                             VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                       (entity.parent, entity.type, entity.name, entity.created, entity.modified,
+                       (entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
                         json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
         self._db.connection.commit()
 
@@ -946,7 +902,7 @@ class DNA:
             where.append(" type = ?")
             args.append(filter_type)
 
-        # To-do: implement item sorting
+        # TODO: implement item sorting
 
         sql = """
                 SELECT id, parent, type, name, created, modified, content, search, sort_order
@@ -1069,7 +1025,7 @@ class DNA:
             properties list of an entity
         """
 
-        # to-do: use factory to speed up this query
+        # TODO: use factory to speed up this query
         raw_props = self._db.all("SELECT key, value, type FROM `properties` WHERE `entity` = ?", (entity_id,))
         props = {}
 
@@ -1193,7 +1149,7 @@ class DNA:
 
         entities = []
 
-        # TO-DO: optimise it by using real sqlite factory
+        # TODO: optimise it by using real sqlite factory
         if factory:
             for raw in raw_entities:
                 entities.append(factory.from_sqlite(self, raw))
@@ -1246,11 +1202,10 @@ class DNA:
         """Save a copy of this file
 
         Args:
-            file_path (str): path to file
+            file_path (str): path to copy of current file
         """
 
-        self._db.commit()
-        self._changed = False
+        self.save()
         self._db.copy(file_path)
 
     def close(self):
@@ -1357,20 +1312,16 @@ class SettingsFile(DNA):
         Returns: True if operation is succeeded
         """
 
-        result = self._unset(0, key)
+        self._unset(0, key)
         self._db.commit()
-
-        return result
 
     def unset_all(self):
         """Remove all properties
 
         Returns: True if operation succeeded"""
 
-        result = self._unset_all(0)
+        self._unset_all(0)
         self._db.commit()
-
-        return result
 
     def rename(self, old_key, new_key):
         """Rename property key
@@ -1378,10 +1329,8 @@ class SettingsFile(DNA):
         Returns: True if operation is succeeded
         """
 
-        result = self._rename(0, old_key, new_key)
+        self._rename(0, old_key, new_key)
         self._db.commit()
-
-        return result
 
 #
 # Project

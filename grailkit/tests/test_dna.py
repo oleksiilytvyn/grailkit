@@ -21,6 +21,24 @@ class TestGrailkitDNA(unittest.TestCase):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
 
+    def test_dna_signal(self):
+
+        self.called_counter = 0
+
+        def slot(counter):
+            self.called_counter += 1
+
+        signal = dna.DNASignal(int)
+        signal.connect(slot)
+        signal.emit(self.called_counter)
+
+        signal.connect(slot, name='slot')
+        signal.emit(self.called_counter, name='slot', context=self)
+        signal.emit(self.called_counter)
+
+        self.assertEqual(len(signal), 2)
+        self.assertEqual(self.called_counter, 4)
+
     def test_dna_create(self):
 
         db_path = os.path.join(self.test_dir, 'test.grail')
@@ -30,15 +48,23 @@ class TestGrailkitDNA(unittest.TestCase):
         self.assertTrue(os.path.isfile(db_path))
 
     def test_dna_open(self):
-        pass
+
+        db_path = os.path.join(self.res_dir, 'dna.grail')
+        db_obj = dna.DNAFile(db_path)
+        db_obj.close()
+
+        self.assertTrue(os.path.isfile(db_path))
+        self.assertEquals(db_obj.location, db_path)
 
     def test_dna_corrupted(self):
+        """Try to load corrupted DNA file"""
 
         db_path = os.path.join(self.res_dir, 'corrupted.grail')
 
         self.assertRaises(db.DataBaseError, dna.DNAFile, db_path)
 
     def test_dna_property(self):
+        """Test properties handling"""
 
         db_path = os.path.join(self.test_dir, 'test.grail')
         db_obj = dna.DNAFile(db_path, create=True)
@@ -57,6 +83,7 @@ class TestGrailkitDNA(unittest.TestCase):
         db_obj.close()
 
     def test_dna_entity(self):
+        """Test DNAEntity methods"""
 
         db_path = os.path.join(self.test_dir, 'entity.grail')
         db_obj = dna.DNAFile(db_path, create=True)
@@ -95,18 +122,17 @@ class TestGrailkitDNA(unittest.TestCase):
         db_obj.close()
 
     def test_dna_fill(self):
+        """Test DNA file entities creation"""
 
         db_path = os.path.join(self.test_dir, 'entity.grail')
         dna_file = dna.DNAFile(db_path, create=True)
 
         # settings
-        settings = dna_file.create()
-        settings.name = "settings"
+        settings = dna_file.create(name="settings")
 
         settings.set('display.background', '#000000')
 
         settings.set('display.text.align', 1)
-        settings.set('display.text.valign', 1)
         settings.set('display.text.case', 'uppercase')
 
         settings.set('display.font.family', 'Helvetica')
@@ -143,40 +169,39 @@ class TestGrailkitDNA(unittest.TestCase):
         settings.update()
 
         # project
-        project = dna_file.create()
-        project.name = "Grail Project"
+        project = dna_file.create(name="Grail Project")
         project.set('author', 'Alex Litvin')
         project.set('description', 'Simple Grail project for testing purposes')
         project.update()
 
         # cuelist
         for cuelist_index in range(5):
-            cuelist = dna_file.create(parent=project.id)
-            cuelist.name = "%d'st Cuelist" % (cuelist_index,)
+            cuelist = dna_file.create(name="%d'st Cuelist" % (cuelist_index,), parent=project.id)
             cuelist.set('color', '#FF0000')
             cuelist.set('description', 'Simple cuelist')
             cuelist.update()
 
             for cue_index in range(5):
-                cue = dna_file.create(parent=cuelist.id)
-                cue.name = "Cue %d in list %d" % (cue_index, cuelist_index)
+                cue = dna_file.create(name="Cue %d in list %d" % (cue_index, cuelist_index), parent=cuelist.id)
                 cue.set('color', '#00FF00')
                 cue.set('continue', 0)
                 cue.set('wait_pre', 100)
                 cue.set('wait_post', 30)
                 cue.update()
 
-        # self._print_childs(dna_file, 0)
+    def test_dna_copy(self):
+        """Test entity copy"""
 
-    def _print_childs(self, db, parent, indent=''):
+        db_path = os.path.join(self.test_dir, 'entity.grail')
+        dna_file = dna.DNAFile(db_path, create=True)
 
-        for entity in db.entities(filter_parent=parent):
+        entity = dna_file.create(name="Hello world!", index=3)
+        entity.set('property', True)
+        entity.set('color', '#dedede')
 
-            print('\n' + indent + '@', entity.id, entity.name, entity)
+        copy = dna_file.copy(entity, name="Hello Again!")
 
-            properties = entity.properties()
+        self.assertEqual(len(entity.properties()), len(copy.properties()))
+        self.assertEqual(len(dna_file.entities()), 2)
 
-            for key in properties:
-                print(indent + "-", key, ':', properties[key])
-
-            self._print_childs(db, entity.id, indent+'  ')
+        dna_file.close()

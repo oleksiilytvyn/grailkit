@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+
 # OSC implementation in pure python
 # Copyright (C) 2014-2016 Oleksii Lytvyn
 #
@@ -34,7 +36,7 @@ import calendar
 import collections
 import socketserver
 
-__version__ = '0.4'
+__version__ = '0.4.1'
 __all__ = [
     'OSCPacket',
     'OSCMessage',
@@ -55,7 +57,7 @@ __all__ = [
     'OSCBundleBuildError',
     'NTPError',
     'IMMEDIATELY'
-    ]
+]
 
 #
 # NTP library
@@ -352,13 +354,25 @@ def get_date(dgram, start_index):
 
 
 def write_date(system_time):
+    """Create time tag datagram
+
+    Args:
+        system_time (int): time to be converted
+
+    Returns:
+        ntp time datagram
+
+    Raises:
+        NTPError if time cant be converted
+    """
+
     if system_time == IMMEDIATELY:
         return NTP_IMMEDIATELY
 
     try:
         return system_time_to_ntp(system_time)
-    except NTPError as ntpe:
-        raise OSCBuildError(ntpe)
+    except NTPError as error:
+        raise OSCBuildError(error)
 
 
 #
@@ -374,6 +388,7 @@ class OSCPacketParseError(Exception):
     """Base error thrown when a packet could not be parsed."""
 
     pass
+
 
 class OSCPacket(object):
     """Unit of transmission of the OSC protocol.
@@ -481,7 +496,7 @@ class OSCMessage(object):
         ARG_TYPE_STRING,
         ARG_TYPE_TRUE,
         ARG_TYPE_FALSE
-        )
+    )
 
     def __init__(self, address=None):
         """Initialize a new OSCMessage.
@@ -508,7 +523,7 @@ class OSCMessage(object):
         """Get a OSCMessage argument by index
 
         Args:
-            key (int): inex of argument
+            key (int): index of argument
 
         Returns:
             argument of OSCMessage
@@ -523,7 +538,7 @@ class OSCMessage(object):
         return self._args[key]
 
     def __setitem__(self, key, value):
-        """Set argument by index, if key is greater than 
+        """Set argument by index, if key is greater than
         length of arguments `value` will be added to end of list
 
         Args:
@@ -660,15 +675,6 @@ class OSCMessage(object):
             return OSCMessage.parse(dgram)
         except OSCBuildError as be:
             raise OSCMessageBuildError('Could not build the message: {}'.format(be))
-
-    def is_bundle(self):
-        """Check is this a bundle
-
-        Returns:
-            whether this is bundle or not
-        """
-
-        return False
 
     @staticmethod
     def parse(dgram):
@@ -829,7 +835,7 @@ class OSCBundle(object):
             key (int): index of item
             value (OSCBundle, OSCMessage): an OSCBundle or OSCMessage
         """
-        
+
         if key >= len(self._contents):
             raise IndexError("Index out of range.")
 
@@ -939,11 +945,6 @@ class OSCBundle(object):
             return OSCBundle.parse(dgram)
         except OSCBuildError as be:
             raise OSCBundleBuildError('Could not build the bundle {}'.format(be))
-
-    def is_bundle(self):
-        """Returns whether this is bundle or not."""
-
-        return True
 
     @staticmethod
     def is_valid(dgram):
@@ -1157,7 +1158,7 @@ class OSCServer(socketserver.UDPServer):
             message: OSCMessage or OSCBundle
             date: int number which represents time of message
         Raises:
-            NotImplementedError
+            NotImplementedError if you don't override it
         """
 
         raise NotImplementedError("Re-implement this method")
@@ -1165,18 +1166,6 @@ class OSCServer(socketserver.UDPServer):
 
 class OSCReceiver(OSCServer):
     """Receive messages only from some clients"""
-
-    def handle(self, address, message, date):
-        """Handle receiving of OSCMessage or OSCBundle
-
-        Args:
-            address: typle (host, port)
-            message: OSCMessage or OSCBundle
-            date: int number which represents time of message
-        Raises:
-            NotImplementedError
-        """
-        super(OSCReceiver, self).handle(address, message, date)
 
     def __init__(self, address, port):
         """Initialize OSCReceiver class
@@ -1216,17 +1205,28 @@ class OSCReceiver(OSCServer):
 
         self._clients.append((address, port))
 
+    def handle(self, address, message, date):
+        """Handle receiving of OSCMessage or OSCBundle
+
+        Args:
+            address: typle (host, port)
+            message: OSCMessage or OSCBundle
+            date: int number which represents time of message
+        Raises:
+            NotImplementedError if you don't override it
+        """
+        super(OSCReceiver, self).handle(address, message, date)
+
 
 class OSCBlockingServer(OSCServer):
     """Blocking version of the UDP server.
 
     Each message will be handled sequentially on the same thread.
     Use this is you don't care about latency in your message handling or don't
-    have a multiprocess/multithreaded environment.
+    have a multiprocess/multithread environment.
     """
 
-    def handle(self, address, message, date):
-        pass
+    pass
 
 
 class OSCThreadingServer(socketserver.ThreadingMixIn, OSCServer):
@@ -1236,8 +1236,7 @@ class OSCThreadingServer(socketserver.ThreadingMixIn, OSCServer):
     Use this when lightweight operations are done by each message handlers.
     """
 
-    def handle(self, address, message, date):
-        pass
+    pass
 
 
 class OSCForkingServer(socketserver.ForkingMixIn, OSCServer):
@@ -1248,5 +1247,4 @@ class OSCForkingServer(socketserver.ForkingMixIn, OSCServer):
     and forking a whole new process for each of them is worth it.
     """
 
-    def handle(self, address, message, date):
-        pass
+    pass
