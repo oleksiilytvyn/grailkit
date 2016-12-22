@@ -315,7 +315,7 @@ class OSISParser(Parser):
 class SwordParser(Parser):
     """Parse Sword bible. Not implemented"""
 
-    # TO-DO: implement this class
+    # TODO: implement this class
 
     def __init__(self, file_in, file_out):
         super(SwordParser, self).__init__(file_in, file_out)
@@ -324,7 +324,7 @@ class SwordParser(Parser):
 class CSVParser(Parser):
     """Parse CSV bible. Not implemented"""
 
-    # TO-DO: implement this class
+    # TODO: implement this class
 
     def __init__(self, file_in, file_out):
         super(CSVParser, self).__init__(file_in, file_out)

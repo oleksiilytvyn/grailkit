@@ -92,5 +92,5 @@ def millis_now():
 def __(message):
     """Translate string using gettext"""
 
-    # to-do: implement this function
+    # TODO: implement this function
     return gettext.gettext(message)
