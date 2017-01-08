@@ -83,6 +83,8 @@ class TestGrailkitDB(unittest.TestCase):
         self.assertRaises(db.DataBaseError, db.DataBase, db_path)
 
     def test_db_connection(self):
+        """Test connection to database"""
+
         db_path = os.path.join(self.res_dir, 'regular.sqlite')
         db_obj = db.DataBase(db_path)
 
@@ -91,6 +93,8 @@ class TestGrailkitDB(unittest.TestCase):
         db_obj.close()
 
     def test_db_cursor(self):
+        """Test cursor property"""
+
         db_path = os.path.join(self.res_dir, 'regular.sqlite')
         db_obj = db.DataBase(db_path)
 
@@ -99,6 +103,7 @@ class TestGrailkitDB(unittest.TestCase):
         db_obj.close()
 
     def test_db_get(self):
+        """Test getting single row"""
 
         db_path = os.path.join(self.test_dir, 'get.sqlite')
         db_obj = db.DataBase(db_path, create=True)
@@ -116,6 +121,7 @@ class TestGrailkitDB(unittest.TestCase):
         db_obj.close()
 
     def test_db_all(self):
+        """Test getting results by query"""
 
         db_path = os.path.join(self.test_dir, 'get.sqlite')
         db_obj = db.DataBase(db_path, create=True)
@@ -137,6 +143,7 @@ class TestGrailkitDB(unittest.TestCase):
         db_obj.close()
 
     def test_execute(self):
+        """Test query execution"""
 
         db_path = os.path.join(self.test_dir, 'execute.sqlite')
         db_obj = db.DataBase(db_path, create=True)

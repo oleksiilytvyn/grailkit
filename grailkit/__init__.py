@@ -3,14 +3,16 @@
     grailkit
     ~~~~~~~~
 
-    GrailKit is a library for Grail like apps
+    GrailKit is a library for Grail like apps,
+    library which consists of UI components for PyQt,
+    grail files IO and networking libraries
 """
 
 import os
 from grailkit.util import path_appdata
 
 # library version
-__version__ = '0.2'
+__version__ = '0.3'
 
 # path to shader folder
 PATH_SHARED = path_appdata("grail-shared")

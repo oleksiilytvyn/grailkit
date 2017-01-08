@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt, QPointF, QSize, QEvent, QObject
 from PyQt5.QtGui import QPolygonF, QColor, QPainter, QPainterPath, QBrush
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 
-from grailkit.ui import GDialog
+from grailkit.qt import GDialog
 from grailkit.util import OS_MAC
 
 
@@ -117,7 +117,7 @@ class GBalloonDialog(GDialog):
 if __name__ == '__main__':
 
     import sys
-    from grailkit.ui import GApplication
+    from grailkit.qt import GApplication
 
     app = GApplication(sys.argv)
 

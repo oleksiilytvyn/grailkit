@@ -10,7 +10,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.ui import GDialog, GColorWidget
+from grailkit.qt import GDialog, GColorWidget
 
 
 class GColorDialog(GDialog):
@@ -166,7 +166,7 @@ class RGBWidget(QWidget):
 if __name__ == "__main__":
 
     import sys
-    from grailkit.ui import GApplication, GColorBalloon
+    from grailkit.qt import GApplication, GColorBalloon
 
     app = GApplication(sys.argv)
 

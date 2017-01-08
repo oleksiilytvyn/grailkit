@@ -70,7 +70,7 @@ class GColorSlider(QSlider):
 if __name__ == "__main__":
 
     import sys
-    from grailkit.ui import GApplication, GDialog
+    from grailkit.qt import GApplication, GDialog
 
     app = GApplication(sys.argv)
     h_slider = GColorSlider(Qt.Horizontal)

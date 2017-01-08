@@ -6,7 +6,7 @@
     Color picker balloon dialog
 """
 
-from grailkit.ui import GBalloonDialog, GColorDialog
+from grailkit.qt import GBalloonDialog, GColorDialog
 
 
 class GColorBalloon(GColorDialog, GBalloonDialog):
@@ -17,7 +17,7 @@ class GColorBalloon(GColorDialog, GBalloonDialog):
 if __name__ == '__main__':
 
     import sys
-    from grailkit.ui import GApplication
+    from grailkit.qt import GApplication
 
     app = GApplication(sys.argv)
 

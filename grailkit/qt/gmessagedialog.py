@@ -10,7 +10,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.ui import GDialog
+from grailkit.qt import GDialog
 from grailkit.util import OS_MAC
 
 
@@ -338,7 +338,7 @@ class GMessageDialog(GDialog):
 # test a dialog
 if __name__ == '__main__':
     import sys
-    from grailkit.ui import GApplication
+    from grailkit.qt import GApplication
 
     def clicked(btn):
         print(btn)

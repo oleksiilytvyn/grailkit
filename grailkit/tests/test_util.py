@@ -3,6 +3,7 @@
 import unittest
 
 import os
+import time
 import shutil
 import tempfile
 from grailkit import util
@@ -18,7 +19,7 @@ class TestGrailkitCore(unittest.TestCase):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
 
-    def test_get_app(self):
+    def test_get_app_path(self):
         """Test app path"""
 
         script_path = util.path_app()
@@ -26,7 +27,7 @@ class TestGrailkitCore(unittest.TestCase):
 
         self.assertEqual(script_path, self_path)
 
-    def test_copy(self):
+    def test_copy_file(self):
         """Test file copy if file exists"""
 
         path_a = os.path.join(self.test_dir, 'test.txt')
@@ -42,7 +43,7 @@ class TestGrailkitCore(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(path_b))
 
-    def test_copy_not_exists(self):
+    def test_copy_file_not_exists(self):
         """Test file copy if file not exists"""
 
         path_a = os.path.join(self.test_dir, 'file_not_exists.txt')
@@ -52,6 +53,25 @@ class TestGrailkitCore(unittest.TestCase):
         util.copy_file(path_a, path_b)
 
         self.assertFalse(os.path.isfile(path_b))
+
+    def test_millis_now(self):
+        """Test millis_now functionality"""
+
+        self.assertEqual(util.millis_now(), int(round(time.time() * 1000)))
+
+    def test_json_key(self):
+        """Test default_key function"""
+
+        data = {
+            'property': 'value'
+            }
+
+        self.assertEqual(util.default_key(data, 'property'), 'value')
+        self.assertEqual(util.default_key(data, 'non_existed_property', 'value'), 'value')
+        # other data types
+        self.assertEqual(util.default_key(None, 'property'), None)
+        self.assertEqual(util.default_key([], 'property'), None)
+        self.assertEqual(util.default_key('string', 'property'), None)
 
 if __name__ == "__main__":
     unittest.main()

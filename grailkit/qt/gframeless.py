@@ -9,7 +9,7 @@ import sys
 
 from PyQt5.QtCore import Qt
 
-from grailkit.ui import GDialog
+from grailkit.qt import GDialog
 from grailkit.util import OS_MAC
 
 
@@ -31,7 +31,7 @@ class GFrameless(GDialog):
 # test a dialog
 if __name__ == '__main__':
 
-    from grailkit.ui import GApplication
+    from grailkit.qt import GApplication
 
     app = GApplication(sys.argv)
 

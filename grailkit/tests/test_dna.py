@@ -13,15 +13,18 @@ import grailkit.db as db
 class TestGrailkitDNA(unittest.TestCase):
 
     def setUp(self):
-        # Create a temporary directory
+        """Create a temporary directory"""
+
         self.test_dir = tempfile.mkdtemp()
         self.res_dir = os.path.abspath(__file__[:-3])
 
     def tearDown(self):
-        # Remove the directory after the test
+        """Remove the directory after the test"""
+
         shutil.rmtree(self.test_dir)
 
     def test_dna_signal(self):
+        """Test DNASignal class"""
 
         self.called_counter = 0
 
@@ -33,7 +36,7 @@ class TestGrailkitDNA(unittest.TestCase):
         signal.emit(self.called_counter)
 
         signal.connect(slot, name='slot')
-        signal.emit(self.called_counter, name='slot', context=self)
+        signal.emit(self.called_counter, name='slot')
         signal.emit(self.called_counter)
 
         self.assertEqual(len(signal), 2)
@@ -115,6 +118,8 @@ class TestGrailkitDNA(unittest.TestCase):
         self.assertTrue(db_obj.has_childs(eid1))
         self.assertFalse(db_obj.has_childs(eid2))
 
+        self.assertEqual(db_obj.has(eid1, 'author'), True)
+        self.assertEqual(db_obj.has(eid1, 'not-existed-property'), False)
         self.assertEqual(len(db_obj.entities()), 2)
         self.assertEqual(len(db_obj.properties(eid1)), 2)
         self.assertEqual(len(db_obj.properties(eid2)), 5)

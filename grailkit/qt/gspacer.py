@@ -8,7 +8,7 @@
 
 from PyQt5.QtWidgets import QSizePolicy
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GSpacer(GWidget):

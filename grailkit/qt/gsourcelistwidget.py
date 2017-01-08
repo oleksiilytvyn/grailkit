@@ -7,7 +7,7 @@
     This widget implements SourceList widget from Mac OS
 """
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GSourceListWidget(GWidget):

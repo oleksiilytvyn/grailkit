@@ -11,7 +11,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.ui import GDialog
+from grailkit.qt import GDialog
 
 
 class GAboutDialog(GDialog):
@@ -117,7 +117,7 @@ class GAboutDialog(GDialog):
 # test a dialog
 if __name__ == '__main__':
 
-    from grailkit.ui import GApplication
+    from grailkit.qt import GApplication
     from grailkit import __version__ as version
 
     app = GApplication(sys.argv)

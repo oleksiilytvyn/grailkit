@@ -10,7 +10,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GColorIndicator(GWidget):
@@ -57,7 +57,7 @@ class GColorIndicator(GWidget):
 if __name__ == "__main__":
 
     import sys
-    from grailkit.ui import GApplication, GDialog
+    from grailkit.qt import GApplication, GDialog
 
     app = GApplication(sys.argv)
     indicator = GColorIndicator(QColor('cyan'))
