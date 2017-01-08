@@ -7,7 +7,7 @@
 """
 from PyQt5.QtWidgets import QDialog, QDesktopWidget
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GDialog(QDialog, GWidget):

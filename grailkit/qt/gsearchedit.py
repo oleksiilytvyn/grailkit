@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon, QPainter
 from PyQt5.QtWidgets import QStyle, QToolButton, QLineEdit, QStyleOption
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GSearchEdit(QLineEdit):
@@ -82,7 +82,7 @@ class GSearchEdit(QLineEdit):
 # test a dialog
 if __name__ == '__main__':
 
-    from grailkit.ui import GDialog, GApplication
+    from grailkit.qt import GDialog, GApplication
     from PyQt5.QtWidgets import QHBoxLayout
 
     app = GApplication(sys.argv)

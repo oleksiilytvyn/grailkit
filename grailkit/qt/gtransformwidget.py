@@ -12,7 +12,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GTransformWidget(GWidget):
@@ -296,7 +296,7 @@ class GTransformWidget(GWidget):
 if __name__ == '__main__':
 
     import sys
-    from grailkit.ui import GApplication, GDialog
+    from grailkit.qt import GApplication, GDialog
 
     app = GApplication(sys.argv)
     widget = GTransformWidget()

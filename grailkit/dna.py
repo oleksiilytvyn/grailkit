@@ -11,7 +11,7 @@ import json
 import sqlite3 as lite
 
 from grailkit.db import DataBaseHost, DataBaseError
-from grailkit.util import millis_now
+from grailkit.util import millis_now, default_key
 
 
 class DNAError(DataBaseError):
@@ -65,7 +65,7 @@ class DNASignal:
             if fn == value:
                 del self._fns[key]
 
-    def emit(self, *args, **kwargs):
+    def emit(self, *args, name=False):
         """Emit signal
         If `name` argument was given only slot with this name will be called
 
@@ -74,16 +74,13 @@ class DNASignal:
             name (str): give name of slot to be called
         """
 
-        if 'name' in kwargs and kwargs['name']:
-            self._fns[kwargs['name']](*args)
+        if name:
+            self._fns[name](*args)
+
             return True
 
         for key in self._fns:
             self._fns[key](*args)
-
-#
-# Entities
-#
 
 
 class DNAEntity:
@@ -107,8 +104,8 @@ class DNAEntity:
             parent (DNA): parent DNA object
         """
 
-        if parent is None:
-            raise DNAError("DNAEntity can't be created without parent")
+        if not isinstance(parent, DNA):
+            raise DNAError("DNAEntity can't be created without parent DNA")
 
         self._id = 0
         self._type = DNA.TYPE_ABSTRACT
@@ -119,8 +116,12 @@ class DNAEntity:
         self._created = millis_now()
         self._modified = 0
         self._index = 0
+        self._dna = parent
 
-        self._dna_parent = parent
+    def __len__(self):
+        """Returns number of properties"""
+
+        return len(self.properties())
 
     @property
     def id(self):
@@ -129,17 +130,40 @@ class DNAEntity:
         return self._id
 
     @property
+    def dna(self):
+        """Returns parent DNA where this entity belongs"""
+
+        return self._dna
+
+    @property
+    def parent(self):
+        """Returns parent entity"""
+
+        return self._dna._entity(self._parent)
+
+    @property
     def parent_id(self):
         """Parent identifier"""
 
         return self._parent
 
     @parent_id.setter
-    def parent_id(self, parent):
-        """Set parent identifier"""
+    def parent_id(self, value):
+        """Set parent identifier
 
-        self._parent = parent
-        self._modified = millis_now()
+        Args:
+            value (int): identifier
+        Raises:
+            ValueError: if parent is not int
+        """
+
+        if not isinstance(value, int):
+            raise ValueError('Parent id must be int')
+
+        self._parent = value
+        self._changed()
+
+        self._dna._update_field(self, 'parent')
 
     @property
     def name(self):
@@ -152,7 +176,9 @@ class DNAEntity:
         """Name of entity"""
 
         self._name = name
-        self._modified = millis_now()
+        self._changed()
+
+        self._dna._update_field(self, 'name')
 
     @property
     def type(self):
@@ -161,14 +187,22 @@ class DNAEntity:
         return self._type
 
     @type.setter
-    def type(self, arg_type):
+    def type(self, value):
         """Set type of entity
 
         Args:
-            arg_type: type of entity
+            value: type of entity
+        Raises:
+            ValueError: if given value is not int
         """
-        self._type = arg_type
-        self._modified = millis_now()
+
+        if not isinstance(value, int):
+            raise ValueError('Type must be int')
+
+        self._type = value
+        self._changed()
+
+        self._dna._update_field(self, 'type')
 
     @property
     def created(self):
@@ -190,10 +224,16 @@ class DNAEntity:
 
     @content.setter
     def content(self, content):
-        """Set content of item"""
+        """Set content of item
+
+        Args:
+            content (object): contents object
+        """
 
         self._content = content
-        self._modified = millis_now()
+        self._changed()
+
+        self._dna._update_field(self, 'content')
 
     @property
     def search(self):
@@ -203,14 +243,25 @@ class DNAEntity:
 
     @search.setter
     def search(self, value):
-        """Search string"""
+        """Set value of search field
 
-        self._search = value
-        self._modified = millis_now()
+        Args:
+            value (str): search string
+        Raises:
+            ValueError: if given value is not string
+        """
+
+        if not isinstance(value, str):
+            raise ValueError('Search value must be string')
+
+        self._search = str(value)
+        self._changed()
+
+        self._dna._update_field(self, 'search')
 
     @property
     def index(self):
-        """Index of entity inside parent entity"""
+        """Index inside parent entity"""
 
         return self._index
 
@@ -222,8 +273,19 @@ class DNAEntity:
             value (int): index value
         """
 
+        if not isinstance(value, int):
+            raise ValueError('Index value is must int')
+
         self._index = value
+        self._changed()
+
+        self._dna._update_field(self, 'sort_order')
+
+    def _changed(self):
+        """Called when property is modified"""
+
         self._modified = millis_now()
+        self._dna._update_field(self, 'modified')
 
     def get(self, key, default=None):
         """Get a property value
@@ -233,7 +295,7 @@ class DNAEntity:
             default (object): return `default` if property doesn't exists
         """
 
-        return self._dna_parent._get(self.id, key, default)
+        return self._dna._get(self.id, key, default)
 
     def set(self, key, value, force_type=None):
         """Set a property
@@ -244,7 +306,7 @@ class DNAEntity:
             force_type: convert value to this type
         """
 
-        self._dna_parent._set(self.id, key, value, force_type)
+        self._dna._set(self.id, key, value, force_type)
 
     def has(self, key):
         """Check if property exists
@@ -253,7 +315,7 @@ class DNAEntity:
             key (str): property name
         """
 
-        return self._dna_parent._has(self.id, key)
+        return self._dna._has(self.id, key)
 
     def unset(self, key):
         """Remove property
@@ -262,27 +324,96 @@ class DNAEntity:
             key (str): property name
         """
 
-        self._dna_parent._unset(self.id, key)
+        self._dna._unset(self.id, key)
 
     def properties(self):
         """Returns list of all properties"""
 
-        return self._dna_parent._properties(self.id)
+        return self._dna._properties(self.id)
 
     def update(self):
-        """Update this entity and commit changes to database"""
+        """Force update entity and commit changes to database"""
 
-        self._dna_parent._update(self)
+        self._dna._update(self)
 
     def copy(self, name=False, parent=False, entity_type=False, index=False, factory=None):
-        """Copy this entity to this origin"""
+        """Copy self in current DNA
 
-        return self._dna_parent._copy(self, name, parent, entity_type, index, factory)
+        Args:
+            name: override name of entity
+            parent: override parent id
+            entity_type: override entity type
+            index: override index of entity
+            factory: use given factory to create entity object
+        """
 
-    def remove(self):
-        """Remove this entity"""
+        return self._dna._copy(self,
+                               name=name,
+                               parent=parent,
+                               entity_type=entity_type,
+                               index=index,
+                               factory=factory)
 
-        self._dna_parent._remove(self._id)
+    def delete(self):
+        """Delete this entity from DNA"""
+
+        self._dna._remove(self._id)
+
+    def remove(self, entity):
+        """Remove first entity if given `entity` is children
+
+        Args:
+            entity (DNAEntity): entity to be deleted
+        """
+
+        self._dna._remove(entity.id, parent=self.id)
+
+    def insert(self, index, name, entity_type=None, properties=tuple(), factory=None):
+        """Create new entity and insert as child item"""
+
+        return self._dna._create(name=name,
+                                 parent=self._id,
+                                 index=index,
+                                 entity_type=entity_type,
+                                 factory=factory)
+
+    def append(self, name='untitled', entity_type=None, properties=tuple(), factory=None):
+        """Create and append new entity"""
+
+        return self._dna._create(name=name,
+                                 parent=self._id,
+                                 entity_type=entity_type,
+                                 factory=factory)
+
+    def clear(self):
+        """Remove all child entities"""
+
+        self._dna._remove_childs(self._id)
+
+    def childs(self):
+        """Returns list of all child entities"""
+
+        return self._dna._childs(self._id)
+
+    def has_childs(self):
+        """Returns True if this entity has childs"""
+
+        return self._dna._has_childs(self._id)
+
+    def reverse(self):
+        """Sort child entities in reverse order"""
+
+        self._dna._sort(self._id, key='sort_order', reverse=True)
+
+    def sort(self, key=None, reverse=False):
+        """Sort child entities
+
+        Args:
+            key (str): database key to sort by
+            reverse (bool): reverse sorting
+        """
+
+        self._dna._sort(self._id, key=key, reverse=reverse)
 
     def _parse(self, row):
         """Parse sqlite row into DNAEntity
@@ -462,25 +593,76 @@ class SongEntity(DNAEntity):
         # parse contents into song info
         content = json.loads(self._content)
 
-        def json_key(obj, key, default=''):
-            if obj:
-                return obj[key] if key in obj else default
-            else:
-                return default
-
-        self._year = int(json_key(content, 'year', 2000))
-        self._track = int(json_key(content, 'track', 1))
-        self._album = json_key(content, 'album', 'Unknown')
+        self._year = int(default_key(content, 'year', 2000))
+        self._track = int(default_key(content, 'track', 1))
+        self._album = default_key(content, 'album', 'Unknown')
         self._artwork = None
-        self._language = json_key(content, 'language', '')
-        self._lyrics = json_key(content, 'lyrics', '')
-        self._genre = json_key(content, 'genre', 'Unknown')
-        self._artist = json_key(content, 'artist', 'Unknown')
+        self._language = default_key(content, 'language', '')
+        self._lyrics = default_key(content, 'lyrics', '')
+        self._genre = default_key(content, 'genre', 'Unknown')
+        self._artist = default_key(content, 'artist', 'Unknown')
 
 
 class FileEntity(DNAEntity):
+    """Representation of file inside DNA file"""
 
-    pass
+    SEEK_SET = 0
+    SEEK_CUR = 1
+    SEEK_END = 2
+
+    def __init__(self, parent):
+        super(FileEntity, self).__init__(parent)
+
+        self._offset = 0
+
+    def read(self, size=0):
+        """Read contents of file, if buffer_size is 0 or None returns whole file
+
+        Args:
+            size (int): number of bytes to read
+        """
+
+        if size == 0 or size is None:
+            return self._content
+
+        self._offset += size
+        return self._content[self._offset - size:self._offset]
+
+    def write(self, data):
+        """Write data at cursor position"""
+
+        self._content = self._content[0:self._offset] + data + self._content[self._offset + len(data):]
+        self._offset += len(data)
+
+    def truncate(self, size=0):
+        """Truncates the file's size. If the optional size argument is present,
+        the file is truncated to that size.
+
+        Args:
+            size (int): size of resulting file
+        """
+
+        self._content = self._content[0:size]
+
+    def seek(self, offset, whence=SEEK_SET):
+        """Sets the file's current position
+
+        Args:
+            offset (int): new position
+            whence (int): how to calculate offset - from begging, current position or end of contents
+        """
+
+        if whence == self.SEEK_SET:
+            self._offset = offset
+        elif whence == self.SEEK_CUR:
+            self._offset += offset
+        elif whence == self.SEEK_END:
+            self._offset = len(self._content) - offset
+
+    def tell(self):
+        """Returns current stream position"""
+
+        return self._offset
 
 
 class CuelistEntity(DNAEntity):
@@ -491,15 +673,16 @@ class CuelistEntity(DNAEntity):
         super(CuelistEntity, self).__init__(parent)
 
     def __len__(self):
-        """Return count of cues"""
+        """Return number of cues"""
+
         return len(self.cues())
 
     def cues(self):
         """Returns list of all cues in Cuelist"""
 
-        return self._dna_parent._entities(filter_parent=self._id,
-                                          filter_type=DNA.TYPE_CUE,
-                                          factory=CueEntity)
+        return self._dna._entities(filter_parent=self._id,
+                                   filter_type=DNA.TYPE_CUE,
+                                   factory=CueEntity)
 
     def cue(self, cue_id):
         """Get cue by id
@@ -507,29 +690,32 @@ class CuelistEntity(DNAEntity):
         Args:
             cue_id (int): cue identifier
         """
-        return self._dna_parent._entity(cue_id, factory=CueEntity)
 
-    def append(self, name="Untitled Cue"):
+        return self._dna._entity(cue_id, factory=CueEntity)
+
+    def append(self, name="Untitled Cue", **kwargs):
         """Create a new cue and append to the end
 
         Args:
             name (str): name of cue
         """
-        cue = self._dna_parent._create(name=name,
-                                       parent=self._id,
-                                       entity_type=DNA.TYPE_CUE,
-                                       factory=CueEntity)
 
-        return cue
+        return super(CuelistEntity, self).append(name=name,
+                                                 entity_type=DNA.TYPE_CUE,
+                                                 factory=CueEntity)
 
-    def insert(self, index, name="Untitled Cue"):
+    def insert(self, index, name="Untitled Cue", **kwargs):
         """Create cue and insert at given index
 
         Args:
             name (str): name of cue
             index (int): position index
         """
-        pass
+
+        return super(CuelistEntity, self).insert(index,
+                                                 name=name,
+                                                 entity_type=DNA.TYPE_CUE,
+                                                 factory=CueEntity)
 
     def remove(self, cue_id):
         """Remove entity by id
@@ -537,7 +723,7 @@ class CuelistEntity(DNAEntity):
         Args:
             cue_id (int): DNA entity id
         """
-        self._dna_parent._remove(cue_id)
+        self._dna._remove(cue_id)
 
 
 class CueEntity(DNAEntity):
@@ -601,28 +787,26 @@ class CueEntity(DNAEntity):
         """
         super(CueEntity, self).__init__(parent)
 
-    def insert(self, index):
+    def insert(self, index, **kwargs):
         """Create and insert a sub cue
 
         Args:
+            **kwargs:
             index (int): position index
         """
-        pass
+        self.insert(index, **kwargs)
 
-    def append(self, name):
+    def append(self, name='', **kwargs):
         """Create and append sub cue
 
         Args:
             name (str): name of sub cue
         """
 
-        # Create a new cue and append to bottom
-        cue = self._dna_parent._create(name=name,
-                                       parent=self._id,
-                                       entity_type=DNA.TYPE_CUE,
-                                       factory=CueEntity)
-
-        return cue
+        return self.append(name=name,
+                           parent=self._id,
+                           entity_type=DNA.TYPE_CUE,
+                           factory=CueEntity)
 
     def _parse(self, row):
         """Parse sqlite row
@@ -639,15 +823,12 @@ class CueEntity(DNAEntity):
         self._post_wait = self.get("post-wait", 0)
         self._pre_wait = self.get("pre-wait", 0)
 
-#
-# Files
-#
-
 
 class DNA:
     """Base class for parsing grail file,
     use this class when you don't want to show public methods.
     Otherwise use DNAFile class.
+    Please don't use this class directly.
     """
 
     # property types
@@ -658,7 +839,7 @@ class DNA:
     ARG_JSON = 6
 
     # list all supported types
-    _SUPPORTED_TYPES = (ARG_BOOL, ARG_INT, ARG_FLOAT, ARG_STRING, ARG_JSON)
+    _SUPPORTED_ARGS = (ARG_BOOL, ARG_INT, ARG_FLOAT, ARG_STRING, ARG_JSON)
 
     # types of entities
     TYPE_ABSTRACT = 0
@@ -688,16 +869,12 @@ class DNA:
         TYPE_SONG
         )
 
+    # types and their default factories
     TYPES_FACTORIES = {
         TYPE_ABSTRACT: DNAEntity,
-        # TYPE_BIBLE: DNAEntity,
-        # TYPE_VERSE: DNAEntity,
-        # TYPE_BOOK: DNAEntity,
-        # TYPE_PROJECT: DNAEntity,
         TYPE_SETTINGS: SettingsEntity,
         TYPE_CUELIST: CuelistEntity,
         TYPE_CUE: CueEntity,
-        # TYPE_LIBRARY: DNAEntity,
         TYPE_FILE: FileEntity,
         TYPE_SONG: SongEntity
         }
@@ -722,7 +899,7 @@ class DNA:
     entity_removed = DNASignal(int)
 
     def __init__(self, file_path, create=False):
-        """Open a *.grail file
+        """Open a *.grail file for read and write
 
         Args:
             file_path (str): path to file
@@ -748,7 +925,7 @@ class DNA:
 
     @property
     def filename(self):
-        """Returns path to file"""
+        """Returns file name"""
 
         return os.path.splitext(os.path.basename(self._location))[0]
 
@@ -758,32 +935,47 @@ class DNA:
 
         return self._changed
 
-    def _create(self, name="", parent=0, entity_type=TYPE_ABSTRACT, index=0, factory=None):
+    def _create(self, name="", parent=0, entity_type=None, index=0, properties=None, factory=None):
         """Returns new DNAEntity inside this DNA file"""
 
         self._changed = True
 
         entity = DNAEntity(self)
         entity.parent_id = parent
-        entity.type = entity_type
+        entity.type = entity_type if entity_type else DNA.TYPE_ABSTRACT
         entity.index = index
         entity.name = name
 
         cursor = self._db.cursor
         cursor.execute("""INSERT INTO entities
-                            (id, parent, type, name, created, modified, content, search, sort_order)
-                            VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                          (id, parent, type, name, created, modified, content, search, sort_order)
+                          VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""",
                        (entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
                         json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index))
         self._db.connection.commit()
 
+        entity_id = cursor.lastrowid
+
+        if properties and len(properties) > 0:
+            for (key, value) in properties:
+                self._set(entity_id, key, value)
+
         # emit entity changed
         self.entity_changed.emit(cursor.lastrowid)
 
-        return self._entity(cursor.lastrowid, factory)
+        return self._entity(entity_id, factory)
 
     def _copy(self, entity, name=False, parent=False, entity_type=False, index=False, factory=None):
-        """Create entity from existing one"""
+        """Create copy of given entity and override properties if needed
+
+        Args:
+            entity (DNAEntity): entity to be copied
+            name (str): override name of entity
+            parent (int): override entity parent
+            entity_type (int): override entity type
+            index (int): override entity index
+            factory: create entity using this factory
+        """
 
         if name:
             entity.name = name
@@ -808,6 +1000,7 @@ class DNA:
 
         entity_id = cursor.lastrowid
 
+        # copy properties
         for key, value in entity.properties().items():
             self._set(entity_id, key, value)
 
@@ -825,49 +1018,12 @@ class DNA:
         """
         raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
                             FROM entities WHERE id = ?""", (entity_id,))
-        entities = self.__factory(factory, raw_entities)
+        entities = self._factory(factory, raw_entities)
 
         return entities[0] if len(entities) > 0 else None
 
-    def _update(self, entity):
-        """update entity
-
-        Args:
-            entity (DNAEntity): entity object
-        """
-
-        self._changed = True
-
-        cursor = self._db.cursor
-        cursor.execute("""UPDATE entities SET
-                        id = ?, parent = ?, type = ?, name = ?, created = ?, modified = ?, content = ?, search = ?,
-                        sort_order = ?
-                        WHERE id = ?""",
-                       (entity.id, entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
-                        json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index, entity.id))
-
-        self.entity_changed.emit(entity.id)
-
-    def _remove(self, entity_id):
-        """Remove entity by id
-
-        Args:
-            entity_id (int): id of an entity
-        """
-        self._changed = True
-
-        self._db.execute("DELETE FROM entities WHERE id = ?", (entity_id,))
-        self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
-        self._db.connection.commit()
-
-        # emit entity changed signal
-        self.entity_removed.emit(entity_id)
-
-        for child in self._childs(entity_id):
-            self._remove(child.id)
-
     def _entities(self, filter_type=False, filter_parent=False, filter_keyword=False,
-                  sort=False, reverse=False, offset=0, limit=0, factory=None):
+                  sort=None, reverse=False, offset=0, limit=0, factory=None):
         """Get list of all entities
 
         Args:
@@ -881,7 +1037,7 @@ class DNA:
             factory (object): factory object
 
         Returns:
-            list of all entities available
+            list of all entities available regarding filter arguments
         """
 
         where = []
@@ -902,16 +1058,14 @@ class DNA:
             where.append(" type = ?")
             args.append(filter_type)
 
-        # TODO: implement item sorting
-
         sql = """
-                SELECT id, parent, type, name, created, modified, content, search, sort_order
-                FROM entities
-                %s
-                ORDER BY %s %s
-                """ % ('WHERE' + ' AND '.join(where) if len(where) > 0 else '',
-                       sort if isinstance(sort, str) else "sort_order",
-                       "DESC" if reverse else "ASC")
+            SELECT id, parent, type, name, created, modified, content, search, sort_order
+            FROM entities
+            %s
+            ORDER BY %s %s
+            """ % ('WHERE' + ' AND '.join(where) if len(where) > 0 else '',
+                   sort if isinstance(sort, str) else "sort_order",
+                   "DESC" if reverse else "ASC")
 
         if limit > 0:
             sql += " LIMIT ? "
@@ -923,7 +1077,103 @@ class DNA:
 
         raw_entities = self._db.all(sql, args)
 
-        return self.__factory(factory, raw_entities)
+        return self._factory(factory, raw_entities)
+
+    def _update(self, entity):
+        """update entity
+
+        Args:
+            entity (DNAEntity): entity object
+        """
+
+        self._changed = True
+
+        cursor = self._db.cursor
+        cursor.execute("""UPDATE entities SET
+                        id = ?, parent = ?, type = ?, name = ?, created = ?, modified = ?, content = ?, search = ?,
+                        sort_order = ?
+                        WHERE id = ?""",
+                       (entity.id, entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
+                        json.dumps(entity.content, separators=(',', ':')), entity.search, entity.index, entity.id))
+
+        self.entity_changed.emit(entity.id)
+
+    def _update_field(self, entity, field):
+        """Update entity field
+
+        Args:
+            entity (DNAEntity): entity to be changed
+            field (str): database field to be updated
+        """
+
+        self._changed = True
+
+        if field not in ('parent', 'type', 'name', 'created', 'modified', 'content', 'search', 'sort_order'):
+            raise ValueError('Given field "%s" not supported' % str(field))
+
+        if field in ('type', 'name', 'created', 'modified', 'search'):
+            value = getattr(entity, field)
+        elif field == 'parent':
+            value = entity.parent_id
+        elif field == 'content':
+            value = json.dumps(entity.content, separators=(',', ':'))
+        elif field == 'sort_order':
+            value = entity.index
+        else:
+            value = ''
+
+        cursor = self._db.cursor
+        cursor.execute("""UPDATE entities SET %s = ? WHERE id = ?""" % field, (value, entity.id))
+
+        self.entity_changed.emit(entity.id)
+
+    def _remove(self, entity_id, parent=None):
+        """Remove entity by id
+
+        Args:
+            entity_id (int): id of an entity
+            parent (int): parent entity id
+        """
+        if parent:
+            entity = self._db.get("SELECT id, parent FROM entities WHERE id = ? AND parent = ?", (entity_id, parent))
+
+            # return False since there is no entity to remove
+            if not entity:
+                return False
+
+        self._changed = True
+
+        self._db.execute("DELETE FROM entities WHERE id = ?", (entity_id,))
+        self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
+        self._db.connection.commit()
+
+        # emit entity changed signal
+        self.entity_removed.emit(entity_id)
+
+        for child in self._childs(entity_id):
+            self._remove(child.id)
+
+        return True
+
+    def _remove_childs(self, entity_id):
+        """Remove child entities
+
+        Args:
+            entity_id (int): id of DNAEntity
+        """
+
+        for child in self._childs(entity_id):
+            self._remove(child.id)
+
+    def _sort(self, entity_id, key=None, reverse=False):
+        """Sort child entities"""
+
+        entities = self._entities(filter_parent=entity_id, sort=key, reverse=reverse)
+
+        for index, entity in enumerate(entities):
+            self._db.execute("""UPDATE entities SET sort_order = ? WHERE id = ?""", (index, entity.id))
+
+        self._db.commit()
 
     def _has_childs(self, entity_id):
         """Check entity child nodes
@@ -952,7 +1202,7 @@ class DNA:
                                 WHERE parent = ?
                                 ORDER BY sort_order ASC""", (entity_id,))
 
-        return self.__factory(factory, raw_entities)
+        return self._factory(factory, raw_entities)
 
     def _get(self, entity_id, key, default=None):
         """Get property of entity with id `entity_id` and property name `key`
@@ -968,7 +1218,7 @@ class DNA:
 
         value = self._db.get("SELECT value, type FROM `properties` WHERE `entity` = ? AND `key` = ?", (entity_id, key))
 
-        return self.__read_type(value[0], value[1]) if value else default
+        return self._read_type(value[0], value[1]) if value else default
 
     def _set(self, entity_id, key, value, force_type=None):
         """Set a property value of an entity
@@ -984,11 +1234,11 @@ class DNA:
         self._changed = True
 
         if force_type is None:
-            force_type = self.__get_type(value)
-        elif force_type not in self._SUPPORTED_TYPES:
+            force_type = self._get_type(value)
+        elif force_type not in self._SUPPORTED_ARGS:
             raise DNAError("Property type not supported")
 
-        value = self.__write_type(value, force_type)
+        value = self._write_type(value, force_type)
 
         self._db.execute("INSERT OR IGNORE INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
                          (entity_id, key, value, force_type))
@@ -1025,14 +1275,9 @@ class DNA:
             properties list of an entity
         """
 
-        # TODO: use factory to speed up this query
-        raw_props = self._db.all("SELECT key, value, type FROM `properties` WHERE `entity` = ?", (entity_id,))
-        props = {}
+        props = self._db.all("SELECT key, value, type FROM `properties` WHERE `entity` = ?", (entity_id,))
 
-        for prop in raw_props:
-            props[prop[0]] = self.__read_type(prop[1], prop[2])
-
-        return props
+        return {prop[0]: self._read_type(prop[1], prop[2]) for prop in props}
 
     def _unset(self, entity_id, key):
         """Remove property of an entity
@@ -1072,74 +1317,7 @@ class DNA:
         # emit property changed signal
         self.property_changed.emit(entity_id, new_key, self._get(entity_id, new_key))
 
-    def __get_type(self, value):
-        """Get type of value
-
-        Args:
-            value: any object
-        Returns:
-            argument type
-        """
-
-        builtin_type = type(value)
-        arg_type = None
-
-        if builtin_type == str:
-            arg_type = self.ARG_STRING
-        elif builtin_type == int:
-            arg_type = self.ARG_INT
-        elif builtin_type == float:
-            arg_type = self.ARG_FLOAT
-        elif builtin_type == bool:
-            arg_type = self.ARG_BOOL
-        elif builtin_type == dict or builtin_type == list:
-            arg_type = self.ARG_JSON
-
-        return arg_type
-
-    def __write_type(self, arg_value, arg_type):
-        """Create a string representation of value given
-
-        Args:
-            arg_value: any object
-            arg_type: type of object to convert to
-
-        Returns:
-            string representation of value
-        """
-
-        value = ""
-
-        if arg_type is self.ARG_JSON:
-            value = json.dumps(arg_value)
-        elif arg_type in self._SUPPORTED_TYPES and arg_type is not self.ARG_JSON:
-            value = str(arg_value)
-
-        return value
-
-    def __read_type(self, arg_value, arg_type):
-        """Parse string from db into correct object
-
-        Args:
-            arg_value: raw value
-            arg_type: value type
-
-        Returns:
-            object from raw value
-        """
-
-        if arg_type is self.ARG_JSON:
-            arg_value = json.loads(arg_value)
-        elif arg_type is self.ARG_INT:
-            arg_value = int(arg_value)
-        elif arg_type is self.ARG_FLOAT:
-            arg_value = float(arg_value)
-        elif arg_type is self.ARG_BOOL:
-            arg_value = bool(arg_value)
-
-        return arg_value
-
-    def __factory(self, factory, raw_entities):
+    def _factory(self, factory, raw_entities):
         """Return list of entities created by factory from raw_entities
 
         Args:
@@ -1149,18 +1327,14 @@ class DNA:
 
         entities = []
 
-        # TODO: optimise it by using real sqlite factory
-        if factory:
-            for raw in raw_entities:
-                entities.append(factory.from_sqlite(self, raw))
-        else:
-            for raw in raw_entities:
-                factory_entity = self.__get_factory(raw['type'])
-                entities.append(factory_entity.from_sqlite(self, raw))
+        for raw in raw_entities:
+            factory_entity = factory if factory else self._get_factory(raw['type'])
+            entities.append(factory_entity.from_sqlite(self, raw))
 
         return entities
 
-    def __get_factory(self, entity_type):
+    @classmethod
+    def _get_factory(cls, entity_type):
         """Map types to entities
 
         Args:
@@ -1169,9 +1343,10 @@ class DNA:
             DNAEntity or DNAEntity subclass corresponding to type as defined in DNA.TYPES_FACTORIES
         """
 
-        return DNA.TYPES_FACTORIES[entity_type] if entity_type in DNA.TYPES_FACTORIES else DNAEntity
+        return cls.TYPES_FACTORIES[entity_type] if entity_type in cls.TYPES_FACTORIES else DNAEntity
 
-    def validate(self, file_path):
+    @classmethod
+    def validate(cls, file_path):
         """Validate file to be proper grail file
 
         Args:
@@ -1181,7 +1356,7 @@ class DNA:
             return False
 
         # if file doesn't have proper extension
-        if os.path.splitext(file_path)[1] != self._file_extension:
+        if os.path.splitext(file_path)[1] != cls._file_extension:
             return False
 
         try:
@@ -1214,9 +1389,79 @@ class DNA:
         self._db.close()
         self._changed = False
 
+    @classmethod
+    def _get_type(cls, value):
+        """Get type of value
+
+        Args:
+            value: any object
+        Returns:
+            argument type
+        """
+
+        builtin_type = type(value)
+        arg_type = None
+
+        if builtin_type == str:
+            arg_type = cls.ARG_STRING
+        elif builtin_type == int:
+            arg_type = cls.ARG_INT
+        elif builtin_type == float:
+            arg_type = cls.ARG_FLOAT
+        elif builtin_type == bool:
+            arg_type = cls.ARG_BOOL
+        elif builtin_type == dict or builtin_type == list:
+            arg_type = cls.ARG_JSON
+
+        return arg_type
+
+    @classmethod
+    def _write_type(cls, arg_value, arg_type):
+        """Create a string representation of value given
+
+        Args:
+            arg_value: any object
+            arg_type: type of object to convert to
+
+        Returns:
+            string representation of value that will be written to database
+        """
+
+        value = ""
+
+        if arg_type is cls.ARG_JSON:
+            value = json.dumps(arg_value)
+        elif arg_type in cls._SUPPORTED_ARGS and arg_type is not cls.ARG_JSON:
+            value = str(arg_value)
+
+        return value
+
+    @classmethod
+    def _read_type(cls, arg_value, arg_type):
+        """Parse string from db into correct object
+
+        Args:
+            arg_value: raw value
+            arg_type: value type
+
+        Returns:
+            object from raw value
+        """
+
+        if arg_type is cls.ARG_JSON:
+            arg_value = json.loads(arg_value)
+        elif arg_type is cls.ARG_INT:
+            arg_value = int(arg_value)
+        elif arg_type is cls.ARG_FLOAT:
+            arg_value = float(arg_value)
+        elif arg_type is cls.ARG_BOOL:
+            arg_value = bool(arg_value)
+
+        return arg_value
+
 
 class DNAFile(DNA):
-    """Grail file parser"""
+    """Interface to Grail-file"""
 
     def __init__(self, file_path, create=False):
         """Open a grail file
@@ -1276,7 +1521,8 @@ class SettingsFile(DNA):
         Args:
             key (str): property key
             default (object): Object that will be returned if property doesn't exists
-        Returns: property value or default if isn't exists
+        Returns:
+            property value or default if isn't exists
         """
 
         return self._get(0, key, default)
@@ -1288,7 +1534,8 @@ class SettingsFile(DNA):
             key (str): property key
             value (object): property value object
             force_type: If set to not None, value with this type will be saved
-        Returns: True if operation is succeeded
+        Returns:
+            True if operation is succeeded
         """
 
         result = self._set(0, key, value, force_type)
@@ -1309,32 +1556,42 @@ class SettingsFile(DNA):
 
         Args:
             key (str): property key
-        Returns: True if operation is succeeded
+        Returns:
+            True if operation is succeeded
         """
 
         self._unset(0, key)
         self._db.commit()
 
+        return True
+
     def unset_all(self):
         """Remove all properties
 
-        Returns: True if operation succeeded"""
+        Returns:
+            True if operation succeeded
+        """
 
         self._unset_all(0)
         self._db.commit()
 
+        return True
+
     def rename(self, old_key, new_key):
         """Rename property key
 
-        Returns: True if operation is succeeded
+        Args:
+            old_key (str): current property key
+            new_key (str): new property key
+
+        Returns:
+            True if operation is succeeded
         """
 
         self._rename(0, old_key, new_key)
         self._db.commit()
 
-#
-# Project
-#
+        return True
 
 
 class ProjectError(DNAError):
@@ -1465,8 +1722,7 @@ class Project(DNAFile):
 
     def _create_project(self):
         # settings
-        settings = self._create(entity_type=DNA.TYPE_SETTINGS)
-        settings.name = "settings"
+        settings = self._create(name="settings", entity_type=DNA.TYPE_SETTINGS)
 
         settings.set('display.background', '#000000')
         settings.set('display.text.align', 1)
@@ -1504,21 +1760,20 @@ class Project(DNAFile):
         settings.set('display.display', 'DISPLAY//2')
         settings.set('display.testcard', False)
         settings.set('display.fullscreen', True)
-        settings.update()
 
         # project
-        project = self._create(entity_type=DNA.TYPE_PROJECT)
-        project.name = "Grail Project"
-        project.set('author', 'Alex Litvin')
-        project.set('description', 'Simple Grail project for testing purposes')
-        project.update()
+        self._create(name="Grail Project",
+                     entity_type=DNA.TYPE_PROJECT,
+                     properties=(
+                        ('author', 'Alex Litvin'),
+                        ('description', 'Simple Grail project for testing purposes')
+                        ))
 
         # cuelist
         for cuelist_index in range(5):
-            cuelist = self.append("%d'st Cuelist" % (cuelist_index,))
+            cuelist = self.append(name="%d'st Cuelist" % (cuelist_index,))
             cuelist.set('color', '#FF0000')
             cuelist.set('description', 'Simple cuelist')
-            cuelist.update()
 
             for cue_index in range(5):
                 cue = self._create(parent=cuelist.id, entity_type=DNA.TYPE_CUE)
@@ -1527,11 +1782,6 @@ class Project(DNAFile):
                 cue.set('continue', 0)
                 cue.set('wait_pre', 100)
                 cue.set('wait_post', 30)
-                cue.update()
-
-#
-# Library
-#
 
 
 class LibraryError(DNAError):
@@ -1554,12 +1804,14 @@ class Library(DNA):
         """
         super(Library, self).__init__(file_path, create=create)
 
+        self._root = None
+
         if not self.root() and create:
             self._create("Grail Library",
                          parent=0,
                          entity_type=DNA.TYPE_LIBRARY)
 
-        if not self.root():
+        if self.root() is None:
             raise LibraryError("Library entity not found in file %s" % (file_path,))
 
     def create(self, name, entity_type=DNA.TYPE_ABSTRACT, factory=None):
@@ -1581,9 +1833,14 @@ class Library(DNA):
         Returns: root item of library
         """
 
-        root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
+        if self._root:
+            return self._root
 
-        return root[0] if len(root) > 0 else None
+        root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
+        root = root[0] if len(root) > 0 else None
+        self._root = root
+
+        return root
 
     def remove(self, entity_id):
         """Remove entity from library

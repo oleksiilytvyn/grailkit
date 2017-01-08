@@ -10,7 +10,7 @@ from PyQt5.QtCore import QPoint, QSize
 from PyQt5.QtGui import QIcon, QPixmap, QPainter
 from PyQt5.QtWidgets import QPushButton, QLabel, QVBoxLayout, QStyleOption, QStyle
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GWelcomeAction(QPushButton, GWidget):

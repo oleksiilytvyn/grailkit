@@ -10,7 +10,6 @@ import sys
 import time
 import shutil
 import platform
-import gettext
 
 # Platform constants
 OS_ANY = True
@@ -24,8 +23,7 @@ def path_app():
     """Get the path to main script file no matter how it's run.
 
     Returns:
-        path to python script
-        :rtype: string
+        path to current python script
     """
 
     apppath = sys.path[0]
@@ -41,13 +39,13 @@ def path_app():
 
 
 def path_appdata(app_name):
-    """Returns appdata path for any platform
+    """Returns path to application data folder
 
     Args:
         app_name: name of application
 
     Returns:
-        path
+        path to folder
     """
 
     if sys.platform == 'win32':
@@ -89,8 +87,16 @@ def millis_now():
     return int(round(time.time() * 1000))
 
 
-def __(message):
-    """Translate string using gettext"""
+def default_key(obj, key, default=None):
+    """Get value by key in object if exists otherwise return `default` value
 
-    # TODO: implement this function
-    return gettext.gettext(message)
+    Args:
+        obj (dict): dictionary
+        key (str): key of property
+        default (object): Object that returned if key not found
+    """
+
+    if obj:
+        return obj[key] if key in obj else default
+    else:
+        return default

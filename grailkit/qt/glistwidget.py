@@ -9,7 +9,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QScrollBar, QListWidget, QListWidgetItem, QHBoxLayout, QAbstractItemView
 
-from grailkit.ui import GWidget
+from grailkit.qt import GWidget
 
 
 class GListWidget(QListWidget, GWidget):
@@ -77,7 +77,7 @@ class GListItem(QListWidgetItem):
 if __name__ == '__main__':
 
     import sys
-    from grailkit.ui import GApplication, GDialog
+    from grailkit.qt import GApplication, GDialog
 
     app = GApplication(sys.argv)
     win = GDialog()
