@@ -5,6 +5,7 @@ pipelines:
   default:
     - step:
         script:
+            # install dependencies
           - pip install pyserial
           - pip install python-rtmidi
             # run tests
