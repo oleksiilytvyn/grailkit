@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gspacer
+    grailkit.qt.gspacer
     ~~~~~~~~~~~~~~~~~~~
 
     Transparent widget that only task to stretch components and fill space
@@ -12,8 +12,9 @@ from grailkit.qt import GWidget
 
 
 class GSpacer(GWidget):
+    """Widget that simply allocate space and spread widgets"""
 
-    def __init__(self, policy_horizontal=QSizePolicy.Expanding, policy_vetrical=QSizePolicy.Expanding, parent=None):
+    def __init__(self, policy_horizontal=QSizePolicy.Expanding, policy_vertical=QSizePolicy.Expanding, parent=None):
         super(GSpacer, self).__init__(parent)
 
-        self.setSizePolicy(policy_horizontal, policy_vetrical)
+        self.setSizePolicy(policy_horizontal, policy_vertical)

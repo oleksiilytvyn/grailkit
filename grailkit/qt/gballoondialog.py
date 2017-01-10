@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gballoondialog
+    grailkit.qt.gballoondialog
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Floating dialog with pointer and without title bar
@@ -111,19 +111,3 @@ class GBalloonDialog(GDialog):
         """
 
         self._background_color = color
-
-
-# test a dialog
-if __name__ == '__main__':
-
-    import sys
-    from grailkit.qt import GApplication
-
-    app = GApplication(sys.argv)
-
-    win = GBalloonDialog()
-    win.closeOnFocusLost(False)
-    win.setBackgroundColor(QColor(72, 74, 81))
-    win.show()
-
-    sys.exit(app.exec_())

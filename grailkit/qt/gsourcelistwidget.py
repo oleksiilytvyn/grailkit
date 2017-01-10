@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gsourcelistwidget
+    grailkit.qt.gsourcelistwidget
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Simple tree widget with only one level.

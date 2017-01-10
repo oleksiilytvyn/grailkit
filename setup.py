@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-# Grail SDK
-# Copyright (C) 2014-2016 Oleksii Lytvyn
+# Grail Development Kit
+# Copyright (C) 2014-2017 Oleksii Lytvyn
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,5 +55,5 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Environment :: X11 Applications :: Qt'
     ],
-    install_requires=['PyQt5', 'pyserial']
+    install_requires=['PyQt5', 'pyserial', 'python-rtmidi']
 )

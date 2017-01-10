@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gcolorindicator
+    grailkit.qt.gcolorindicator
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Widget that simply shows color

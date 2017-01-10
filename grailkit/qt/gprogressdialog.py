@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gprogressdialog
+    grailkit.qt.gprogressdialog
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Dialog for displaying any progress

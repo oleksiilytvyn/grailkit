@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gcolordialog
+    grailkit.qt.gcolordialog
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Color picker dialog

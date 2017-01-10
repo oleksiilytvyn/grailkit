@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gcolorballoon
+    grailkit.qt.gcolorballoon
     ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Color picker balloon dialog

@@ -1,12 +1,10 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gaboutdialog
+    grailkit.qt.gaboutdialog
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Generic about dialog window
 """
-import sys
-
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -104,29 +102,9 @@ class GAboutDialog(GDialog):
     def help(self):
         """Open a web page"""
 
-        url = QUrl(self.url_help)
-        QDesktopServices.openUrl(url)
+        QDesktopServices.openUrl(QUrl(self.url_help))
 
     def report(self):
         """Open a web page"""
 
-        url = QUrl(self.url_report)
-        QDesktopServices.openUrl(url)
-
-
-# test a dialog
-if __name__ == '__main__':
-
-    from grailkit.qt import GApplication
-    from grailkit import __version__ as version
-
-    app = GApplication(sys.argv)
-
-    win = GAboutDialog()
-    win.url_help = "http://grailapp.com/help"
-    win.url_report = "http://grailapp.com/report"
-    win.setTitle("GrailKit")
-    win.setDescription("Version %s, 2015-2016 Olexii Lytvyn" % (version, ))
-    win.show()
-
-    sys.exit(app.exec_())
+        QDesktopServices.openUrl(QUrl(self.url_report))

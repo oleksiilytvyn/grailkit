@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gmessagedialog
+    grailkit.qt.gmessagedialog
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Replacement for default OS message dialog

@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gcolorwidget
+    grailkit.qt.gcolorwidget
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Simple color picker widget

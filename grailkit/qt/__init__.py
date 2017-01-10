@@ -1,7 +1,13 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.qt
+    ~~~~~~~~~~~
+
+    Qt widgets
+"""
 
 # core
-from grailkit.qt.gapplication import GApplication
+from grailkit.qt.gapplication import GApplication, AppInstance
 
 # widgets
 from grailkit.qt.gwidget import GWidget

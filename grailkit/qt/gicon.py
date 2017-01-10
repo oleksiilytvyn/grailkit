@@ -1,13 +1,12 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gicon
+    grailkit.qt.gicon
     ~~~~~~~~~~~~~~~~~
 
     QIcon with color changing capabilities
 """
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QColor
 
 
 class GIcon(QIcon):
@@ -45,40 +44,3 @@ class GIcon(QIcon):
         """
 
         self.addPixmap(self.pixmap_color(width, height, color), mode, state)
-
-
-if __name__ == "__main__":
-
-    import sys
-    from grailkit.qt import GApplication, GDialog
-
-    app = GApplication(sys.argv)
-
-    win = GDialog()
-    icon_svg = GIcon(":/gk/icon/close.svg")
-    icon = QIcon()
-    icon.addPixmap(icon_svg.pixmap_color(128, 128, QColor("#f00")), QIcon.Active, QIcon.On)
-    icon.addPixmap(icon_svg.pixmap_color(128, 128, QColor("#0f0")), QIcon.Active, QIcon.Off)
-    icon.addPixmap(icon_svg.pixmap_color(128, 128, QColor("#0ff")), QIcon.Normal, QIcon.On)
-    icon.addPixmap(icon_svg.pixmap_color(128, 128, QColor("#f0f")), QIcon.Normal, QIcon.Off)
-    icon.addPixmap(icon_svg.pixmap_color(128, 128, QColor("#00f")), QIcon.Selected, QIcon.On)
-    icon.addPixmap(icon_svg.pixmap_color(128, 128, QColor("#ff0")), QIcon.Selected, QIcon.Off)
-
-    pixmap = icon_svg.pixmap_color(128, 128, QColor("#ff0000"))
-
-    label = QLabel()
-    label.setPixmap(pixmap)
-
-    btn = QPushButton("Button")
-    btn.setCheckable(True)
-    btn.setIcon(icon)
-
-    layout = QVBoxLayout()
-    layout.addWidget(label)
-    layout.addWidget(btn)
-
-    win.setLayout(layout)
-    win.setWindowIcon(icon)
-    win.show()
-
-    sys.exit(app.exec_())

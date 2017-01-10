@@ -1,12 +1,10 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gframeless
+    grailkit.qt.gframeless
     ~~~~~~~~~~~~~~~~~~~~~~
 
     Frameless dialog implementation
 """
-import sys
-
 from PyQt5.QtCore import Qt
 
 from grailkit.qt import GDialog
@@ -27,16 +25,3 @@ class GFrameless(GDialog):
                             Qt.FramelessWindowHint |
                             Qt.WindowSystemMenuHint |
                             Qt.WindowStaysOnTopHint)
-
-# test a dialog
-if __name__ == '__main__':
-
-    from grailkit.qt import GApplication
-
-    app = GApplication(sys.argv)
-
-    win = GFrameless()
-    win.setGeometry(100, 100, 200, 200)
-    win.show()
-
-    sys.exit(app.exec_())
