@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.glistwidget
+    grailkit.qt.glistwidget
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     Simple list widget
@@ -67,30 +67,15 @@ class GListItem(QListWidgetItem):
         self._data = None
 
     def setObject(self, data):
+        """Set associated data object
+
+        Args:
+            data: any object
+        """
+
         self._data = data
 
     def object(self):
+        """Returns associated data object"""
+
         return self._data
-
-
-# test a widget
-if __name__ == '__main__':
-
-    import sys
-    from grailkit.qt import GApplication, GDialog
-
-    app = GApplication(sys.argv)
-    win = GDialog()
-    items = GListWidget()
-
-    for index in range(10):
-        items.addItem(GListItem("Item # %d" % (index,)))
-
-    layout = QHBoxLayout()
-    layout.setContentsMargins(0, 0, 0, 0)
-    layout.addWidget(items)
-
-    win.setLayout(layout)
-    win.show()
-
-    sys.exit(app.exec_())

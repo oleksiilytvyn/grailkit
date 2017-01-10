@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gtransformwidget
+    grailkit.qt.gtransformwidget
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     A simple transformation widget
@@ -16,6 +16,7 @@ from grailkit.qt import GWidget
 
 
 class GTransformWidget(GWidget):
+    """Transformation widget"""
 
     updated = pyqtSignal(object)
 

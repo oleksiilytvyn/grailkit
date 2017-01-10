@@ -1,32 +1,40 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gwelcomewidget
+    grailkit.qt.gwelcomewidget
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Implements widget for welcome screen with title, description and list of actions
     for user to choose from.
 """
 
-from PyQt5.QtCore import Qt, QCoreApplication
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QSizePolicy
 
 from grailkit.qt import GWidget, GWelcomeAction
+from grailkit.qt.gapplication import AppInstance
 
 
 class GWelcomeWidget(GWidget):
-    """"""
+    """Widget with title, icon and actions below"""
 
-    def __init__(self, parent=None):
+    def __init__(self, title="", description="", icon=None, parent=None):
         super(GWelcomeWidget, self).__init__(parent)
 
-        app = QCoreApplication.instance()
-        self.setStyleSheet(app._get_stylesheet())
+        # fix stylesheet issues
+        self.setStyleSheet(AppInstance()._get_stylesheet())
 
         self._icon = None
-
         self.__ui__()
-        self.setIconVisible(False)
+
+        if icon:
+            self.setIcon(icon)
+            self.setIconVisible(True)
+        else:
+            self.setIconVisible(False)
+
+        self.setTitle(title)
+        self.setDescription(description)
 
     def __ui__(self):
         """Create ui"""
@@ -66,19 +74,38 @@ class GWelcomeWidget(GWidget):
         self.setLayout(self._ui_layout)
 
     def addWidget(self, widget):
-        """Add action to list"""
+        """Add action to list
+
+        Args:
+            widget (GWelcomeAction): action to be added
+        """
 
         self._ui_actions_layout.addWidget(widget)
 
     def setTitle(self, title):
+        """Set widget title
+
+        Args:
+            title (str): title text
+        """
 
         self._ui_title.setText(title)
 
     def setDescription(self, text):
+        """Set widget description
+
+        Args:
+            text (str): description text
+        """
 
         self._ui_description.setText(text)
 
     def setIcon(self, icon):
+        """Set icon of widget
+
+        Args:
+            icon (QIcon, QPixmap): icon of widget
+        """
 
         size = 128
 
@@ -91,6 +118,11 @@ class GWelcomeWidget(GWidget):
         self._ui_icon.setPixmap(self._icon)
 
     def setIconVisible(self, flag):
+        """Make icon visible or not
+
+        Args:
+            flag (bool): True if it visible
+        """
 
         if flag:
             self._ui_icon.show()
@@ -112,41 +144,3 @@ class GWelcomeWidget(GWidget):
             padding = width * 0.2
 
         self._ui_actions.setContentsMargins(padding, 0, padding, 0)
-
-
-# test a widget
-if __name__ == '__main__':
-
-    import sys
-    from PyQt5.QtWidgets import QHBoxLayout, QApplication, QStyle
-    import grailkit
-    from grailkit.qt import GApplication, GDialog
-
-    app = GApplication(sys.argv)
-    win = GDialog()
-    win.setGeometry(100, 100, 400, 600)
-
-    style = QApplication.style()
-
-    widget = GWelcomeWidget()
-    widget.setIcon(style.standardIcon(QStyle.SP_FileIcon))
-    widget.setIconVisible(True)
-    widget.setTitle("Welcome to GrailKit %s" % grailkit.__version__)
-    widget.setDescription("Choose some action below")
-
-    widget.addWidget(
-        GWelcomeAction("Create", "Write a new document", style.standardIcon(QStyle.SP_FileIcon)))
-    widget.addWidget(
-        GWelcomeAction("Open", "Edit existing one", style.standardIcon(QStyle.SP_DirIcon)))
-    widget.addWidget(
-        GWelcomeAction("Save", "Save current file", style.standardIcon(QStyle.SP_DialogSaveButton)))
-
-    layout = QHBoxLayout()
-    layout.setContentsMargins(0, 0, 0, 0)
-    layout.addWidget(widget)
-
-    win.setLayout(layout)
-    win.setStyleSheet("background: #2f2f2f;")
-    win.show()
-
-    sys.exit(app.exec_())

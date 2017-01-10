@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gwelcomeaction
+    grailkit.qt.gwelcomeaction
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Action button widget for GWelcomeWidget
@@ -14,6 +14,7 @@ from grailkit.qt import GWidget
 
 
 class GWelcomeAction(QPushButton, GWidget):
+    """Action for GWelcomeWidget"""
 
     def __init__(self, title="Action", text="Take some action", icon=None, parent=None):
         super(GWelcomeAction, self).__init__(parent)

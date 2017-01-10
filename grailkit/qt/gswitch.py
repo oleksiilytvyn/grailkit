@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gswitch
+    grailkit.qt.gswitch
     ~~~~~~~~~~~~~~~~~~~
 
     Simple two state switch widget

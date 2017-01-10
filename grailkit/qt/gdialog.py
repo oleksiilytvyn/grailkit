@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gdialog
+    grailkit.qt.gdialog
     ~~~~~~~~~~~~~~~~~~~
 
     Base class for all Grail Kit UI dialogs
@@ -19,8 +19,7 @@ class GDialog(QDialog, GWidget):
     def moveToCenter(self):
         """Move window to the center of current screen"""
 
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
+        geometry = self.frameGeometry()
+        geometry.moveCenter(QDesktopWidget().availableGeometry().center())
 
-        self.move(qr.topLeft())
+        self.move(geometry.topLeft())

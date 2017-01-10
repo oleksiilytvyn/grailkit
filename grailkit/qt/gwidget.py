@@ -1,12 +1,11 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gwidget
+    grailkit.qt.gwidget
     ~~~~~~~~~~~~~~~~~~~
 
-    Base widget for all Grail Kit UI components
+    Base widget for all Grail Kit Qt components
 """
-from PyQt5.QtGui import QPainter
-from PyQt5.QtWidgets import QWidget, QStyleOption, QStyle
+from PyQt5.QtWidgets import QWidget
 
 
 class GWidget(QWidget):

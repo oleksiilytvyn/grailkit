@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gapplication
+    grailkit.qt.gapplication
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Extended QApplication class
@@ -49,10 +49,9 @@ class GApplication(QApplication):
             self.quit()
 
     def _get_stylesheet(self):
-        """
-        Get the application stylesheet
+        """Get the application stylesheet
 
-        Returns: string
+        Returns: stylesheet string
         """
 
         self._stylesheet = self._read_stylesheet(":/gk/ui.qss")
@@ -61,7 +60,11 @@ class GApplication(QApplication):
         return self._stylesheet
 
     def _read_stylesheet(self, file_path):
-        """Read and return stylesheet file contents"""
+        """Read and return stylesheet file contents
+
+        Args:
+            file_path (str): path to stylesheet file
+        """
 
         if not file_path:
             return ""
@@ -98,10 +101,10 @@ class GApplication(QApplication):
 
         super(GApplication, self).quit()
 
-    def unhandledException(self, exctype, value, traceback_object):
+    def unhandledException(self, exception_type, value, traceback_object):
         """Re-implement this method to catch exceptions"""
 
-        self._sys_exception_handler(exctype, value, traceback_object)
+        self._sys_exception_handler(exception_type, value, traceback_object)
 
     def isAlreadyRunning(self):
         """Check for another instances of this application

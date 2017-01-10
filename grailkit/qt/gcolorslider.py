@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gcolorslider
+    grailkit.qt.gcolorslider
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Slider with ability to set gradient as background

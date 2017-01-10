@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.ui.gcolorbutton
+    grailkit.qt.gcolorbutton
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Button with color display

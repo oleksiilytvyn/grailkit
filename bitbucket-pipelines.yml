@@ -5,5 +5,7 @@ pipelines:
   default:
     - step:
         script:
+          - pip install pyserial
+          - pip install python-rtmidi
             # run tests
           - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'

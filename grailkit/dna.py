@@ -336,7 +336,7 @@ class DNAEntity:
 
         self._dna._update(self)
 
-    def copy(self, name=False, parent=False, entity_type=False, index=False, factory=None):
+    def copy(self, name=None, parent=None, entity_type=None, index=None, factory=None):
         """Copy self in current DNA
 
         Args:
@@ -965,7 +965,7 @@ class DNA:
 
         return self._entity(entity_id, factory)
 
-    def _copy(self, entity, name=False, parent=False, entity_type=False, index=False, factory=None):
+    def _copy(self, entity, name=None, parent=None, entity_type=None, index=None, factory=None):
         """Create copy of given entity and override properties if needed
 
         Args:
@@ -1618,7 +1618,11 @@ class Project(DNAFile):
 
     @name.setter
     def name(self, value):
-        """Project name setter"""
+        """Project name setter
+
+        Args:
+            value (str): new project name
+        """
 
         self._name = value
 
@@ -1630,7 +1634,11 @@ class Project(DNAFile):
 
     @description.setter
     def description(self, value):
-        """Project description setter"""
+        """Project description setter
+
+        Args:
+            value (str): new project description
+        """
 
         self._description = value
 
@@ -1642,7 +1650,11 @@ class Project(DNAFile):
 
     @author.setter
     def author(self, value):
-        """Project author setter"""
+        """Project author setter
+
+        Args:
+            value (str): new project author
+        """
 
         self._author = value
 
@@ -1675,15 +1687,17 @@ class Project(DNAFile):
         if create and len(entity) == 0:
             self._create_project()
 
-        # read properties
-        # find settings
+        # todo: read properties
+        # todo: find settings
 
     def __len__(self):
         """Get number of cuelist in project"""
+
         return len(self.cuelists())
 
     def settings(self):
         """Get a setting object"""
+
         entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
                                 filter_parent=self._id,
                                 factory=SettingsEntity)
@@ -1694,94 +1708,45 @@ class Project(DNAFile):
                                   entity_type=DNA.TYPE_SETTINGS,
                                   factory=SettingsEntity)
             return entity
-
-        return entity[0]
+        else:
+            return entity[0]
 
     def cuelists(self):
         """Get all cuelists in project"""
+
         return self._entities(filter_type=DNA.TYPE_CUELIST,
                               filter_parent=self._id,
                               factory=CuelistEntity)
 
     def cuelist(self, cuelist_id):
         """Get a cuelist"""
+
         return self._entity(cuelist_id, factory=CuelistEntity)
 
     def remove(self, cuelist_id):
         """Remove a cuelist"""
+
         return self._remove(cuelist_id)
 
     def append(self, name="Untitled cuelist"):
         """Create a cuelist"""
-        cuelist = self._create(name=name,
-                               parent=self._id,
-                               entity_type=DNA.TYPE_CUELIST,
-                               factory=CuelistEntity)
 
-        return cuelist
+        return self._create(name=name,
+                            parent=self._id,
+                            entity_type=DNA.TYPE_CUELIST,
+                            factory=CuelistEntity)
 
     def _create_project(self):
-        # settings
-        settings = self._create(name="settings", entity_type=DNA.TYPE_SETTINGS)
+        """Create project entities"""
 
-        settings.set('display.background', '#000000')
-        settings.set('display.text.align', 1)
-        settings.set('display.text.valign', 1)
-        settings.set('display.text.case', 'uppercase')
+        self._create(name="settings", entity_type=DNA.TYPE_SETTINGS)
 
-        settings.set('display.font.family', 'Helvetica')
-        settings.set('display.font.size', '32pt')
-        settings.set('display.font.weight', 'normal')
-        settings.set('display.font.style', 'normal')
-        settings.set('display.font.color', '#FFFFFF')
-
-        settings.set('display.shadow.x', 0)
-        settings.set('display.shadow.y', 2)
-        settings.set('display.shadow.blur', 10)
-        settings.set('display.shadow.color', '#000000')
-
-        settings.set('display.padding.left', 10)
-        settings.set('display.padding.right', 10)
-        settings.set('display.padding.top', 10)
-        settings.set('display.padding.bottom', 10)
-        settings.set('display.padding.box', 10)
-
-        settings.set('display.composition.x', 0)
-        settings.set('display.composition.y', 0)
-        settings.set('display.composition.width', 1920)
-        settings.set('display.composition.height', 1080)
-
-        settings.set('display.geometry.x', 1920)
-        settings.set('display.geometry.y', 0)
-        settings.set('display.geometry.width', 1920)
-        settings.set('display.geometry.height', 1080)
-
-        settings.set('display.disabled', False)
-        settings.set('display.display', 'DISPLAY//2')
-        settings.set('display.testcard', False)
-        settings.set('display.fullscreen', True)
-
-        # project
         self._create(name="Grail Project",
                      entity_type=DNA.TYPE_PROJECT,
                      properties=(
                         ('author', 'Alex Litvin'),
                         ('description', 'Simple Grail project for testing purposes')
                         ))
-
-        # cuelist
-        for cuelist_index in range(5):
-            cuelist = self.append(name="%d'st Cuelist" % (cuelist_index,))
-            cuelist.set('color', '#FF0000')
-            cuelist.set('description', 'Simple cuelist')
-
-            for cue_index in range(5):
-                cue = self._create(parent=cuelist.id, entity_type=DNA.TYPE_CUE)
-                cue.name = "Cue %d in list %d" % (cue_index, cuelist_index)
-                cue.set('color', '#00FF00')
-                cue.set('continue', 0)
-                cue.set('wait_pre', 100)
-                cue.set('wait_post', 30)
 
 
 class LibraryError(DNAError):
