@@ -2,6 +2,16 @@
 image: python:3.3
 
 pipelines:
+  custom:
+    run-tests:
+      - step:
+        script:
+            # install dependencies
+          - pip install pyserial
+          - pip install python-rtmidi
+            # run tests
+          - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'
+
   default:
     - step:
         script:
