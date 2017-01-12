@@ -55,8 +55,8 @@ class GSearchEdit(QLineEdit, GWidget):
         btn_size = self._ui_clear.sizeHint()
         frame_width = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
 
-        self._ui_clear.move(size.width() - btn_size.width() / 2 - frame_width * 2,
-                            size.height() / 2 - btn_size.height() / 2 + frame_width)
+        self._ui_clear.move(size.width() - btn_size.width() - frame_width * 2,
+                            size.height() / 2 - btn_size.height() / 2 + frame_width * 2)
 
     def keyPressEvent(self, event):
         """Implements keyPressed signal"""

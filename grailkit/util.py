@@ -88,7 +88,8 @@ def millis_now():
 
 
 def default_key(obj, key, default=None):
-    """Get value by key in object if exists otherwise return `default` value
+    """Get value by attribute in object or by key in dict
+    if property exists returns value otherwise return `default` value
 
     Args:
         obj (dict): dictionary
@@ -96,7 +97,9 @@ def default_key(obj, key, default=None):
         default (object): Object that returned if key not found
     """
 
-    if obj:
+    if obj and isinstance(obj, dict):
         return obj[key] if key in obj else default
+    elif obj and isinstance(obj, object):
+        return getattr(obj, key, default)
     else:
         return default

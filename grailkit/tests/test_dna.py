@@ -26,23 +26,40 @@ class TestGrailkitDNA(unittest.TestCase):
     def test_dna_signal(self):
         """Test DNASignal class"""
 
-        self.called_counter = 0
+        bucket = []
 
-        def slot(counter):
-            self.called_counter += 1
+        def slot(ref):
+            bucket.append('regular slot')
+
+        def named_slot(ref):
+            bucket.append('named slot')
 
         signal = dna.DNASignal(int)
         signal.connect(slot)
-        signal.emit(self.called_counter)
+        signal.connect(named_slot, name='slot')
+        signal.emit(bucket)
 
-        signal.connect(slot, name='slot')
-        signal.emit(self.called_counter, name='slot')
-        signal.emit(self.called_counter)
+        # two signals called at once
+        self.assertEqual(len(bucket), 2)
 
+        signal.emit(bucket, name='slot')
+
+        # last called slot is named
+        self.assertEqual(bucket[2], 'named slot')
+
+        # count signals
         self.assertEqual(len(signal), 2)
-        self.assertEqual(self.called_counter, 4)
+
+        signal.disconnect(named_slot)
+        signal.emit(bucket)
+        signal.emit(bucket, name='slot')
+
+        # count signals an calls
+        self.assertEqual(len(signal), 1)
+        self.assertEqual(len(bucket), 4)
 
     def test_dna_create(self):
+        """Test creation of new DNA file"""
 
         db_path = os.path.join(self.test_dir, 'test.grail')
         db_obj = dna.DNAFile(db_path, create=True)
@@ -51,6 +68,7 @@ class TestGrailkitDNA(unittest.TestCase):
         self.assertTrue(os.path.isfile(db_path))
 
     def test_dna_open(self):
+        """Test opening of regular DNA file"""
 
         db_path = os.path.join(self.res_dir, 'dna.grail')
         db_obj = dna.DNAFile(db_path)
@@ -67,64 +85,113 @@ class TestGrailkitDNA(unittest.TestCase):
         self.assertRaises(db.DataBaseError, dna.DNAFile, db_path)
 
     def test_dna_property(self):
-        """Test properties handling"""
+        """Test DNA properties handling"""
 
         db_path = os.path.join(self.test_dir, 'test.grail')
-        db_obj = dna.DNAFile(db_path, create=True)
+        ref = dna.DNAFile(db_path, create=True)
 
-        # test property insertion
-        db_obj.set(0, "name", "java")
-        self.assertEqual(db_obj.get(0, "name"), "java")
+        # set
+        ref.set(0, 'language', 'python 3')
+        ref.set(0, 'version', 3.4)
+        ref.set(0, 'object', {'key': 'value'})
+        ref.set(0, 'happy', True)
 
-        # test property update
-        db_obj.set(0, "name", "vala")
-        self.assertEqual(db_obj.get(0, "name"), "vala")
+        # get
+        self.assertEqual(ref.get(0, 'language'), 'python 3')
+        self.assertEqual(ref.get(0, 'version'), 3.4)
+        self.assertEqual(ref.get(0, 'object'), {'key': 'value'})
+        self.assertEqual(ref.get(0, 'happy'), True)
+        self.assertEqual(ref.get(0, 'non-existed'), None)
+        self.assertEqual(ref.get(0, 'non-existed', default='default'), 'default')
 
-        # get non existent property
-        self.assertEqual(db_obj.get(0, "non-existent"), None)
+        # has
+        self.assertTrue(ref.has(0, 'version'))
+        self.assertFalse(ref.has(0, 'non-existed'))
 
-        db_obj.close()
+        # properties
+        props = ref.properties(0)
+
+        self.assertEqual(len(props), 4)
+        self.assertEqual(props['version'], 3.4)
+
+        # rename
+        ref.rename(0, 'language', 'lang')
+        self.assertTrue(ref.has(0, 'lang'))
+        self.assertFalse(ref.has(0, 'language'))
+
+        # unset
+        ref.unset(0, 'happy')
+
+        self.assertEqual(len(ref.properties(0)), 3)
+
+        # unset_all
+        ref.unset_all(0)
+
+        self.assertEqual(len(ref.properties(0)), 0)
+
+        ref.close()
 
     def test_dna_entity(self):
         """Test DNAEntity methods"""
 
         db_path = os.path.join(self.test_dir, 'entity.grail')
-        db_obj = dna.DNAFile(db_path, create=True)
+        ref = dna.DNAFile(db_path, create=True)
 
-        entity1 = db_obj.create(name="project", parent=0)
-        entity1.update()
+        project = ref.create(name="project", entity_type=dna.DNA.TYPE_PROJECT)
 
-        entity2 = db_obj.create(name="cuelist", parent=entity1.id)
-        entity2.content = [0, 2, 3]
-        entity2.search = "cuelist 1 (0 2 3)"
-        entity2.update()
+        self.assertEqual(project.type, dna.DNA.TYPE_PROJECT)
 
-        eid1 = entity1.id
-        eid2 = entity2.id
+        cuelist = project.create(name="cuelist")
+        cuelist.content = [0, 2, 3]
+        cuelist.search = "cuelist 1 (0 2 3)"
 
-        db_obj.set(eid1, "author", "Alex Litvin")
-        db_obj.set(eid1, "description", "testing DNA file")
+        self.assertEqual(cuelist.parent_id, project.id)
 
-        db_obj.set(eid2, "author", "Alex Litvin")
-        db_obj.set(eid2, "description", "simple cuelist")
-        db_obj.set(eid2, "length", 2)
-        db_obj.set(eid2, "ratio", 3.1516)
-        db_obj.set(eid2, "list", [1, 2, 3, 4])
+        eid1 = project.id
+        eid2 = cuelist.id
 
-        self.assertEqual(type(db_obj.get(eid2, 'length')), int)
-        self.assertEqual(type(db_obj.get(eid2, 'ratio')), float)
-        self.assertEqual(type(db_obj.get(eid2, 'list')), list)
+        project.set("author", "Alex Litvin")
+        project.set("description", "testing DNA file")
 
-        self.assertTrue(db_obj.has_childs(eid1))
-        self.assertFalse(db_obj.has_childs(eid2))
+        cuelist.set("author", "Alex Litvin")
+        cuelist.set("description", "simple cuelist")
+        cuelist.set("length", 2)
+        cuelist.set("ratio", 3.1516)
+        cuelist.set("list", [1, 2, 3, 4])
 
-        self.assertEqual(db_obj.has(eid1, 'author'), True)
-        self.assertEqual(db_obj.has(eid1, 'not-existed-property'), False)
-        self.assertEqual(len(db_obj.entities()), 2)
-        self.assertEqual(len(db_obj.properties(eid1)), 2)
-        self.assertEqual(len(db_obj.properties(eid2)), 5)
+        # check properties types
+        self.assertEqual(type(cuelist.get('length')), int)
+        self.assertEqual(type(cuelist.get('ratio')), float)
+        self.assertEqual(type(cuelist.get('list')), list)
 
-        db_obj.close()
+        self.assertTrue(ref.has_childs(eid1))
+        self.assertFalse(ref.has_childs(eid2))
+
+        self.assertEqual(project.has('author'), True)
+        self.assertEqual(project.has('not-existed-property'), False)
+        self.assertEqual(len(ref.entities()), 2)
+        self.assertEqual(len(ref.properties(eid1)), 2)
+        self.assertEqual(len(ref.properties(eid2)), 5)
+
+        entity1 = ref.create(name="Entity 1", parent=10, properties={'key': 'value 1'})
+        entity2 = ref.create(name="Entity 2", parent=10, properties={'key': 'value 2'})
+        entity3 = ref.create(name="Entity 3", parent=10, properties={'key': 'value 3'})
+
+        cuelist.append(entity1)
+        cuelist.insert(0, entity2)
+        cuelist.append(entity3)
+
+        childs = cuelist.childs()
+
+        self.assertEqual(len(childs), 3)
+        self.assertEqual(childs[0].name, 'Entity 2')
+        self.assertEqual(childs[1].name, 'Entity 1')
+        self.assertEqual(childs[2].name, 'Entity 3')
+
+        cuelist.remove(childs[0])
+        cuelist.delete()
+
+        ref.close()
 
     def test_dna_fill(self):
         """Test DNA file entities creation"""

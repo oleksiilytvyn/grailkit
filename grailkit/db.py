@@ -3,22 +3,21 @@
     grailkit.db
     ~~~~~~~~~~~
 
-    Simplified interface to sqlite database
+    Simplified interface to SQLite database
 """
 import os
 import re
 import sqlite3 as lite
 import logging
-from logging import NullHandler
 
 from grailkit import util
 
 
-logging.getLogger(__name__).addHandler(NullHandler())
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def create_factory(object_def, cursor, row):
-    """Create factory
+    """Create object factory
 
     Args:
         object_def: callable object
@@ -27,6 +26,10 @@ def create_factory(object_def, cursor, row):
     Returns:
         instance of `object_def`
     """
+
+    if not object_def or not callable(object_def):
+        raise DataBaseError("Can't create factory with given object. Object is not callable or not exists.")
+
     return object_def(row, cursor)
 
 
@@ -43,7 +46,8 @@ class DataBase:
     _connection = None
 
     def __init__(self, file_path, file_copy=False, query="", create=False):
-        """Create SQLite database wrapper
+        """Create SQLite database wrapper.
+        Also define custom functions sql `lowercase` an `search_strip`.
 
         Args:
             file_path (str): database file path
@@ -57,7 +61,7 @@ class DataBase:
 
         if not create and (not os.path.exists(directory) or
            not os.path.isfile(file_path)):
-            raise DataBaseError("Database file not exists. Unable to open sqlite file.")
+            raise DataBaseError("Database file not exists. Unable to open sqlite file @ %s." % file_path)
 
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -74,9 +78,19 @@ class DataBase:
         self._location = file_path
 
         def lowercase(char):
+            """Lover string
+
+            Args:
+                char (str): string to process
+            """
             return char.lower()
 
         def search_strip(char):
+            """Prepare string for search
+
+            Args:
+                char (str): string to process
+            """
             char = re.sub(r'[\[_\]\.\-,!\(\)\"\':;]', '', char)
             char = re.sub('[\s+]', '', char)
 
@@ -88,9 +102,11 @@ class DataBase:
         if execute_query and query:
             self.cursor.executescript(query)
 
+        DataBaseHost.add(self)
+
     @property
     def connection(self):
-        """Returns sqlite3 connection"""
+        """Returns sqlite3 connection object"""
 
         return self._connection
 
@@ -151,7 +167,7 @@ class DataBase:
         return result
 
     def execute(self, query, data=tuple()):
-        """Execute query
+        """Execute many sql queries at once
 
         Args:
             query (str): SQL query string
@@ -171,7 +187,16 @@ class DataBase:
         self._connection.row_factory = factory
 
     def copy(self, file_path):
-        """Copy database to new file"""
+        """Copy database to new file location
+
+        Args:
+            file_path (str): path to new file
+        """
+
+        directory = os.path.dirname(os.path.realpath(file_path))
+
+        if not os.path.exists(directory) or not os.path.isfile(file_path):
+            raise DataBaseError('Unable to copy database, file %s not exists.' % file_path)
 
         db = lite.connect(file_path)
         query = "".join(line for line in self._connection.iterdump())
@@ -181,19 +206,21 @@ class DataBase:
         db.close()
 
     def commit(self):
-        """Save changes"""
+        """Commit changes to database"""
 
         self._connection.commit()
 
     def close(self):
-        """Close connection"""
+        """Commit changes to database and close connection"""
 
         try:
             self._connection.commit()
         except lite.ProgrammingError:
             logging.info("Unable to commit into %s, connection was closed" % (self._location, ))
 
-        self._connection.close()
+        # close if this connection is not used by others
+        if not DataBaseHost.has(self._location):
+            self._connection.close()
 
 
 class DataBaseHost:
@@ -202,28 +229,52 @@ class DataBaseHost:
     # list of all connected databases
     _list = {}
 
-    @staticmethod
-    def get(file_path, file_copy=False, query="", create=True):
-        """Get database object
+    @classmethod
+    def get(cls, file_path, file_copy=False, query="", create=True):
+        """Get DataBase object
 
         Args:
             file_path (str): path to database file
             file_copy (str): copy file from `file_copy` if `file_path` not exists
             query (str): execute query if file `file_path` not exists
             create (bool): create database file or not
-        Returns
-            DataBase object if open or opens database and returns it.
+        Returns:
+            DataBase object if opened or opens database and returns it.
         """
 
         file_path = os.path.abspath(file_path)
 
         if file_path in DataBaseHost._list:
-            db = DataBaseHost._list[file_path]
+            db = cls._list[file_path]
         else:
             db = DataBase(file_path, file_copy, query, create)
-            DataBaseHost._list[file_path] = db
+            cls._list[file_path] = db
 
         return db
+
+    @classmethod
+    def add(cls, db_ref):
+        """Add DataBase object to list if not exists
+
+        Args:
+            db_ref (DataBase): reference to database error
+        Raises:
+            DataBaseError if wrong object were passed
+        """
+
+        if not db_ref or not isinstance(db_ref, DataBase):
+            raise DataBaseError("DataBase object doesn't exists or is not instance of DataBase class.")
+
+        file_path = os.path.abspath(db_ref.location)
+
+        if file_path not in cls._list:
+            cls._list[db_ref.location] = db_ref
+
+    @classmethod
+    def has(cls, file_path):
+        """Returns True if `file_path` in list of opened connections"""
+
+        return os.path.abspath(file_path) in cls._list
 
     @staticmethod
     def close():

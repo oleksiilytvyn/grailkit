@@ -21,7 +21,7 @@ import glob
 import json
 
 from grailkit import PATH_SHARED
-from grailkit.util import copy_file
+from grailkit.util import copy_file, default_key
 from grailkit.dna import DNA
 
 
@@ -74,13 +74,13 @@ class Verse:
 
     @property
     def type(self):
-        """DNA type"""
+        """DNA type (int)"""
 
         return DNA.TYPE_VERSE
 
     @property
     def book(self):
-        """Book name"""
+        """Book name (str)"""
 
         return self._book
 
@@ -104,7 +104,7 @@ class Verse:
 
     @property
     def reference(self):
-        """Returns complete reference text
+        """Returns complete reference string
 
         Examples:
             Genesis 1:1
@@ -160,25 +160,25 @@ class Book:
 
     @property
     def type(self):
-        """DNA type"""
+        """DNA type (int)"""
 
         return DNA.TYPE_BOOK
 
     @property
     def id(self):
-        """Book abbreviations"""
+        """Book abbreviations (str)"""
 
         return self._id
 
     @property
     def abbr(self):
-        """Book abbreviations"""
+        """Book abbreviations (str)"""
 
         return self._abbr
 
     @property
     def name(self):
-        """Name of book"""
+        """Name of book (str)"""
 
         return self._name
 
@@ -240,52 +240,62 @@ class BibleInfo:
 
     @property
     def file(self):
-        """Date"""
+        """File location"""
+
         return self._file
 
     @property
     def date(self):
-        """Date"""
+        """Date of publication"""
+
         return self._date
 
     @property
     def title(self):
         """Bible title"""
+
         return self._title
 
     @property
     def subject(self):
         """Subject of a bible"""
+
         return self._subject
 
     @property
     def language(self):
         """Language of bible"""
+
         return self._language
 
     @property
     def publisher(self):
         """Publisher information"""
+
         return self._publisher
 
     @property
     def copyright(self):
         """Copyright information"""
+
         return self._copyright
 
     @property
     def identifier(self):
         """Bible identifier, must be unique"""
+
         return self._identifier
 
     @property
     def description(self):
         """A little description of Bible"""
+
         return self._description
 
     @property
     def version(self):
-        """Schema version nubmer"""
+        """Schema version number"""
+
         return self._version
 
     @staticmethod
@@ -300,15 +310,15 @@ class BibleInfo:
 
         info = BibleInfo()
 
-        info._file = data['file'] or ""
-        info._date = data['date']
-        info._title = data['title']
-        info._subject = data['subject']
-        info._language = data['language']
-        info._publisher = data['publisher']
-        info._copyright = data['copyright']
-        info._identifier = data['identifier']
-        info._description = data['description']
+        info._file = default_key(data, 'file', '')
+        info._date = default_key(data, 'date')
+        info._title = default_key(data, 'title')
+        info._subject = default_key(data, 'subject')
+        info._language = default_key(data, 'language')
+        info._publisher = default_key(data, 'publisher')
+        info._copyright = default_key(data, 'copyright')
+        info._identifier = default_key(data, 'identifier')
+        info._description = default_key(data, 'description')
 
         return info
 
@@ -322,20 +332,15 @@ class Bible(DNA):
     _file_extension = ".grail-bible"
 
     def __init__(self, file_path):
-        """Read grail bible format into Bible class"""
+        """Read grail bible file into Bible class
 
-        self._db_create_query += """
-            DROP TABLE IF EXISTS books;
-            CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
-
-            DROP TABLE IF EXISTS verses;
-            CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
-            """
+        Raises:
+            DNAError if file does not exists
+        """
 
         super(Bible, self).__init__(file_path, create=False)
 
         # read bible info
-        self._file = file_path
         self._date = self._get(0, "date", default="")
         self._title = self._get(0, "title", default="Untitled")
         self._subject = self._get(0, "subject", default="")
@@ -346,12 +351,6 @@ class Bible(DNA):
         self._description = self._get(0, "description", default="")
 
         self._version = self._get(0, "version", default=1)
-
-    @property
-    def file(self):
-        """Path to file"""
-
-        return self._file
 
     @property
     def date(self):
@@ -419,7 +418,11 @@ class Bible(DNA):
             FROM books""", factory=book_factory)
 
     def book(self, book):
-        """Returns single book"""
+        """Returns single book
+
+        Args:
+            book (int): book id
+        """
 
         return self._db.get("""SELECT
             `books`.`id`,
@@ -429,7 +432,12 @@ class Bible(DNA):
             `books`.`abbr` FROM books WHERE id = ?""", (book,), factory=book_factory)
 
     def chapter(self, book, chapter):
-        """Returns all verses in chapter"""
+        """Returns all verses in chapter
+
+        Args:
+            book (int): book id
+            chapter (int): chapter id
+        """
 
         return self._db.all("""SELECT 
                 `verses`.`osisid`,
@@ -444,7 +452,13 @@ class Bible(DNA):
             ORDER BY `verses`.`verse` ASC""", (book, chapter), factory=verse_factory)
 
     def verse(self, book, chapter, verse):
-        """Returns single verse"""
+        """Returns single verse
+
+        Args:
+            book (int): book id
+            chapter (int): chapter id
+            verse (int): verse number
+        """
 
         return self._db.get("""SELECT 
                                 `verses`.`osisid`,
@@ -459,19 +473,32 @@ class Bible(DNA):
                             (book, chapter, verse), factory=verse_factory)
 
     def count_verses(self, book, chapter):
-        """Returns number of verses in chapter"""
+        """Returns number of verses in chapter
+
+        Args:
+            book (int): book id
+            chapter (int): chapter id
+        """
 
         return self._db.get("SELECT COUNT(*) as count FROM verses WHERE book = ? AND chapter = ?",
                             (book, chapter))["count"]
 
     def count_chapters(self, book):
-        """Returns number of chapters in book"""
+        """Returns number of chapters in book
+
+        Args:
+            book (int): book id
+        """
 
         return self._db.get("SELECT COUNT(*) as count FROM verses WHERE book = ? AND verse = 1",
                             (book,))["count"]
 
     def match_book(self, keyword):
-        """find book by keyword"""
+        """Find books by keyword
+
+        Args:
+            keyword (str): search phrase
+        """
 
         keyword = "%" + keyword + "%"
 
@@ -493,6 +520,7 @@ class Bible(DNA):
 
         Args:
             keyword (str): keywords
+            limit (int): limit results
         """
 
         # default values
@@ -505,12 +533,12 @@ class Bible(DNA):
         # match book and chapter
         match_chapter = re.search(r'([0-9]+)([\D])([0-9]+)$', keyword)
         # match book, chapter and verse
-        match_verse = re.search(r'([0-9]+)([\D])([0-9]+)\-([0-9]+)$', keyword)
+        match_verse = re.search(r'([0-9]+)([\D])([0-9]+)-([0-9]+)$', keyword)
 
         if match_verse:
             chapter = match_verse.group(1)
             verse = match_verse.group(3)
-            keyword = re.sub(r'([0-9]+)([\D])([0-9]+)\-([0-9]+)$', '', keyword)
+            keyword = re.sub(r'([0-9]+)([\D])([0-9]+)-([0-9]+)$', '', keyword)
         elif match_chapter:
             chapter = match_chapter.group(1)
             verse = match_chapter.group(3)
@@ -545,7 +573,7 @@ class Bible(DNA):
         """Create json information string"""
 
         data = {
-            "file": self._file,
+            "file": self._location,
             "date": self._date,
             "title": self._title,
             "subject": self._subject,
@@ -568,12 +596,15 @@ class BibleHostError(Exception):
 class BibleHost:
     """Manage all installed bibles."""
 
+    # location of shared folder
     _location = os.path.join(PATH_SHARED, "bibles/")
+    # list of available bibles
     _list = {}
 
     @classmethod
     def setup(cls):
-        """Gather information about installed bibles"""
+        """Gather information about installed bibles.
+        Call this method before use of BibleHost."""
 
         for f in glob.glob(cls._location + "*.json"):
             file = open(f, "r")
