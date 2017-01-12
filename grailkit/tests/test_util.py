@@ -4,8 +4,10 @@ import unittest
 
 import os
 import time
+import json
 import shutil
 import tempfile
+
 from grailkit import util
 
 
@@ -26,6 +28,14 @@ class TestGrailkitCore(unittest.TestCase):
         self_path = os.path.abspath('./grailkit/tests')
 
         self.assertEqual(script_path, self_path)
+
+    def test_get_data_path(self):
+        """Test path of data folder"""
+
+        app = 'APP_NAME'
+
+        self.assertIsInstance(util.path_appdata(app), str)
+        self.assertTrue(util.path_appdata(app).index(app) >= 0)
 
     def test_copy_file(self):
         """Test file copy if file exists"""
@@ -57,7 +67,7 @@ class TestGrailkitCore(unittest.TestCase):
     def test_millis_now(self):
         """Test millis_now functionality"""
 
-        self.assertEqual(util.millis_now(), int(round(time.time() * 1000)))
+        self.assertAlmostEqual(util.millis_now(), int(round(time.time() * 1000)))
 
     def test_json_key(self):
         """Test default_key function"""
@@ -66,12 +76,25 @@ class TestGrailkitCore(unittest.TestCase):
             'property': 'value'
             }
 
+        class ObjectDef(object):
+            """Object with property"""
+
+            property = 'value'
+
+        obj_data = ObjectDef()
+        obj_data.property = 'value'
+
         self.assertEqual(util.default_key(data, 'property'), 'value')
         self.assertEqual(util.default_key(data, 'non_existed_property', 'value'), 'value')
+        self.assertEqual(util.default_key(json.loads('{"key": "value"}'), 'key'), 'value')
+        self.assertEqual(util.default_key(json.loads('{"key": "value"}'), 'no_key'), None)
+        self.assertEqual(util.default_key(obj_data, 'property'), 'value')
+
         # other data types
         self.assertEqual(util.default_key(None, 'property'), None)
         self.assertEqual(util.default_key([], 'property'), None)
         self.assertEqual(util.default_key('string', 'property'), None)
+        self.assertEqual(util.default_key(json.dumps('{"key": "value"}'), 'key'), None)
 
 if __name__ == "__main__":
     unittest.main()

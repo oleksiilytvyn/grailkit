@@ -21,8 +21,15 @@ class TestGrailkitProject(unittest.TestCase):
         shutil.rmtree(self.test_dir)
 
     def test_create_project(self):
+
         path = os.path.join(self.test_dir, 'project.grail')
         proj = Project(path, create=True)
+
+        proj.name = 'Testing'
+        self.assertEqual(proj.name, 'Testing')
+
+        proj.description = 'Testing description'
+        self.assertEqual(proj.description, 'Testing description')
 
         props = proj.settings()
         props.set("display", "DISPLAY2")
@@ -34,10 +41,3 @@ class TestGrailkitProject(unittest.TestCase):
         self.assertEqual(props.get("background"), "#000000")
         self.assertEqual(props.get("cuelist"), 2)
         self.assertEqual(props.get("osc-enabled"), True)
-
-        cuelist = proj.append("Test Cuelist")
-
-        self.assertEqual(cuelist.name, "Test Cuelist")
-        self.assertEqual(len(proj), 6)
-
-        cuelist.append("Cue")

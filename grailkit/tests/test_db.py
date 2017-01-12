@@ -5,8 +5,10 @@ import unittest
 import os
 import shutil
 import tempfile
-import grailkit.db as db
 import sqlite3 as sqlite
+
+import grailkit.db as db
+
 
 QUERY_CREATE = """CREATE TABLE `test` (`key` TEXT NOT NULL, `value` TEXT, PRIMARY KEY(key));"""
 QUERY_INSERT = """INSERT INTO `test` VALUES('key', 'value')"""
@@ -142,7 +144,7 @@ class TestGrailkitDB(unittest.TestCase):
 
         db_obj.close()
 
-    def test_execute(self):
+    def test_db_execute(self):
         """Test query execution"""
 
         db_path = os.path.join(self.test_dir, 'execute.sqlite')
@@ -153,6 +155,16 @@ class TestGrailkitDB(unittest.TestCase):
 
         self.assertTrue(isinstance(db_obj.cursor, sqlite.Cursor))
         self.assertRaises(sqlite.Warning, db_obj.execute, QUERY_MULTIPLE)
+
+        db_obj.close()
+
+    def test_db_host_get(self):
+        """Test DataBaseHost get method"""
+
+        db_path = os.path.join(self.res_dir, 'regular.sqlite')
+        db_obj = db.DataBaseHost.get(db_path)
+
+        self.assertEqual(db.DataBaseHost.get(db_path), db_obj)
 
         db_obj.close()
 
