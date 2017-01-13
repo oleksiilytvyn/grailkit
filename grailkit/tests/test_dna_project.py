@@ -6,7 +6,7 @@ import os
 import shutil
 import tempfile
 
-from grailkit.dna import Project, SettingsEntity, CueEntity, CuelistEntity
+from grailkit.dna import DNA, Project, SettingsEntity, CueEntity, CuelistEntity
 
 
 class TestGrailkitProject(unittest.TestCase):
@@ -41,3 +41,12 @@ class TestGrailkitProject(unittest.TestCase):
         self.assertEqual(props.get("background"), "#000000")
         self.assertEqual(props.get("cuelist"), 2)
         self.assertEqual(props.get("osc-enabled"), True)
+
+        cuelist = proj.create(name='cuelist')
+
+        self.assertEqual(cuelist.type, DNA.TYPE_CUELIST)
+
+        cuelists = proj.cuelists()
+
+        self.assertEqual(cuelists[0].name, 'cuelist')
+        self.assertEqual(cuelists[0].type, DNA.TYPE_CUELIST)

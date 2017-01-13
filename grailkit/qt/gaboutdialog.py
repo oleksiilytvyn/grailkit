@@ -48,6 +48,8 @@ class GAboutDialog(GDialog):
         self._ui_description.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._ui_description.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._ui_description.setReadOnly(True)
+        self._ui_description.setTextInteractionFlags(Qt.NoTextInteraction)
+        self._ui_description.viewport().setCursor(Qt.ArrowCursor)
         self._ui_description.setGeometry(156, 74, 311, 88)
 
         self._ui_btn_help = QPushButton("Help")

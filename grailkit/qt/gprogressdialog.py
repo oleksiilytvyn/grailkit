@@ -14,6 +14,7 @@ from grailkit.qt import GDialog
 
 
 class GProgressDialog(GDialog):
+    """Progress dialog with cancel button, title and description text"""
 
     def __init__(self, parent=None,
                  title="Processing...",
@@ -74,6 +75,7 @@ class GProgressDialog(GDialog):
         self.setFixedSize(self.size().width(), self.size().height())
 
     def resizeEvent(self, event):
+        """Update widgets positions"""
 
         rect = self.rect()
         btn_rect = self._ui_cancel_btn.rect()
@@ -83,10 +85,6 @@ class GProgressDialog(GDialog):
 
         self._ui_cancel_btn.move(rect.width() - btn_rect.width() - 12,
                                  rect.height() / 2 - btn_rect.height() / 2)
-
-    def paintEvent(self, event):
-
-        pass
 
     def icon(self):
         """Get a icon of dialog"""
@@ -159,6 +157,9 @@ class GProgressDialog(GDialog):
             value (int): value of progress
         """
 
+        if value >= self._ui_progress.value() and self._auto_close:
+            self.close()
+
         self._ui_progress.setValue(value)
 
     def value(self):
@@ -206,7 +207,7 @@ class GProgressDialog(GDialog):
     def cancel(self):
         """Cancel a progress and close dialog"""
 
-        pass
+        self.close()
 
 
 # test a dialog
@@ -217,8 +218,12 @@ if __name__ == '__main__':
     app = GApplication(sys.argv)
 
     win = GProgressDialog()
-    win.setWindowTitle("Copying")
+    win.setWindowTitle("Copying files")
+    win.setText("Please wait while file are copying.")
     win.setIcon(QApplication.style().standardIcon(QStyle.SP_MessageBoxCritical))
     win.show()
+
+    win.setRange(0, 100)
+    win.setValue(66)
 
     sys.exit(app.exec_())

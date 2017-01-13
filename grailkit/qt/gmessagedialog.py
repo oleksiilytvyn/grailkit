@@ -260,18 +260,17 @@ class GMessageDialog(GDialog):
         else:
             raise Exception("Invalid argument passed")
 
-        def triggered(cls, btn):
+        def triggered(cls, _btn):
+            """Wrap button callback"""
 
-            def fn(falg):
-                cls._button_clicked(btn)
+            def fn(flag):
+                """Button clicked"""
+
+                cls._button_clicked(_btn)
 
             return fn
 
-        if isinstance(button, QPushButton):
-            btn = button
-        else:
-            btn = QPushButton(name)
-
+        btn = button if isinstance(button, QPushButton) else QPushButton(name)
         btn.role = role
         btn.clicked.connect(triggered(self, btn))
 
@@ -333,26 +332,3 @@ class GMessageDialog(GDialog):
         buttons = [GMessageDialog.Ok]
 
         return GMessageDialog(parent, title, text, GMessageDialog.Information, buttons)
-
-
-# test a dialog
-if __name__ == '__main__':
-    import sys
-    from grailkit.qt import GApplication
-
-    def clicked(btn):
-        print(btn)
-        print(btn.text())
-
-    app = GApplication(sys.argv)
-
-    btn = QPushButton("Destruct")
-    btn.setStyleSheet("background: red;color: white;")
-
-    win = GMessageDialog(icon=GMessageDialog.Critical)
-    win.buttonClicked.connect(clicked)
-    win.addButton(btn, GMessageDialog.DestructiveRole)
-    win.setStandardButtons([GMessageDialog.Yes, GMessageDialog.No, GMessageDialog.Help])
-    win.show()
-
-    sys.exit(app.exec_())

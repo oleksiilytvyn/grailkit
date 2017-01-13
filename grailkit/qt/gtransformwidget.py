@@ -50,7 +50,7 @@ class GTransformWidget(GWidget):
         self._ui_menu.addAction(self._ui_center_action)
 
         self._rect = QRect(0, 0, 100, 100)
-        self.points = [
+        self._points = [
             QPointF(0, 0),
             QPointF(0, 0),
             QPointF(0, 0),
@@ -105,7 +105,7 @@ class GTransformWidget(GWidget):
 
         points = []
 
-        for point in self.points:
+        for point in self._points:
             points.append(self.mapToWidget(point))
 
         painter.drawPolygon(QPolygonF(points))
@@ -127,7 +127,7 @@ class GTransformWidget(GWidget):
         self._mouse_hold = True
         index = 0
 
-        for point in self.points:
+        for point in self._points:
             point = self.mapToWidget(point)
 
             if math.sqrt(pow(point.x() - event.x(), 2) + pow(point.y() - event.y(), 2)) <= 5:
@@ -153,7 +153,7 @@ class GTransformWidget(GWidget):
             point = self.mapToScreen(QPointF(event.x() - self._x, event.y() - self._y))
 
             self._text = "(%d, %d)" % (point.x(), point.y())
-            self.points[self._point_index] = point
+            self._points[self._point_index] = point
 
             self.updated.emit(self.transformation())
         else:
@@ -190,7 +190,7 @@ class GTransformWidget(GWidget):
         maxx = 0
         maxy = 0
 
-        for point in self.points:
+        for point in self._points:
             if point.x() < minx:
                 minx = point.x()
 
@@ -208,11 +208,11 @@ class GTransformWidget(GWidget):
 
         index = 0
 
-        for point in self.points:
+        for point in self._points:
             point.setX(point.x() - minx + x)
             point.setY(point.y() - miny + y)
 
-            self.points[index] = point
+            self._points[index] = point
             index += 1
 
         self.updated.emit(self.transformation())
@@ -224,10 +224,10 @@ class GTransformWidget(GWidget):
         w = self._rect.width()
         h = self._rect.height()
 
-        self.points[0] = QPointF(0, 0)
-        self.points[1] = QPointF(w, 0)
-        self.points[2] = QPointF(w, h)
-        self.points[3] = QPointF(0, h)
+        self._points[0] = QPointF(0, 0)
+        self._points[1] = QPointF(w, 0)
+        self._points[2] = QPointF(w, h)
+        self._points[3] = QPointF(0, h)
 
         self.updated.emit(self.transformation())
         self.update()
@@ -238,10 +238,10 @@ class GTransformWidget(GWidget):
         w = self._rect.width()
         h = self._rect.height()
 
-        self.points[0] = QPointF(0, 0)
-        self.points[1] = QPointF(w / 2, 0)
-        self.points[2] = QPointF(w / 2, h)
-        self.points[3] = QPointF(0, h)
+        self._points[0] = QPointF(0, 0)
+        self._points[1] = QPointF(w / 2, 0)
+        self._points[2] = QPointF(w / 2, h)
+        self._points[3] = QPointF(0, h)
 
         self.updated.emit(self.transformation())
         self.update()
@@ -252,10 +252,10 @@ class GTransformWidget(GWidget):
         w = self._rect.width()
         h = self._rect.height()
 
-        self.points[0] = QPointF(w / 2, 0)
-        self.points[1] = QPointF(w, 0)
-        self.points[2] = QPointF(w, h)
-        self.points[3] = QPointF(w / 2, h)
+        self._points[0] = QPointF(w / 2, 0)
+        self._points[1] = QPointF(w, 0)
+        self._points[2] = QPointF(w, h)
+        self._points[3] = QPointF(w / 2, h)
 
         self.updated.emit(self.transformation())
         self.update()
@@ -275,8 +275,13 @@ class GTransformWidget(GWidget):
 
         return self._rect
 
+    def points(self):
+        """Returns list of QPoint"""
+
+        return self._points
+
     def transformation(self):
-        """Returns a transformation object"""
+        """Returns a QTransform object"""
 
         t = QTransform()
         p = []
@@ -285,30 +290,9 @@ class GTransformWidget(GWidget):
              QPointF(self._rect.width(), self._rect.height()),
              QPointF(0, self._rect.height())]
 
-        for o in self.points:
+        for o in self._points:
             p.append(QPointF(o.x(), o.y()))
 
         QTransform.quadToQuad(QPolygonF(q), QPolygonF(p), t)
 
         return t
-
-
-# test a widget
-if __name__ == '__main__':
-
-    import sys
-    from grailkit.qt import GApplication, GDialog
-
-    app = GApplication(sys.argv)
-    widget = GTransformWidget()
-
-    layout = QHBoxLayout()
-    layout.setContentsMargins(0, 0, 0, 0)
-    layout.addWidget(widget)
-
-    win = GDialog()
-    win.setGeometry(100, 100, 500, 300)
-    win.setLayout(layout)
-    win.show()
-
-    sys.exit(app.exec_())

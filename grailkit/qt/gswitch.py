@@ -30,19 +30,18 @@ class GSwitch(QAbstractButton, GWidget):
         width = self.size().width()
         height = self.size().height()
 
-        on_color = QColor()
-        on_color.setNamedColor("#8a9fbd")
-        off_color = QColor()
-        off_color.setNamedColor("#676869")
-        switch_color = QColor()
-        switch_color.setNamedColor("#2f2f2f")
+        on_color = QColor("#4bda64")
+        off_color = QColor("#fe3a2e")
+        switch_color = QColor('#fff')
+        #switch_color.setNamedColor("#2f2f2f")
+        roundness = 10
 
         p = QPainter()
         p.begin(self)
         p.setRenderHint(QPainter.Antialiasing)
 
         path = QPainterPath()
-        path.addRoundedRect(QRectF(1, 1, width - 2, height - 2), 3, 3)
+        path.addRoundedRect(QRectF(1, 1, width - 2, height - 2), roundness, roundness)
 
         flag_path = QPainterPath()
 
@@ -54,15 +53,28 @@ class GSwitch(QAbstractButton, GWidget):
         pen.setColor(pen_color)
         p.setPen(pen)
 
+        switch_size = height - 6
+        switch_roundness = switch_size / 2
+
         if self._state:
             p.fillPath(path, on_color)
-            flag_path.addRoundedRect(QRectF(width / 2, 3, width / 2 - 3, height - 6), 3, 3)
+            flag_path.addRoundedRect(QRectF(width - switch_size - 3, 3, switch_size, switch_size),
+                                     switch_roundness, switch_roundness)
         else:
             p.fillPath(path, off_color)
-            flag_path.addRoundedRect(QRectF(3, 3, width /2 - 3, height - 6), 3, 3)
+            flag_path.addRoundedRect(QRectF(3, 3, switch_size, switch_size),
+                                     switch_roundness, switch_roundness)
 
         p.drawPath(path)
+
+        color = QColor('#000')
+        color.setAlphaF(0.2)
+
+        pen.setColor(color)
+        p.setPen(pen)
+
         p.fillPath(flag_path, switch_color)
+        p.drawPath(flag_path)
 
         p.end()
 
@@ -75,7 +87,7 @@ class GSwitch(QAbstractButton, GWidget):
     def sizeHint(self):
         """Resize rule"""
 
-        return QSize(52, 22)
+        return QSize(52, 24)
 
     def setState(self, state):
         """Set state of switch"""
@@ -86,25 +98,3 @@ class GSwitch(QAbstractButton, GWidget):
         """Get state of switch"""
 
         return self._state
-
-
-if __name__ == "__main__":
-
-    import sys
-    from grailkit.qt import GApplication, GDialog
-
-    app = GApplication(sys.argv)
-
-    switch = GSwitch()
-    label = QLabel("Press the switch")
-
-    layout = QHBoxLayout()
-    layout.addWidget(label)
-    layout.addWidget(switch)
-
-    win = GDialog()
-    win.setLayout(layout)
-    win.setStyleSheet("GDialog {background: #2f2f2f;}QLabel {color: #e6e6e6;}")
-    win.show()
-
-    sys.exit(app.exec_())
