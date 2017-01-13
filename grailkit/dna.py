@@ -1052,34 +1052,31 @@ class DNA:
 
         self._changed = True
 
-        entity = DNAEntity(self)
-        entity.parent_id = parent
-        entity.type = entity_type if entity_type else DNA.TYPE_ABSTRACT
-        entity.index = index
-        entity.name = name
+        if entity_type not in DNA.TYPES:
+            entity_type = DNA.TYPE_ABSTRACT
 
         cursor = self._db.cursor
-        sql_values = [entity.parent_id,
-                      entity.type,
-                      entity.name,
-                      entity.created,
-                      entity.modified,
-                      json.dumps(entity.content, separators=(',', ':')),
-                      entity.search,
-                      entity.index]
+        sql_values = [parent,
+                      entity_type,
+                      name,
+                      millis_now(),
+                      millis_now(),
+                      json.dumps(None, separators=(',', ':')),
+                      '',
+                      index]
 
         if index >= 0:
             # realign sort_order field
             cursor.execute("""UPDATE entities
                               SET sort_order = sort_order + 1
-                              WHERE sort_order >= ? AND parent = ?""", (index, entity.parent_id))
+                              WHERE sort_order >= ? AND parent = ?""", (index, parent))
             # insert
             cursor.execute("""INSERT INTO entities
                           (id, parent, type, name, created, modified, content, search, sort_order)
                           VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""", sql_values)
         else:
-            sql_values[7] = entity.parent_id
-            # append item with max + 1 index
+            sql_values[7] = parent
+            # append item with max(sort_order) + 1 index or 0 if it first child entity
             cursor.execute("""INSERT INTO entities
                           (id, parent, type, name, created, modified, content, search, sort_order)
                           VALUES (NULL, ?, ?, ?, ?, ?, ?, ?,
@@ -1592,24 +1589,65 @@ class DNAFile(DNA):
         """
         super(DNAFile, self).__init__(file_path, create=create)
 
-        # entities
-        self.create = self._create
-        self.copy = self._copy
-        self.entity = self._entity
-        self.entities = self._entities
-        self.update = self._update
-        self.remove = self._remove
-        self.childs = self._childs
-        self.has_childs = self._has_childs
+    def create(self, *args, **kwargs):
+        """Create entity"""
+        return self._create(*args, **kwargs)
 
-        # properties
-        self.has = self._has
-        self.get = self._get
-        self.set = self._set
-        self.rename = self._rename
-        self.unset = self._unset
-        self.unset_all = self._unset_all
-        self.properties = self._properties
+    def copy(self, *args, **kwargs):
+        """Copy existing entity"""
+        return self._copy(*args, **kwargs)
+
+    def entity(self, *args, **kwargs):
+        """Returns entity by id"""
+        return self._entity(*args, **kwargs)
+
+    def entities(self, *args, **kwargs):
+        """Returns list of entities"""
+        return self._entities(*args, **kwargs)
+
+    def update(self, *args, **kwargs):
+        """Update entity"""
+        return self._update(*args, **kwargs)
+
+    def remove(self, *args, **kwargs):
+        """Remove entity by id"""
+        return self._remove(*args, **kwargs)
+
+    def childs(self, *args, **kwargs):
+        """Returns list of child entities"""
+        return self._entity(*args, **kwargs)
+
+    def has_childs(self, *args, **kwargs):
+        """Returns Tru if entity has childs"""
+        return self._has_childs(*args, **kwargs)
+
+    def has(self, *args, **kwargs):
+        """Check if property exists"""
+        return self._has(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        """Get property value"""
+        return self._get(*args, **kwargs)
+
+    def set(self, *args, **kwargs):
+        """Set property value"""
+        return self._set(*args, **kwargs)
+
+    def rename(self, *args, **kwargs):
+        """Rename property name"""
+        return self._rename(*args, **kwargs)
+
+    def unset(self, *args, **kwargs):
+        """Remove property"""
+        return self._unset(*args, **kwargs)
+
+    def unset_all(self, *args, **kwargs):
+        """Remove all properties"""
+        return self._unset_all(*args, **kwargs)
+
+    def properties(self, *args, **kwargs):
+        """Returns dict of properties"""
+        return self._properties(*args, **kwargs)
 
 
 class SettingsFile(DNA):
@@ -1721,7 +1759,7 @@ class ProjectError(DNAError):
     pass
 
 
-class Project(DNAFile):
+class Project(DNA):
     """Representation of a project file"""
 
     def __init__(self, file_path, create=False):
