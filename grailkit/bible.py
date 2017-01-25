@@ -19,6 +19,7 @@ import os
 import re
 import glob
 import json
+import sqlite3 as lite
 
 from grailkit import PATH_SHARED
 from grailkit.util import copy_file, default_key
@@ -606,6 +607,8 @@ class BibleHost:
         """Gather information about installed bibles.
         Call this method before use of BibleHost."""
 
+        cls._list = {}
+
         for f in glob.glob(cls._location + "*.json"):
             file = open(f, "r")
             info = BibleInfo.from_json(json.load(file))
@@ -670,8 +673,9 @@ class BibleHost:
 
         try:
             bible = Bible(file_path)
+            bible.close()
             bible_path = os.path.join(cls._location, bible.identifier + '.grail-bible')
-        except BibleError:
+        except (BibleError, lite.OperationalError):
             return False
 
         if os.path.exists(bible_path) and os.path.isfile(bible_path) and not replace:
@@ -679,9 +683,11 @@ class BibleHost:
 
         # just copy file to new location
         copy_file(file_path, bible_path)
+        installed_bible = Bible(bible_path)
+
         # create a description file
-        cls._create_descriptor(bible)
-        bible.close()
+        cls._create_descriptor(installed_bible)
+        cls.setup()
 
         return True
 
