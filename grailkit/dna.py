@@ -1280,7 +1280,13 @@ class DNA:
             self._remove(child.id)
 
     def _sort(self, entity_id, key=None, reverse=False):
-        """Sort child entities"""
+        """Sort child entities
+
+        Args:
+            entity_id (int): entity id
+            key: sort field
+            reverse (bool): reverse order or not
+        """
 
         entities = self._entities(filter_parent=entity_id, sort=key, reverse=reverse)
 
@@ -1577,8 +1583,79 @@ class DNA:
         return arg_value
 
 
-class DNAFile(DNA):
-    """Interface to Grail-file"""
+class DNAProxy:
+    """This class gives public access to hidden methods of DNA"""
+
+    def __init__(self, dna):
+        """Args:
+            dna (DNA): reference to DNA
+        """
+
+        self._dna_ref = dna
+
+    def create(self, *args, **kwargs):
+        """Create entity"""
+        return self._dna_ref._create(*args, **kwargs)
+
+    def copy(self, *args, **kwargs):
+        """Copy existing entity"""
+        return self._dna_ref._copy(*args, **kwargs)
+
+    def entity(self, *args, **kwargs):
+        """Returns entity by id"""
+        return self._dna_ref._entity(*args, **kwargs)
+
+    def entities(self, *args, **kwargs):
+        """Returns list of entities"""
+        return self._dna_ref._entities(*args, **kwargs)
+
+    def update(self, *args, **kwargs):
+        """Update entity"""
+        return self._dna_ref._update(*args, **kwargs)
+
+    def remove(self, *args, **kwargs):
+        """Remove entity by id"""
+        return self._dna_ref._remove(*args, **kwargs)
+
+    def childs(self, *args, **kwargs):
+        """Returns list of child entities"""
+        return self._dna_ref._childs(*args, **kwargs)
+
+    def has_childs(self, *args, **kwargs):
+        """Returns Tru if entity has childs"""
+        return self._dna_ref._has_childs(*args, **kwargs)
+
+    def has(self, *args, **kwargs):
+        """Check if property exists"""
+        return self._dna_ref._has(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        """Get property value"""
+        return self._dna_ref._get(*args, **kwargs)
+
+    def set(self, *args, **kwargs):
+        """Set property value"""
+        return self._dna_ref._set(*args, **kwargs)
+
+    def rename(self, *args, **kwargs):
+        """Rename property name"""
+        return self._dna_ref._rename(*args, **kwargs)
+
+    def unset(self, *args, **kwargs):
+        """Remove property"""
+        return self._dna_ref._unset(*args, **kwargs)
+
+    def unset_all(self, *args, **kwargs):
+        """Remove all properties"""
+        return self._dna_ref._unset_all(*args, **kwargs)
+
+    def properties(self, *args, **kwargs):
+        """Returns dict of properties"""
+        return self._dna_ref._properties(*args, **kwargs)
+
+
+class DNAFile(DNA, DNAProxy):
+    """Interface to Grail-file with public methods"""
 
     def __init__(self, file_path, create=False):
         """Open a grail file
@@ -1587,67 +1664,8 @@ class DNAFile(DNA):
             file_path (str): path to grail file
             create (bool): create file if not exists
         """
-        super(DNAFile, self).__init__(file_path, create=create)
-
-    def create(self, *args, **kwargs):
-        """Create entity"""
-        return self._create(*args, **kwargs)
-
-    def copy(self, *args, **kwargs):
-        """Copy existing entity"""
-        return self._copy(*args, **kwargs)
-
-    def entity(self, *args, **kwargs):
-        """Returns entity by id"""
-        return self._entity(*args, **kwargs)
-
-    def entities(self, *args, **kwargs):
-        """Returns list of entities"""
-        return self._entities(*args, **kwargs)
-
-    def update(self, *args, **kwargs):
-        """Update entity"""
-        return self._update(*args, **kwargs)
-
-    def remove(self, *args, **kwargs):
-        """Remove entity by id"""
-        return self._remove(*args, **kwargs)
-
-    def childs(self, *args, **kwargs):
-        """Returns list of child entities"""
-        return self._entity(*args, **kwargs)
-
-    def has_childs(self, *args, **kwargs):
-        """Returns Tru if entity has childs"""
-        return self._has_childs(*args, **kwargs)
-
-    def has(self, *args, **kwargs):
-        """Check if property exists"""
-        return self._has(*args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        """Get property value"""
-        return self._get(*args, **kwargs)
-
-    def set(self, *args, **kwargs):
-        """Set property value"""
-        return self._set(*args, **kwargs)
-
-    def rename(self, *args, **kwargs):
-        """Rename property name"""
-        return self._rename(*args, **kwargs)
-
-    def unset(self, *args, **kwargs):
-        """Remove property"""
-        return self._unset(*args, **kwargs)
-
-    def unset_all(self, *args, **kwargs):
-        """Remove all properties"""
-        return self._unset_all(*args, **kwargs)
-
-    def properties(self, *args, **kwargs):
-        """Returns dict of properties"""
-        return self._properties(*args, **kwargs)
+        DNA.__init__(self, file_path, create=create)
+        DNAProxy.__init__(self, self)
 
 
 class SettingsFile(DNA):
@@ -1773,6 +1791,7 @@ class Project(DNA):
         super(Project, self).__init__(file_path, create=create)
 
         self._id = 0
+        self._dna_proxy = DNAProxy(self)
         self._project = 0
 
         root = self._root()
@@ -1800,6 +1819,12 @@ class Project(DNA):
         self._project = root
 
         return root
+
+    @property
+    def dna(self):
+        """Get a proxy for dna"""
+
+        return self._dna_proxy
 
     @property
     def name(self):
