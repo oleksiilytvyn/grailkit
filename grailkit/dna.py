@@ -1790,7 +1790,6 @@ class Project(DNA):
 
         super(Project, self).__init__(file_path, create=create)
 
-        self._id = 0
         self._dna_proxy = DNAProxy(self)
         self._project = 0
 
@@ -1802,6 +1801,8 @@ class Project(DNA):
         # create project if there is no project entity
         if create and not root:
             self._create_project()
+
+        self._id = self._root().id
 
     def __len__(self):
         """Get number of cuelist in project"""
