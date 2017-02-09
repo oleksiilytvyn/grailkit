@@ -1966,6 +1966,7 @@ class Library(DNA):
         super(Library, self).__init__(file_path, create=create)
 
         self._root = None
+        self._dna_proxy = DNAProxy(self)
 
         if not self.root() and create:
             self._create("Grail Library",
@@ -1974,6 +1975,12 @@ class Library(DNA):
 
         if self.root() is None:
             raise LibraryError("Library entity not found in file %s" % (file_path,))
+
+    @property
+    def dna(self):
+        """Get a proxy for dna"""
+
+        return self._dna_proxy
 
     def create(self, name, entity_type=DNA.TYPE_ABSTRACT, factory=None):
         """Create new library entity
