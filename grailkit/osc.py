@@ -132,23 +132,42 @@ class MIDI(object):
     """Representation of OSC MIDI message"""
 
     def __init__(self, port, status, data1=None, data2=None):
+        """Create MIDI message
+
+        Args:
+            port: midi port
+            status: message status
+            data1: first data value
+            data2: second data value
+        """
+
         self.port = port
         self.status = status
         self.data1 = data1
         self.data2 = data2
 
     def pack(self):
+        """Create bytes representation"""
+
         return struct.pack('>BBBB', self.port, self.status, self.data1, self.data2)
 
     @classmethod
     def unpack(cls, data):
+        """Unpack from bytes to new instance of MIDI
+
+        Args:
+            data (bytes): original data
+        Returns:
+            MIDI instance
+        """
+
         return cls(*struct.unpack('>BBBB', data))
 
 
 class Color(object):
     """Representation of OSC color type in RGBA format"""
 
-    def __init__(self, r, g, b, a):
+    def __init__(self, r=0, g=0, b=0, a=1):
         self.r = r
         self.g = g
         self.b = b
@@ -1311,6 +1330,7 @@ class _UDPRequestHandler(socketserver.BaseRequestHandler):
     """
 
     def handle(self):
+        """Handle and callback if request is correct"""
 
         data = self.request[0]
         callback = self.server.handle

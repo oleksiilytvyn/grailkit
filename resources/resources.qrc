@@ -3,7 +3,6 @@
     <qresource>
         <file alias="gk/icon/search-clear.png">gk/icon/search-clear.png</file>
         <file alias="gk/icon/close.svg">gk/icon/close.svg</file>
-        <file alias="gk/widgets/colorwheel.png">gk/widgets/colorwheel.png</file>
 
         <file alias="gk/ui.qss">gk/ui.qss</file>
     </qresource>

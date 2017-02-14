@@ -10,6 +10,7 @@ import os
 import json
 import sqlite3 as lite
 
+from grailkit.core import Signal
 from grailkit.db import DataBaseHost, DataBaseError
 from grailkit.util import millis_now, default_key
 
@@ -18,82 +19,6 @@ class DNAError(DataBaseError):
     """Base class for DNA errors"""
 
     pass
-
-
-class DNASignal:
-    """Callback mechanism for DNA"""
-
-    def __init__(self, *args):
-        """Create signal
-
-        Args:
-            *args: template of arguments
-        """
-
-        self._args = [type(x) for x in args]
-        self._fns = {}
-
-    def __len__(self):
-        """Returns number of connected slots"""
-
-        return len(self._fns)
-
-    def __bool__(self):
-        """Returns True and prevent from converting to False when number of slots 0"""
-
-        return True
-
-    def connect(self, fn, name=False):
-        """Add function to list of callbacks
-
-        Args:
-            fn (callable): function to call on emit
-            name (str): give name to slot
-        """
-
-        if not callable(fn):
-            raise DNAError("Given object is not callable")
-
-        if not name:
-            name = len(self._fns)
-
-        self._fns[name] = fn
-
-    def disconnect(self, fn):
-        """Remove function from list, if it previously added to it
-
-        Args:
-            fn (callable): function to remove
-        """
-
-        ref = None
-
-        for key in self._fns:
-            if fn == self._fns[key]:
-                ref = key
-                break
-
-        if ref:
-            del self._fns[ref]
-
-    def emit(self, *args, name=False):
-        """Emit signal
-        If `name` argument was given, only slot with this name will be called
-        otherwise all slots will be called
-
-        Args:
-            *args: arguments to pass to callbacks
-            name (str): give name of slot to be called
-        """
-
-        if name:
-            if name in self._fns:
-                self._fns[name](*args)
-
-            return
-
-        for key in self._fns:
-            self._fns[key](*args)
 
 
 class DNAEntity:
@@ -1006,9 +931,9 @@ class DNA:
         """
 
         # signals
-        self.property_changed = DNASignal(int, str, str)
-        self.entity_changed = DNASignal(int)
-        self.entity_removed = DNASignal(int)
+        self.property_changed = Signal(int, str, str)
+        self.entity_changed = Signal(int)
+        self.entity_removed = Signal(int)
 
         self._changed = False
         self._location = file_path
