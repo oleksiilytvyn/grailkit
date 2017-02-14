@@ -10,7 +10,7 @@ import sys
 import glob
 import serial
 import threading
-from grailkit.dna import DNASignal
+from grailkit.core import Signal
 
 
 def serial_ports():
@@ -152,7 +152,7 @@ class DMXDevice:
     _DMX_INIT1 = b'\x03\x02\x00\x00\x00'
     _DMX_INIT2 = b'\n\x02\x00\x00\x00'
 
-    receive = DNASignal(DMXFrame)
+    receive = Signal(DMXFrame)
 
     def __init__(self, port, mode=MODE_TX):
         """Create DMX device

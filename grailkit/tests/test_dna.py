@@ -8,6 +8,7 @@ import tempfile
 
 import grailkit.dna as dna
 import grailkit.db as db
+import grailkit.core as core
 
 
 class TestGrailkitDNA(unittest.TestCase):
@@ -34,7 +35,7 @@ class TestGrailkitDNA(unittest.TestCase):
         def named_slot(ref):
             bucket.append('named slot')
 
-        signal = dna.DNASignal(int)
+        signal = core.Signal(int)
         signal.connect(slot)
         signal.connect(named_slot, name='slot')
         signal.emit(bucket)
