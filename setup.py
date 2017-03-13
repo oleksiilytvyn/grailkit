@@ -31,14 +31,13 @@ setup(
     version=grailkit.__version__,
     author='Oleksii Lytvyn',
     author_email='grailapplication@gmail.com',
-    description=(
-        'Grail development kit'),
+    description='Grail development kit',
     long_description=open('README.rst').read(),
     url='https://bitbucket.org/grailapp/grail-kit',
     download_url='https://bitbucket.org/grailapp/grail-kit/get/default.zip',
     platforms='any',
     packages=['grailkit'],
-    keywords=['qt', 'framework', 'grail', 'dev kit', 'osc'],
+    keywords=['qt', 'framework', 'grail', 'dev kit', 'osc', 'midi', 'gl', 'pyglet'],
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -55,5 +54,5 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Environment :: X11 Applications :: Qt'
     ],
-    install_requires=['PyQt5', 'pyserial', 'python-rtmidi']
+    install_requires=['PyQt5', 'pyserial', 'python-rtmidi', 'pyglet']
 )

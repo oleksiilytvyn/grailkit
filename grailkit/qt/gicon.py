@@ -4,6 +4,9 @@
     ~~~~~~~~~~~~~~~~~
 
     QIcon with color changing capabilities
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QColor

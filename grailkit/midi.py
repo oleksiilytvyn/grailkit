@@ -4,10 +4,13 @@
     ~~~~~~~~~~~~~
 
     MIDI library based on python-rtmidi library but with better interface
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 import rtmidi
 
-from grailkit.dna import DNASignal
+from grailkit.core import Signal
 
 
 NOTE_OFF = 0x80
@@ -196,7 +199,7 @@ class MidiIn(object):
             self._dev.open_port(port, name)
 
         # signals
-        self.received = DNASignal(object)
+        self.received = Signal(object)
 
         self._dev.set_callback(self._received)
 

@@ -6,13 +6,16 @@
     GrailKit is a library for Grail like apps,
     library which consists of UI components for PyQt,
     grail files IO and networking libraries
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 
 import os
 from grailkit.util import path_appdata
 
 # library version
-__version__ = '0.3'
+__version__ = '0.3.1'
 
 # path to shader folder
 PATH_SHARED = path_appdata("grail-shared")

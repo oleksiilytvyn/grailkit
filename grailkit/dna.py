@@ -5,6 +5,9 @@
 
     Implementation of grail file format.
     This file format used for all internal grail data.
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 import os
 import json
