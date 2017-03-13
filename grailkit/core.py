@@ -3,7 +3,10 @@
     grailkit.core
     ~~~~~~~~~~~~~
 
-    Core functionality
+    Core types and widely used components
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 import math
 
@@ -11,7 +14,6 @@ import math
 class Signal(object):
     """Callback mechanism for DNA"""
 
-    # todo: use weak reference callbacks
     def __init__(self, *args):
         """Create signal
 
@@ -90,7 +92,6 @@ class Color(object):
 
     __slots__ = ['r', 'g', 'b', 'a']
 
-    # todo: grailkit.core.Color conflicts with grailkit.osc.Color
     def __init__(self, r=0.0, g=0.0, b=0.0, a=1.0):
         self.r = r
         self.g = g

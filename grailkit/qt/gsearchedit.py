@@ -4,6 +4,9 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     Line edit with clear button and more signals
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon

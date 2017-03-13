@@ -4,6 +4,9 @@
     ~~~~~~~~~~~~~~~~~~~~
 
     Parse other bible formats into grail bible format.
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 import os
 import xml.etree.ElementTree as ElementTree

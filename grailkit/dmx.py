@@ -5,6 +5,9 @@
 
     Send DMX signal over Serial Port USB interfaces
     Caution this module is experimental
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 import sys
 import glob

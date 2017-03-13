@@ -23,6 +23,9 @@
 
     OSC protocol implementation in pure python,
     Code from OSC project (https://bitbucket.org/grailapp/osc)
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 
 import time
@@ -44,9 +47,9 @@ __all__ = [
     'OSCClient',
     'OSCServer',
 
-    'Impulse',
-    'Color',
-    'MIDI',
+    'OSCImpulse',
+    'OSCColor',
+    'OSCMidi',
     'IMMEDIATELY',
 
     'NTPError',
@@ -122,71 +125,61 @@ _INT64_DGRAM_LEN = 8
 _CHAR_DGRAM_LEN = 4
 
 
-class Impulse(object):
+class OSCImpulse(object):
     """Representation of Impulse OSC type"""
 
     pass
 
 
-class MIDI(object):
-    """Representation of OSC MIDI message"""
+class OSCMidi(object):
+    """Representation of OSC OSCMidi message"""
 
     def __init__(self, port, status, data1=None, data2=None):
-        """Create MIDI message
-
-        Args:
-            port: midi port
-            status: message status
-            data1: first data value
-            data2: second data value
-        """
-
         self.port = port
         self.status = status
         self.data1 = data1
         self.data2 = data2
 
     def pack(self):
-        """Create bytes representation"""
-
+        """Returns midi message representation"""
         return struct.pack('>BBBB', self.port, self.status, self.data1, self.data2)
 
     @classmethod
     def unpack(cls, data):
-        """Unpack from bytes to new instance of MIDI
+        """Parse datagram into OSCMidi instance
 
         Args:
-            data (bytes): original data
-        Returns:
-            MIDI instance
-        """
+            data (bytes): datagram
 
+        Returns:
+            OSCMidi instance
+        """
         return cls(*struct.unpack('>BBBB', data))
 
 
-class Color(object):
+class OSCColor(object):
     """Representation of OSC color type in RGBA format"""
 
-    def __init__(self, r=0, g=0, b=0, a=1):
+    def __init__(self, r, g, b, a):
         self.r = r
         self.g = g
         self.b = b
         self.a = a
 
     def pack(self):
-        """Returns datagram of Color type"""
+        """Returns datagram of OSCColor type"""
 
         return struct.pack('>BBBB', self.r, self.g, self.b, self.a)
 
     @classmethod
     def unpack(cls, data):
-        """Parse datagram into Color instance
+        """Parse datagram into OSCColor instance
 
         Args:
             data (bytes): datagram
 
         Returns:
-            Color instance
+            OSCColor instance
         """
 
         return cls(*struct.unpack('>BBBB', data))
@@ -285,11 +278,11 @@ class OSCType(object):
             arg_type = cls.TYPE_NULL
         elif builtin_type == builtins.str and len(value) == 1:
             arg_type = cls.TYPE_CHAR
-        elif isinstance(value, Color):
+        elif isinstance(value, OSCColor):
             arg_type = cls.TYPE_COLOR
-        elif isinstance(value, MIDI):
+        elif isinstance(value, OSCMidi):
             arg_type = cls.TYPE_MIDI
-        elif isinstance(value, Impulse):
+        elif isinstance(value, OSCImpulse):
             arg_type = cls.TYPE_IMPULSE
 
         return arg_type
@@ -627,23 +620,23 @@ class OSCType(object):
 
     @classmethod
     def color(cls, data, index=-1):
-        """Read and write Color OSC type
+        """Read and write OSCColor OSC type
 
         Args:
-            data (bytes, Color): datagram or Color instance
+            data (bytes, OSCColor): datagram or OSCColor instance
             index: An index where the type starts in the datagram.
         Returns:
-            Color instance if index given
-            Datagram for Color instance if `index` is -1
+            OSCColor instance if index given
+            Datagram for OSCColor instance if `index` is -1
         Raises:
             OSCParseError if the datagram could not be parsed.
-            OSCBuildError if datagram for MIDI message can't be created
+            OSCBuildError if datagram for OSCMidi message can't be created
         """
 
         # read
         if index != -1:
             try:
-                return Color.unpack(data[index:index + _COLOR_DGRAM_LEN]), index + _COLOR_DGRAM_LEN
+                return OSCColor.unpack(data[index:index + _COLOR_DGRAM_LEN]), index + _COLOR_DGRAM_LEN
             except (struct.error, TypeError) as e:
                 raise OSCParseError('Could not parse datagram %s' % e)
         # write
@@ -655,23 +648,23 @@ class OSCType(object):
 
     @classmethod
     def midi(cls, data, index=-1):
-        """Read and write OSC MIDI message
+        """Read and write OSC OSCMidi message
 
         Args:
-            data: MIDI instance or datagram to be parsed
+            data: OSCMidi instance or datagram to be parsed
             index: An index where the type starts in the datagram.
         Returns:
-            MIDI message datagram if `index` is -1
-            MIDI instance otherwise
+            OSCMidi message datagram if `index` is -1
+            OSCMidi instance otherwise
         Raises:
             OSCParseError if the datagram could not be parsed.
-            OSCBuildError if datagram for MIDI message can't be created
+            OSCBuildError if datagram for OSCMidi message can't be created
         """
 
         # read
         if index != -1:
             try:
-                return MIDI.unpack(data[index:index + _MIDI_DGRAM_LEN]), index + _MIDI_DGRAM_LEN
+                return OSCMidi.unpack(data[index:index + _MIDI_DGRAM_LEN]), index + _MIDI_DGRAM_LEN
             except (struct.error, TypeError) as e:
                 raise OSCParseError('Could not parse datagram %s' % e)
         # write
@@ -847,15 +840,17 @@ class OSCMessage(object):
 
     def __setitem__(self, key, value):
         """Set argument by index, if key is greater than
-        length of arguments `value` will be added to end of list
+        length of arguments error will be raised
 
         Args:
             key (int): index of argument
             value: an argument
+        Raises:
+            IndexError if there is no argument with this index
         """
 
         if key >= len(self._args):
-            self.add(value)
+            raise IndexError("Index out of range.")
         else:
             arg_type = OSCType.tag(value)
             self._args[key] = (arg_type, value)
@@ -865,12 +860,23 @@ class OSCMessage(object):
 
         Args:
             key (int): index of argument
+        Raises:
+            IndexError if there is no argument with this index
         """
 
         if key >= len(self._args):
             raise IndexError("Index out of range.")
 
         del self._args[key]
+
+    def __contains__(self, value):
+        """Returns True if value in arguments list
+
+        Args:
+            value: argument value
+        """
+
+        return self.index(value) >= 0
 
     def __cmp__(self, other):
         """Check two OSCMessage's to be equal
@@ -924,6 +930,19 @@ class OSCMessage(object):
             ValueError: if the type is not supported.
         """
 
+        self.append(value, _type)
+
+    def append(self, value, _type=None):
+        """Add a typed argument to this message.
+
+        Args:
+            value: The corresponding value for the argument.
+            _type: A value in ARG_TYPE_* defined in this class,
+                if none then the type will be guessed.
+        Raises:
+            ValueError: if the type is not supported.
+        """
+
         if _type and not OSCType.is_supported(_type):
             raise ValueError('_type is not supported')
 
@@ -931,6 +950,93 @@ class OSCMessage(object):
             _type = OSCType.tag(value)
 
         self._args.append((_type, value))
+
+    def extend(self, values):
+        """Extend arguments list, all values will be added using auto type
+
+        Args:
+            values (list): a list of values
+        """
+
+        for value in values:
+            self.append(value)
+
+    def insert(self, index, value, _type=None):
+        """Insert typed argument at specific index
+
+        Args:
+            index (int): index of insertion
+            value: The corresponding value for the argument.
+            _type: A value in ARG_TYPE_* defined in this class,
+                if none then the type will be guessed.
+        Raises:
+            ValueError: if the type is not supported.
+            IndexError: if index is greater than list size
+        """
+
+        if index >= len(self._args):
+            raise IndexError("Index is out of range.")
+
+        if _type and not OSCType.is_supported(_type):
+            raise ValueError('_type is not supported')
+
+        if not _type:
+            _type = OSCType.tag(value)
+
+        self._args.insert(index, (_type, value))
+
+    def remove(self, value):
+        """Remove the first item from the arguments list whose value is `value`.
+
+        Args:
+            value: argument value
+        Raises:
+            ValueError: if value is not fund in arguments list
+        """
+
+        index = self.index(value)
+
+        if (index > 0) and (index < len(self._args)):
+            del self._args[index]
+        else:
+            raise ValueError("Item not found in arguments list.")
+
+    def index(self, value, start=0, end=False):
+        """Find value in arguments list and return first index otherwise return -1.
+        The returned index is computed relative to the beginning of the full sequence rather than the start argument.
+        """
+        found_index = -1
+
+        if not end:
+            end = len(self._args)
+
+        for index, arg in enumerate(self._args):
+
+            if index < start:
+                continue
+
+            if index >= end:
+                break
+
+            if value == arg[1]:
+                found_index = index
+
+        return found_index
+
+    def clear(self):
+        """Remove all arguments from message"""
+
+        self._args.clear()
+
+    def copy(self):
+        """Create copy of OSCMessage
+
+        Returns:
+            New OSCMessage instance
+        """
+        self.build()
+
+        return OSCMessage.parse(self._dgram)
 
     def build(self):
         """Builds OSCMessage datagram and return current instance
@@ -1010,7 +1116,7 @@ class OSCMessage(object):
                 elif _type == OSCType.TYPE_NULL:
                     value = None
                 elif _type == OSCType.TYPE_IMPULSE:
-                    value = Impulse()
+                    value = OSCImpulse()
                 else:
                     logging.warning('Unhandled parameter type: {0}'.format(_type))
                     continue
@@ -1155,7 +1261,7 @@ class OSCBundle(object):
 
         return self._dgram
 
-    def add(self, content):
+    def append(self, content):
         """Add a new content to this bundle.
 
         Args:
@@ -1168,6 +1274,11 @@ class OSCBundle(object):
             self._contents.append(content.build())
         else:
             raise OSCBuildError("Content must be either OSCBundle or OSCMessage found {}".format(type(content)))
+
+    def add(self, content):
+        """Same as append method"""
+
+        self.append(content)
 
     def build(self):
         """Build an OSCBundle with the current state of this builder.
@@ -1330,7 +1441,7 @@ class _UDPRequestHandler(socketserver.BaseRequestHandler):
     """
 
     def handle(self):
-        """Handle and callback if request is correct"""
+        """Handle UDP request and call handler callback"""
 
         data = self.request[0]
         callback = self.server.handle
