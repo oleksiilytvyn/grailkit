@@ -15,93 +15,6 @@ from grailkit.dna import DNA
 from grailkit.bible import BibleError
 
 
-class Parser(DNA):
-    """Basic implementation of parser"""
-
-    def __init__(self, file_in, file_out):
-        """Parse `file_in` into grail file `file_out`
-
-        Args:
-            file_in (str): path to input file
-            file_out (str): path to output file
-        """
-
-        # add new tables to basic grail format file
-        self._db_create_query += """
-            DROP TABLE IF EXISTS books;
-            CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
-
-            DROP TABLE IF EXISTS verses;
-            CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
-            """
-
-        super(Parser, self).__init__(file_out, create=True)
-
-        if not os.path.isfile(file_in):
-            raise BibleError("Could not open file. File %s not found." % (file_in,))
-
-        # read input file and write to output file
-        self.parse_file(file_in)
-
-    def set_property(self, key, value):
-        """Set bible property
-
-        Args:
-            key (str): property key
-            value (str): property value
-        """
-
-        self._set(0, key, value, force_type=str)
-
-    def get_property(self, key, default=""):
-        """Get bible property
-
-        Args:
-            key (str): property name
-            default (str): default value if property not exists
-
-        Returns:
-            bible property
-        """
-
-        return self._get(0, key, default=default)
-
-    def write_verse(self, osis_id, book_id, chapter, verse, text):
-        """Add verse to file
-
-        Args:
-            osis_id (str): OSIS identifier
-            book_id (int): book number
-            chapter (int): chapter number
-            verse (int): verse number
-            text (str): text of verse
-        """
-
-        self._db.execute("INSERT INTO verses VALUES(?, ?, ?, ?, ?)",
-                         (osis_id, book_id, chapter, verse, text))
-
-    def write_book(self, book_id, osis_id, name, title, abbr):
-        """Add book to file
-
-        Args:
-            book_id (int): book number
-            osis_id (str): OSIS identifier
-            name (str): short book name
-            title (str): full name of book
-            abbr (str): string with abbreviations of book name separated by comma
-        """
-        self._db.execute("INSERT INTO books VALUES(?, ?, ?, ?, ?)",
-                         (book_id, osis_id, name, title, abbr))
-
-    def parse_file(self, file_in):
-        """Abstract method. Implement this method in sub class.
-
-        Args:
-            file_in (str): path to file that will be parsed
-        """
-        raise NotImplementedError()
-
-
 class Names(object):
     """This class holds book names and abbreviations
     to simplify parsing of bible formats
@@ -332,6 +245,93 @@ class Names(object):
             return cls._books[cls._osis_book_names[osis_id]]
         else:
             return None
+
+
+class Parser(DNA):
+    """Basic implementation of parser"""
+
+    def __init__(self, file_in, file_out):
+        """Parse `file_in` into grail file `file_out`
+
+        Args:
+            file_in (str): path to input file
+            file_out (str): path to output file
+        """
+
+        # add new tables to basic grail format file
+        self._db_create_query += """
+            DROP TABLE IF EXISTS books;
+            CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
+
+            DROP TABLE IF EXISTS verses;
+            CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
+            """
+
+        super(Parser, self).__init__(file_out, create=True)
+
+        if not os.path.isfile(file_in):
+            raise BibleError("Could not open file. File %s not found." % (file_in,))
+
+        # read input file and write to output file
+        self.parse_file(file_in)
+
+    def set_property(self, key, value):
+        """Set bible property
+
+        Args:
+            key (str): property key
+            value (str): property value
+        """
+
+        self._set(0, key, value, force_type=str)
+
+    def get_property(self, key, default=""):
+        """Get bible property
+
+        Args:
+            key (str): property name
+            default (str): default value if property not exists
+
+        Returns:
+            bible property
+        """
+
+        return self._get(0, key, default=default)
+
+    def write_verse(self, osis_id, book_id, chapter, verse, text):
+        """Add verse to file
+
+        Args:
+            osis_id (str): OSIS identifier
+            book_id (int): book number
+            chapter (int): chapter number
+            verse (int): verse number
+            text (str): text of verse
+        """
+
+        self._db.execute("INSERT INTO verses VALUES(?, ?, ?, ?, ?)",
+                         (osis_id, book_id, chapter, verse, text))
+
+    def write_book(self, book_id, osis_id, name, title, abbr):
+        """Add book to file
+
+        Args:
+            book_id (int): book number
+            osis_id (str): OSIS identifier
+            name (str): short book name
+            title (str): full name of book
+            abbr (str): string with abbreviations of book name separated by comma
+        """
+        self._db.execute("INSERT INTO books VALUES(?, ?, ?, ?, ?)",
+                         (book_id, osis_id, name, title, abbr))
+
+    def parse_file(self, file_in):
+        """Abstract method. Implement this method in sub class.
+
+        Args:
+            file_in (str): path to file that will be parsed
+        """
+        raise NotImplementedError()
 
 
 class OSISParser(Parser):

@@ -135,7 +135,7 @@ class DMXFrame(object):
         return bytes(self._bytes)
 
 
-class DMXDevice:
+class DMXDevice(object):
     """DMX device using RS245 protocol"""
 
     MODE_RX = 0
@@ -144,13 +144,10 @@ class DMXDevice:
     # setup the dmx
     # char 126 is 7E in hex. It's used to start all DMX512 commands
     _DMX_OPEN = b'\x7e'
-
     # char 231 is E7 in hex. It's used to close all DMX512 commands
     _DMX_CLOSE = b'\xe7'
-
     # packet label
     _DMX_LABEL = b'\x06\x01\x02'
-
     # this code seems to initialize the communications.
     _DMX_INIT1 = b'\x03\x02\x00\x00\x00'
     _DMX_INIT2 = b'\n\x02\x00\x00\x00'
