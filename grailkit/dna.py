@@ -396,9 +396,15 @@ class DNAEntity:
         self._name = str(row[3])
         self._created = int(row[4])
         self._modified = int(row[5])
-        self._content = row[6]
+        self._content = None
         self._search = str(row[7])
         self._index = int(row[8] or 0)
+
+        if row[6]:
+            try:
+                self._content = json.loads(str(row[6]))
+            except ValueError:
+                pass
 
     @classmethod
     def from_sqlite(cls, parent, row):
@@ -586,8 +592,7 @@ class SongEntity(DNAEntity):
 
         super(SongEntity, self)._parse(row)
 
-        # parse contents into song info
-        content = json.loads(self._content)
+        content = self._content
 
         self._year = int(default_key(content, 'year', 2000))
         self._track = int(default_key(content, 'track', 1))
@@ -861,6 +866,7 @@ class DNA:
     """
 
     # property types
+    ARG_NONE = 0
     ARG_BOOL = 1
     ARG_INT = 2
     ARG_FLOAT = 3
@@ -868,7 +874,7 @@ class DNA:
     ARG_JSON = 6
 
     # list all supported types
-    _SUPPORTED_ARGS = (ARG_BOOL, ARG_INT, ARG_FLOAT, ARG_STRING, ARG_JSON)
+    _SUPPORTED_ARGS = (ARG_NONE, ARG_BOOL, ARG_INT, ARG_FLOAT, ARG_STRING, ARG_JSON)
 
     # types of entities
     TYPE_ABSTRACT = 0
@@ -1042,12 +1048,17 @@ class DNA:
         parent = parent if parent else entity.parent_id
         entity_type = entity_type if entity_type else entity.type
 
-        return self._create(name=name,
+        # todo: replace with SQL code
+        copy = self._create(name=name,
                             parent=parent,
                             entity_type=entity_type,
                             index=index,
-                            properties=entity.properties(),
-                            factory=factory)
+                            properties=entity.properties())
+
+        copy.content = entity.content
+        copy.search = entity.search
+
+        return self._entity(copy.id, factory=factory)
 
     def _entity(self, entity_id, factory=None):
         """Get entity by `entity_id`
@@ -1451,7 +1462,7 @@ class DNA:
         """
 
         builtin_type = type(value)
-        arg_type = None
+        arg_type = cls.ARG_NONE
 
         if builtin_type == str:
             arg_type = cls.ARG_STRING
@@ -1478,12 +1489,16 @@ class DNA:
             string representation of value that will be written to database
         """
 
-        value = ""
-
-        if arg_type is cls.ARG_JSON:
+        if arg_type == cls.ARG_JSON:
             value = json.dumps(arg_value)
-        elif arg_type in cls._SUPPORTED_ARGS and arg_type is not cls.ARG_JSON:
+        elif arg_value is True:
+            value = 'True'
+        elif arg_value is False:
+            value = 'False'
+        elif arg_type in cls._SUPPORTED_ARGS and arg_type != cls.ARG_JSON:
             value = str(arg_value)
+        else:
+            value = 'None'
 
         return value
 
@@ -1499,14 +1514,16 @@ class DNA:
             object from raw value
         """
 
-        if arg_type is cls.ARG_JSON:
+        if arg_type == cls.ARG_JSON:
             arg_value = json.loads(arg_value)
-        elif arg_type is cls.ARG_INT:
+        elif arg_type == cls.ARG_INT:
             arg_value = int(arg_value)
-        elif arg_type is cls.ARG_FLOAT:
+        elif arg_type == cls.ARG_FLOAT:
             arg_value = float(arg_value)
-        elif arg_type is cls.ARG_BOOL:
-            arg_value = bool(arg_value)
+        elif arg_type == cls.ARG_BOOL:
+            arg_value = arg_value == 'True'
+        elif arg_type == cls.ARG_NONE:
+            arg_value = None
 
         return arg_value
 

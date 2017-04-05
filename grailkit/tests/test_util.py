@@ -67,7 +67,7 @@ class TestGrailkitCore(unittest.TestCase):
     def test_millis_now(self):
         """Test millis_now functionality"""
 
-        self.assertAlmostEqual(util.millis_now(), int(round(time.time() * 1000)))
+        self.assertAlmostEqual(util.millis_now(), int(round(time.time() * 1000)), places=6)
 
     def test_json_key(self):
         """Test default_key function"""

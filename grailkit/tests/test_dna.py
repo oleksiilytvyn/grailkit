@@ -96,6 +96,8 @@ class TestGrailkitDNA(unittest.TestCase):
         ref.set(0, 'version', 3.4)
         ref.set(0, 'object', {'key': 'value'})
         ref.set(0, 'happy', True)
+        ref.set(0, 'unhappy', False)
+        ref.set(0, 'none-value', None)
 
         # get
         self.assertEqual(ref.get(0, 'language'), 'python 3')
@@ -104,6 +106,8 @@ class TestGrailkitDNA(unittest.TestCase):
         self.assertEqual(ref.get(0, 'happy'), True)
         self.assertEqual(ref.get(0, 'non-existed'), None)
         self.assertEqual(ref.get(0, 'non-existed', default='default'), 'default')
+        self.assertEqual(ref.get(0, 'unhappy'), False)
+        self.assertEqual(ref.get(0, 'none-value'), None)
 
         # has
         self.assertTrue(ref.has(0, 'version'))
@@ -112,7 +116,7 @@ class TestGrailkitDNA(unittest.TestCase):
         # properties
         props = ref.properties(0)
 
-        self.assertEqual(len(props), 4)
+        self.assertEqual(len(props), 6)
         self.assertEqual(props['version'], 3.4)
 
         # rename
@@ -123,12 +127,38 @@ class TestGrailkitDNA(unittest.TestCase):
         # unset
         ref.unset(0, 'happy')
 
-        self.assertEqual(len(ref.properties(0)), 3)
+        self.assertEqual(len(ref.properties(0)), 5)
 
         # unset_all
         ref.unset_all(0)
 
         self.assertEqual(len(ref.properties(0)), 0)
+
+        ref.close()
+
+    def test_dna_property_types(self):
+        """Test DNA properties types"""
+
+        db_path = os.path.join(self.test_dir, 'test.grail')
+        ref = dna.DNAFile(db_path, create=True)
+
+        ref.set(0, 'none', None)
+        ref.set(0, 'bool', True)
+        ref.set(0, 'bool-false', False)
+        ref.set(0, 'string', 'Hello World!')
+        ref.set(0, 'integer', 255)
+        ref.set(0, 'float', 3.1415)
+        ref.set(0, 'list', [1, 2, 3, 4, 5])
+        ref.set(0, 'dict', {'property': 'value'})
+
+        self.assertEqual(type(ref.get(0, 'none')), type(None))
+        self.assertEqual(type(ref.get(0, 'bool')), bool)
+        self.assertEqual(type(ref.get(0, 'bool-false')), bool)
+        self.assertEqual(type(ref.get(0, 'string')), str)
+        self.assertEqual(type(ref.get(0, 'integer')), int)
+        self.assertEqual(type(ref.get(0, 'float')), float)
+        self.assertEqual(type(ref.get(0, 'list')), list)
+        self.assertEqual(type(ref.get(0, 'dict')), dict)
 
         ref.close()
 
