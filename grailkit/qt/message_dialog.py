@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gmessagedialog
+    grailkit.qt.message_dialog
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Replacement for default OS message dialog
@@ -13,11 +13,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.qt import GDialog
+from grailkit.qt import Dialog
 from grailkit.util import OS_MAC
 
 
-class GMessageDialog(GDialog):
+class MessageDialog(Dialog):
     """Message dialog, replacement of a default dialog"""
 
     # default icons
@@ -102,7 +102,7 @@ class GMessageDialog(GDialog):
                  buttons=[]):
         """Initialize a message dialog"""
 
-        super(GMessageDialog, self).__init__(parent)
+        super(MessageDialog, self).__init__(parent)
 
         self._title = title
         self._text = text
@@ -197,16 +197,16 @@ class GMessageDialog(GDialog):
         size = 56
 
         # pick a standard icon
-        if icon in GMessageDialog.Icon:
+        if icon in MessageDialog.Icon or icon is None:
             standard_icon = QStyle.SP_MessageBoxInformation
 
-            if icon == GMessageDialog.Information:
+            if icon == MessageDialog.Information:
                 standard_icon = QStyle.SP_MessageBoxInformation
-            elif icon == GMessageDialog.Question:
+            elif icon == MessageDialog.Question:
                 standard_icon = QStyle.SP_MessageBoxQuestion
-            elif icon == GMessageDialog.Warning:
+            elif icon == MessageDialog.Warning:
                 standard_icon = QStyle.SP_MessageBoxWarning
-            elif icon == GMessageDialog.Critical:
+            elif icon == MessageDialog.Critical:
                 standard_icon = QStyle.SP_MessageBoxCritical
 
             icon = QApplication.style().standardIcon(standard_icon)
@@ -244,7 +244,7 @@ class GMessageDialog(GDialog):
             if item[3] == button:
                 return item[2]
 
-        return GMessageDialog.InvalidRole
+        return MessageDialog.InvalidRole
 
     def addButton(self, button, role=None):
 
@@ -253,9 +253,9 @@ class GMessageDialog(GDialog):
         if isinstance(button, str):
             name = button
             value = -1
-        elif button in GMessageDialog.StandardButton:
-            name = GMessageDialog.StandardButtonRoleName[button][1]
-            role = GMessageDialog.StandardButtonRoleName[button][0]
+        elif button in MessageDialog.StandardButton:
+            name = MessageDialog.StandardButtonRoleName[button][1]
+            role = MessageDialog.StandardButtonRoleName[button][0]
             value = button
         elif isinstance(button, QPushButton):
             name = button.text()
@@ -288,7 +288,7 @@ class GMessageDialog(GDialog):
             return
 
         for button in buttons:
-            if button not in GMessageDialog.StandardButton:
+            if button not in MessageDialog.StandardButton:
                 raise Exception("Button type is not standard")
 
             self.addButton(button)
@@ -306,32 +306,30 @@ class GMessageDialog(GDialog):
     def warning(parent=None, title="Warning", text=""):
         """Warning dialog"""
 
-        buttons = [GMessageDialog.Ok]
+        buttons = [MessageDialog.Ok]
 
-        return GMessageDialog(parent, title, text, GMessageDialog.Warning, buttons)
+        return MessageDialog(parent, title, text, MessageDialog.Warning, buttons)
 
     @staticmethod
     def critical(parent=None, title="Critical Problem", text=""):
         """Warning dialog"""
 
-        buttons = [GMessageDialog.Ok]
+        buttons = [MessageDialog.Ok]
 
-        return GMessageDialog(parent, title, text, GMessageDialog.Critical, buttons)
-
+        return MessageDialog(parent, title, text, MessageDialog.Critical, buttons)
 
     @staticmethod
     def question(parent=None, title="Are you sure?", text=""):
         """Warning dialog"""
 
-        buttons = [GMessageDialog.Ok]
+        buttons = [MessageDialog.Ok]
 
-        return GMessageDialog(parent, title, text, GMessageDialog.Question, buttons)
-
+        return MessageDialog(parent, title, text, MessageDialog.Question, buttons)
 
     @staticmethod
     def information(parent=None, title="Information", text=""):
         """Warning dialog"""
 
-        buttons = [GMessageDialog.Ok]
+        buttons = [MessageDialog.Ok]
 
-        return GMessageDialog(parent, title, text, GMessageDialog.Information, buttons)
+        return MessageDialog(parent, title, text, MessageDialog.Information, buttons)

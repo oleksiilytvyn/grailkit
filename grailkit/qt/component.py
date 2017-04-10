@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gwidget
-    ~~~~~~~~~~~~~~~~~~~
+    grailkit.qt.component
+    ~~~~~~~~~~~~~~~~~~~~~
 
     Base widget for all Grail Kit Qt components
 
@@ -11,7 +11,7 @@
 from PyQt5.QtWidgets import QWidget
 
 
-class GWidget(QWidget):
+class Component(QWidget):
     """Base widget"""
 
     def className(self):
@@ -19,7 +19,7 @@ class GWidget(QWidget):
         Returns widget name that used in stylesheet.
 
         stylesheet example:
-            GDialog {
+            Dialog {
                 background: red;
             }
         """

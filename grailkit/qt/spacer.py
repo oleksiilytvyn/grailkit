@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gspacer
-    ~~~~~~~~~~~~~~~~~~~
+    grailkit.qt.spacer
+    ~~~~~~~~~~~~~~~~~~
 
     Transparent widget that only task to stretch components and fill space
 
@@ -11,13 +11,20 @@
 
 from PyQt5.QtWidgets import QSizePolicy
 
-from grailkit.qt import GWidget
+from grailkit.qt import Component
 
 
-class GSpacer(GWidget):
+class Spacer(Component):
     """Widget that simply allocate space and spread widgets"""
 
     def __init__(self, policy_horizontal=QSizePolicy.Expanding, policy_vertical=QSizePolicy.Expanding, parent=None):
-        super(GSpacer, self).__init__(parent)
+        """Create spacer component that allocates space and stretches another components in layout
+
+        Args:
+            policy_horizontal (QSizePolicy.Policy): horizontal space allocation rule
+            policy_vertical (QSizePolicy.Policy): vertical space allocation rule
+            parent (object): parent qt widget
+        """
+        super(Spacer, self).__init__(parent)
 
         self.setSizePolicy(policy_horizontal, policy_vertical)

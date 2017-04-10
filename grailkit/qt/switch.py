@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gswitch
-    ~~~~~~~~~~~~~~~~~~~
+    grailkit.qt.switch
+    ~~~~~~~~~~~~~~~~~~
 
-    Simple two state switch widget
+    Simple two state switch component
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
@@ -13,16 +13,16 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.qt import GWidget
+from grailkit.qt import Component
 
 
-class GSwitch(QAbstractButton, GWidget):
+class Switch(QAbstractButton, Component):
     """Simple two state switch widget"""
 
     state_changed = pyqtSignal(bool)
 
     def __init__(self, parent=None, state=True):
-        super(GSwitch, self).__init__(parent)
+        super(Switch, self).__init__(parent)
 
         self._state = state
         self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
@@ -36,7 +36,6 @@ class GSwitch(QAbstractButton, GWidget):
         on_color = QColor("#4bda64")
         off_color = QColor("#fe3a2e")
         switch_color = QColor('#fff')
-        #switch_color.setNamedColor("#2f2f2f")
         roundness = 10
 
         p = QPainter()

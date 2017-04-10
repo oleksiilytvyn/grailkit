@@ -749,19 +749,11 @@ class CueEntity(DNAEntity):
               COLOR_PURPLE,
               COLOR_GRAY)
 
-    # private members
-    _number = "1"
-    _name = "Untitled cue"
-    _color = COLOR_DEFAULT
-    _pre_wait = 0
-    _post_wait = 0
-    _follow = FOLLOW_ON
-
     @property
     def number(self):
         """Identifier of cue assigned by user"""
 
-        return self._number
+        return self.get("number", default=self.index)
 
     @number.setter
     def number(self, value):
@@ -769,15 +761,20 @@ class CueEntity(DNAEntity):
 
         Args:
             value (str): cue number
+        Raises:
+            ValueError: if given value is not string
         """
 
-        self._name = value
+        if not isinstance(value, str):
+            raise ValueError('Cue number must be string, \'%s\' given' % str(value))
+
+        self.set("number", value)
 
     @property
     def color(self):
         """any text that describe cue"""
 
-        return self._color
+        return self.get("color", default=self.COLOR_DEFAULT)
 
     @color.setter
     def color(self, value):
@@ -787,37 +784,58 @@ class CueEntity(DNAEntity):
             value (str): cue color
         """
 
-        self._color = value
+        if not isinstance(value, str):
+            raise ValueError('Cue color must be string in #000000 format, \'%s\' given' % str(value))
+
+        self.set('color', value)
 
     @property
     def pre_wait(self):
         """Wait before execution of cue"""
 
-        return self._pre_wait
+        return self.get("pre-wait", default=0)
 
     @pre_wait.setter
     def pre_wait(self, value):
-        """Set pre wait"""
+        """Set pre wait
 
-        self._pre_wait = value
+        Args:
+            value (float, int): pre wait in seconds
+        Raises:
+            ValueError if given value is not float or int
+        """
+
+        if not isinstance(value, int) or not isinstance(value, float):
+            raise ValueError('Given value must be of int or float type')
+
+        self.set('pre-wait', value, force_type=DNA.ARG_FLOAT)
 
     @property
     def post_wait(self):
         """Wait after execution of cue"""
 
-        return self._post_wait
+        return self.get("post-wait", default=0)
 
     @post_wait.setter
     def post_wait(self, value):
-        """Set post wait time"""
+        """Set post wait time
 
-        self._post_wait = value
+        Args:
+            value (float, int): post wait in seconds
+        Raises:
+            ValueError if given value is not float or int
+        """
+
+        if not isinstance(value, int) or not isinstance(value, float):
+            raise ValueError('Given value must be of int or float type')
+
+        self.set('post-wait', value, force_type=DNA.ARG_FLOAT)
 
     @property
     def follow(self):
         """Execute next cue after this finishes, move cursor to next or do nothing."""
 
-        return self._follow
+        return self.get("follow", default=self.FOLLOW_OFF)
 
     @follow.setter
     def follow(self, value):
@@ -826,13 +844,13 @@ class CueEntity(DNAEntity):
         Args:
             value (int): follow mode
         Raises:
-            DNAError if value is not one of (FOLLOW_OFF, FOLLOW_ON, FOLLOW_CONTINUE)
+            ValueError if value is not one of (FOLLOW_OFF, FOLLOW_ON, FOLLOW_CONTINUE)
         """
 
         if value not in self.FOLLOW_TYPE:
-            raise DNAError('Follow type is not supported')
+            raise ValueError('Follow type is not supported')
 
-        self._follow = value
+        self.set("follow", value)
 
     def __init__(self, parent):
         """Create a cue instance
@@ -841,21 +859,6 @@ class CueEntity(DNAEntity):
             parent (DNA): parent DNA
         """
         super(CueEntity, self).__init__(parent)
-
-    def _parse(self, row):
-        """Parse sqlite row
-
-        Args:
-            row: sqlite3 row object
-        """
-
-        super(CueEntity, self)._parse(row)
-
-        self._follow = self.get("follow", self.FOLLOW_OFF)
-        self._color = self.get("color", self.COLOR_DEFAULT)
-        self._number = self.get("number", self.index)
-        self._post_wait = self.get("post-wait", 0)
-        self._pre_wait = self.get("pre-wait", 0)
 
 
 class DNA:
@@ -1048,17 +1051,44 @@ class DNA:
         parent = parent if parent else entity.parent_id
         entity_type = entity_type if entity_type else entity.type
 
-        # todo: replace with SQL code
-        copy = self._create(name=name,
-                            parent=parent,
-                            entity_type=entity_type,
-                            index=index,
-                            properties=entity.properties())
+        cursor = self._db.cursor
+        sql_values = [parent,
+                      entity_type,
+                      name,
+                      millis_now(),
+                      millis_now(),
+                      json.dumps(entity.content, separators=(',', ':')),
+                      entity.search,
+                      index]
 
-        copy.content = entity.content
-        copy.search = entity.search
+        if index >= 0:
+            # realign sort_order field
+            cursor.execute("""UPDATE entities
+                              SET sort_order = sort_order + 1
+                              WHERE sort_order >= ? AND parent = ?""", (index, parent))
+            # insert
+            cursor.execute("""INSERT INTO entities
+                          (id, parent, type, name, created, modified, content, search, sort_order)
+                          VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)""", sql_values)
+        else:
+            sql_values[7] = parent
+            # append item with max(sort_order) + 1 index or 0 if it first child entity
+            cursor.execute("""INSERT INTO entities
+                          (id, parent, type, name, created, modified, content, search, sort_order)
+                          VALUES (NULL, ?, ?, ?, ?, ?, ?, ?,
+                          (SELECT IFNULL(MAX(sort_order) + 1, 0) FROM entities WHERE parent = ?))
+                           """, sql_values)
 
-        return self._entity(copy.id, factory=factory)
+        self._db.connection.commit()
+
+        copy_id = cursor.lastrowid
+
+        for key, value in entity.properties().items():
+            force_type = self._get_type(value)
+            self._db.execute("INSERT OR IGNORE INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
+                             (copy_id, key, self._write_type(value, force_type), force_type))
+
+        return self._entity(copy_id, factory=factory)
 
     def _entity(self, entity_id, factory=None):
         """Get entity by `entity_id`

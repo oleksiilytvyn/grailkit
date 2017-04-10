@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gprogressdialog
+    grailkit.qt.progress_dialog
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Dialog for displaying any progress
@@ -13,18 +13,19 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.qt import GDialog
+from grailkit.qt import Dialog
 
 
-class GProgressDialog(GDialog):
+class ProgressDialog(Dialog):
     """Progress dialog with cancel button, title and description text"""
 
     def __init__(self, parent=None,
-                 title="Processing...",
-                 text="",
+                 title="Processing something...",
+                 text="Item 1 of 10",
+                 icon=None,
                  minimum=0,
                  maximum=100):
-        super(GProgressDialog, self).__init__(parent)
+        super(ProgressDialog, self).__init__(parent)
 
         self._title = title
         self._text = text
@@ -37,6 +38,7 @@ class GProgressDialog(GDialog):
         self.setMinimum(minimum)
         self.setMaximum(maximum)
         self.setIconVisible(self._icon_visible)
+        self.setIcon(icon)
 
     def __ui__(self):
 
@@ -105,9 +107,10 @@ class GProgressDialog(GDialog):
 
         if isinstance(icon, QIcon):
             self._icon = icon.pixmap(size)
-
-        if isinstance(icon, QPixmap):
+        elif isinstance(icon, QPixmap):
             self._icon = icon.scaledToWidth(size)
+        else:
+            self._icon = QApplication.style().standardIcon(QStyle.SP_MessageBoxInformation).pixmap(size)
 
         self._ui_icon.setPixmap(self._icon)
 
@@ -211,22 +214,3 @@ class GProgressDialog(GDialog):
         """Cancel a progress and close dialog"""
 
         self.close()
-
-
-# test a dialog
-if __name__ == '__main__':
-    import sys
-    from grailkit.qt import GApplication
-
-    app = GApplication(sys.argv)
-
-    win = GProgressDialog()
-    win.setWindowTitle("Copying files")
-    win.setText("Please wait while file are copying.")
-    win.setIcon(QApplication.style().standardIcon(QStyle.SP_MessageBoxCritical))
-    win.show()
-
-    win.setRange(0, 100)
-    win.setValue(66)
-
-    sys.exit(app.exec_())
