@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gsearchedit
+    grailkit.qt.search_edit
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     Line edit with clear button and more signals
@@ -12,17 +12,17 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QStyle, QToolButton, QLineEdit
 
-from grailkit.qt import GWidget
+from grailkit.qt import Component
 
 
-class GSearchEdit(QLineEdit, GWidget):
+class SearchEdit(QLineEdit, Component):
     """Basic edit input for search with clear button"""
 
     keyPressed = pyqtSignal('QKeyEvent')
     focusOut = pyqtSignal('QFocusEvent')
 
     def __init__(self, parent=None):
-        super(GSearchEdit, self).__init__(parent)
+        super(SearchEdit, self).__init__(parent)
 
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.textChanged.connect(self._text_changed)
@@ -64,14 +64,14 @@ class GSearchEdit(QLineEdit, GWidget):
     def keyPressEvent(self, event):
         """Implements keyPressed signal"""
 
-        super(GSearchEdit, self).keyPressEvent(event)
+        super(SearchEdit, self).keyPressEvent(event)
 
         self.keyPressed.emit(event)
 
     def focusOutEvent(self, event):
         """Focus is lost"""
 
-        super(GSearchEdit, self).focusOutEvent(event)
+        super(SearchEdit, self).focusOutEvent(event)
 
         self.focusOut.emit(event)
 

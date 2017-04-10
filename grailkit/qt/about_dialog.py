@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gaboutdialog
+    grailkit.qt.about_dialog
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Generic about dialog window
@@ -8,20 +8,20 @@
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
 """
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QPixmap, QIcon, QDesktopServices
+from PyQt5.QtWidgets import QStyle, QApplication, QPushButton, QPlainTextEdit, QLabel, QWidget, QBoxLayout
 
-from grailkit.qt import GDialog
+from grailkit.qt import Dialog
 
 
-class GAboutDialog(GDialog):
+class AboutDialog(Dialog):
     """Default about dialog"""
 
     def __init__(self, parent=None, title="Application", description="version 1.0", icon=None):
         """A basic about dialog"""
 
-        super(GAboutDialog, self).__init__(parent)
+        super(AboutDialog, self).__init__(parent)
 
         self._title = title
         self._description = description

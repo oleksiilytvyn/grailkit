@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gicon
-    ~~~~~~~~~~~~~~~~~
+    grailkit.qt.icon
+    ~~~~~~~~~~~~~~~~
 
     QIcon with color changing capabilities
 
@@ -12,12 +12,13 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QColor
 
 
-class GIcon(QIcon):
+class Icon(QIcon):
+    """Pixmap/vector icon"""
 
     def __init__(self, path=None):
-        super(GIcon, self).__init__(path)
+        super(Icon, self).__init__(path)
 
-    def pixmap_color(self, width, height, color):
+    def coloredPixmap(self, width, height, color, original_color=QColor('black')):
         """Create a pixmap from original icon, changing black color to given color
 
         Args:
@@ -29,7 +30,7 @@ class GIcon(QIcon):
         """
 
         pixmap = self.pixmap(width, height)
-        mask = pixmap.createMaskFromColor(QColor('black'), Qt.MaskOutColor)
+        mask = pixmap.createMaskFromColor(original_color, Qt.MaskOutColor)
         pixmap.fill(color)
         pixmap.setMask(mask)
 
@@ -46,4 +47,4 @@ class GIcon(QIcon):
             state: QIcon state
         """
 
-        self.addPixmap(self.pixmap_color(width, height, color), mode, state)
+        self.addPixmap(self.coloredPixmap(width, height, color), mode, state)

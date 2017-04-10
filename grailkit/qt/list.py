@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.glistwidget
-    ~~~~~~~~~~~~~~~~~~~~~~~
+    grailkit.qt.list
+    ~~~~~~~~~~~~~~~~
 
     Simple list widget
 
@@ -10,16 +10,16 @@
 """
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QScrollBar, QListWidget, QListWidgetItem, QHBoxLayout, QAbstractItemView
+from PyQt5.QtWidgets import QScrollBar, QListWidget, QListWidgetItem, QAbstractItemView
 
-from grailkit.qt import GWidget
+from grailkit.qt import Component
 
 
-class GListWidget(QListWidget, GWidget):
+class List(QListWidget, Component):
     """Simple list widget"""
 
     def __init__(self, parent=None):
-        super(GListWidget, self).__init__(parent)
+        super(List, self).__init__(parent)
 
         self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -56,16 +56,17 @@ class GListWidget(QListWidget, GWidget):
 
     def paintEvent(self, event):
         """Redraw a widget"""
+
         QListWidget.paintEvent(self, event)
 
         self._update_scrollbar()
 
 
-class GListItem(QListWidgetItem):
-    """GListWidget list item"""
+class ListItem(QListWidgetItem):
+    """List item"""
 
     def __init__(self, parent=None):
-        super(GListItem, self).__init__(parent)
+        super(ListItem, self).__init__(parent)
 
         self._data = None
 
@@ -73,7 +74,7 @@ class GListItem(QListWidgetItem):
         """Set associated data object
 
         Args:
-            data: any object
+            data (object): any object
         """
 
         self._data = data

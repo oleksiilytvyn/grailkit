@@ -3,30 +3,28 @@
     grailkit.qt
     ~~~~~~~~~~~
 
-    Qt widgets
+    Application development toolkit on top of Qt,
+    this set of components and widgets developed for consistent look of grail-like applications
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
 """
 
-# core
-from grailkit.qt.gapplication import GApplication, AppInstance
+from grailkit.qt.application import Application
+from grailkit.qt.layout import VLayout, HLayout
+from grailkit.qt.icon import Icon
 
-# widgets
-from grailkit.qt.gwidget import GWidget
-from grailkit.qt.gspacer import GSpacer
-from grailkit.qt.gswitch import GSwitch
-from grailkit.qt.gsearchedit import GSearchEdit
-from grailkit.qt.glistwidget import GListWidget, GListItem
-from grailkit.qt.gicon import GIcon
-from grailkit.qt.gwelcomeaction import GWelcomeAction
-from grailkit.qt.gwelcomewidget import GWelcomeWidget
+from grailkit.qt.component import Component
+from grailkit.qt.spacer import Spacer
+from grailkit.qt.switch import Switch
+from grailkit.qt.search_edit import SearchEdit
 
-# dialogs
-from grailkit.qt.gdialog import GDialog
-from grailkit.qt.gframeless import GFrameless
-from grailkit.qt.gaboutdialog import GAboutDialog
-from grailkit.qt.gmessagedialog import GMessageDialog
-from grailkit.qt.gballoondialog import GBalloonDialog
-from grailkit.qt.gprogressdialog import GProgressDialog
-from grailkit.qt.gtransformwidget import GTransformWidget
+from grailkit.qt.list import List, ListItem
+from grailkit.qt.welcome import Welcome, WelcomeAction
+
+from grailkit.qt.dialog import Dialog
+from grailkit.qt.frameless import Frameless
+from grailkit.qt.balloon_dialog import BalloonDialog
+from grailkit.qt.about_dialog import AboutDialog
+from grailkit.qt.message_dialog import MessageDialog
+from grailkit.qt.progress_dialog import ProgressDialog

@@ -141,11 +141,30 @@ class DMXDevice(object):
     MODE_RX = 0
     MODE_TX = 1
 
-    # setup the dmx
-    # char 126 is 7E in hex. It's used to start all DMX512 commands
+    # dmx packet labels
+    LABEL = {
+        'REPROGRAM_FIRMWARE_RQ': 1,
+        'PROGRAM_FLASH_PAGE_RQ': 2,
+        'PROGRAM_FLASH_PAGE_REPLY': 2,
+
+        'GET_WIDGET_PARAMS_RQ': 3,
+        'GET_WIDGET_PARAMS_REPLY': 3,
+        'SET_WIDGET_PARAMS_RQ': 4,
+
+        'SET_DMX_RX_MODE': 5,
+        'SET_DMX_TX_MODE': 6,
+        'SEND_DMX_RDM_TX': 7,
+        'RECEIVE_DMX_ON_CHANGE': 8,
+        'RECEIVED_DMX_COS_TYPE': 9,
+        'GET_WIDGET_SN_RQ': 10,
+        'GET_WIDGET_SN_REPLY': 10,
+        'SEND_RDM_DISCOVERY_RQ': 11
+        }
+
+    # DMX packet start and end codes
     _DMX_OPEN = b'\x7e'
-    # char 231 is E7 in hex. It's used to close all DMX512 commands
     _DMX_CLOSE = b'\xe7'
+
     # packet label
     _DMX_LABEL = b'\x06\x01\x02'
     # this code seems to initialize the communications.

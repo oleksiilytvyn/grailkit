@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gballoondialog
+    grailkit.qt.balloon_dialog
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Floating dialog with pointer and without title bar
@@ -13,15 +13,15 @@ from PyQt5.QtCore import Qt, QPointF, QSize, QEvent, QObject
 from PyQt5.QtGui import QPolygonF, QColor, QPainter, QPainterPath, QBrush
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 
-from grailkit.qt import GDialog
+from grailkit.qt import Dialog
 from grailkit.util import OS_MAC
 
 
-class GBalloonDialog(GDialog):
+class BalloonDialog(Dialog):
     """Dialog without title bar and frame, but with rounded corners and pointing triangle"""
 
     def __init__(self, parent=None):
-        super(GBalloonDialog, self).__init__(parent)
+        super(BalloonDialog, self).__init__(parent)
 
         self._close_on_focus_lost = True
         self._background_color = QColor(255, 255, 255)

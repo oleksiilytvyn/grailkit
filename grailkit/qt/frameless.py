@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gframeless
-    ~~~~~~~~~~~~~~~~~~~~~~
+    grailkit.qt.frameless
+    ~~~~~~~~~~~~~~~~~~~~~
 
     Frameless dialog implementation
 
@@ -10,15 +10,17 @@
 """
 from PyQt5.QtCore import Qt
 
-from grailkit.qt import GDialog
+from grailkit.qt import Dialog
 from grailkit.util import OS_MAC
 
 
-class GFrameless(GDialog):
-    """Frameless dialog that stays on top and not shown in menu bar"""
+class Frameless(Dialog):
+    """Frameless dialog that stays on top and doesn't shown in menu bar"""
+
+    # todo: remove shadow system decoration
 
     def __init__(self, parent=None):
-        super(GFrameless, self).__init__(parent)
+        super(Frameless, self).__init__(parent)
 
         # set a widget background
         self.setStyleSheet("background-color: #000000;")

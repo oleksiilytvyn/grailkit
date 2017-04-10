@@ -2,17 +2,17 @@
  * @section Button
  */
 
-GAboutDialog QPushButton,
-GAboutDialog QToolButton {
+AboutDialog QPushButton,
+AboutDialog QToolButton {
     background: #e6e6e6;
     color: #31343a;
     border: none;
     border-radius: 3px;
-    padding: 5px 12px;
+    padding: 4px 8px;
     margin: 3px;
     }
 
-GAboutDialog QToolButton {
+AboutDialog QToolButton {
     padding: 2px;
     }
 
@@ -82,7 +82,7 @@ QScrollBar:horizontal {
  * @section GSearchEdit
  */
 
-GSearchEdit {
+SearchEdit {
     border: none;
     border-radius: 11px;
     padding: 1px 8px;
@@ -92,7 +92,7 @@ GSearchEdit {
     height: 20px;
     }
 
-    GSearchEdit QToolButton {
+    SearchEdit QToolButton {
         margin-right: 18px;
         border: none;
         padding: 0;
@@ -103,7 +103,7 @@ GSearchEdit {
  * @section GListWidget
  */
 
-GListWidget {
+List {
     border: none;
     background-color: #626364;
     alternate-background-color: #676869;
@@ -111,7 +111,7 @@ GListWidget {
     outline: 0;
     }
 
-    GListWidget::item {
+    List::item {
         color: #e6e6e6;
         margin: 0;
         padding: 4px 12px;
@@ -119,7 +119,7 @@ GListWidget {
         qproperty-wordWrap: true;
         }
 
-    GListWidget::item:selected {
+    List::item:selected {
         background: #8a9fbb;
         border-bottom: 1px solid #8a9fbb;
         color: #e6e6e6;
@@ -129,20 +129,21 @@ GListWidget {
  * @section GWelcomeWidget
  */
 
-GWelcomeWidget {
+Welcome {
+    background-color: #2f2f2f;
     }
 
-    GWelcomeWidget #g_welcome_title {
+    Welcome #gk_welcome_title {
         qproperty-alignment: AlignCenter AlignCenter;
         text-align: center;
-        font-size: 24px;
+        font-size: 22px;
         margin: 0 0 6px 0;
         color: #f1f1f1;
         }
 
-    GWelcomeWidget #g_welcome_description {
+    Welcome #gk_welcome_description {
         text-align: center;
-        font-size: 14px;
+        font-size: 13px;
         qproperty-alignment: AlignCenter AlignCenter;
         font-weight: 300;
         color: #929292;
@@ -153,25 +154,25 @@ GWelcomeWidget {
  * @section
  */
 
-GWelcomeAction {
+WelcomeAction {
     border: none;
     border-radius: 5px;
     }
 
-    GWelcomeAction:hover {
+    WelcomeAction:hover {
         background: #222;
         }
 
-    #q_welcome_action_title {
-        font-size: 14px;
+    #gk_welcome_action_title {
+        font-size: 13px;
         margin-left: 70px;
         margin-bottom: 3px;
         color: #f1f1f1;
         background: none;
         }
 
-    #q_welcome_action_text {
-        font-size: 14px;
+    #gk_welcome_action_text {
+        font-size: 13px;
         color: #929292;
         margin-left: 70px;
         background: none;
@@ -181,16 +182,16 @@ GWelcomeAction {
  * @section GAboutDialog
  */
 
-GAboutDialog {
+AboutDialog {
     background: #484a51;
     }
 
-    GAboutDialog #g_about_title {
+    AboutDialog #g_about_title {
         font-size: 20pt;
         color: #f1f1f1;
         }
 
-    GAboutDialog #g_about_description {
+    AboutDialog #g_about_description {
         background: #484a51;
         border: none;
         color: #a3a3a6;
@@ -200,19 +201,19 @@ GAboutDialog {
  * @section GBalloonDialog
  */
 
-GBalloonDialog {}
+BalloonDialog {}
 
 /**
  * @section GMessageDialog
  */
 
-GMessageDialog {}
+MessageDialog {}
 
-    GMessageDialog #g_message_title {
+    MessageDialog #g_message_title {
         font-weight: bold;
         }
 
-    GMessageDialog #g_message_text {
+    MessageDialog #g_message_text {
         color: #666;
         }
 
@@ -220,18 +221,18 @@ GMessageDialog {}
  * @section GMessageDialog
  */
 
-GProgressDialog {}
+ProgressDialog {}
 
-    GProgressDialog #g_progress_title {
+    ProgressDialog #g_progress_title {
         font-weight: bold;
         }
 
-    GProgressDialog #g_progress_text {
+    ProgressDialog #g_progress_text {
         color: #666;
         font-size: 12pt;
         }
 
-        GProgressDialog QToolButton {
+        ProgressDialog QToolButton {
             border: none;
             padding: 0;
             background: none;

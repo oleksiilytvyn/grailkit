@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.qt.gdialog
-    ~~~~~~~~~~~~~~~~~~~
+    grailkit.qt.dialog
+    ~~~~~~~~~~~~~~~~~~
 
     Base class for all Grail Kit UI dialogs
 
@@ -10,16 +10,16 @@
 """
 from PyQt5.QtWidgets import QDialog, QDesktopWidget
 
-from grailkit.qt import GWidget
+from grailkit.qt import Component
 
 
-class GDialog(QDialog, GWidget):
+class Dialog(QDialog, Component):
     """Abstract dialog window"""
 
     def __init__(self, parent=None):
-        super(GDialog, self).__init__(parent)
+        super(Dialog, self).__init__(parent)
 
-    def moveToCenter(self):
+    def moveCenter(self):
         """Move window to the center of current screen"""
 
         geometry = self.frameGeometry()
