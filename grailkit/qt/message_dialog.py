@@ -9,11 +9,11 @@
     :license: GNU, see LICENSE for more details.
 """
 
-from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.qt import Dialog
+from grailkit.qt import Dialog, Label
 from grailkit.util import OS_MAC
 
 
@@ -99,8 +99,15 @@ class MessageDialog(Dialog):
                  text="Secondary text providing further details. Also includes information "
                       "that explains any unobvious consequences of actions.",
                  icon=None,
-                 buttons=[]):
-        """Initialize a message dialog"""
+                 buttons=None):
+        """Initialize a message dialog
+
+        Args:
+            title (str): title text
+            text (str): message text
+            icon (QIcon, QPixmap): dialog icon
+            buttons (list): list of standard buttons
+        """
 
         super(MessageDialog, self).__init__(parent)
 
@@ -112,21 +119,21 @@ class MessageDialog(Dialog):
         self.__ui__()
 
         self.setIcon(icon)
-        self.setStandardButtons(buttons)
+        self.setStandardButtons(buttons if buttons else [])
 
     def __ui__(self):
-        """Create ui components"""
+        """Create UI components"""
 
-        self._ui_icon = QLabel(self)
+        self._ui_icon = Label(self)
         self._ui_icon.setAlignment(Qt.AlignCenter)
         self._ui_icon.setGeometry(20, 18, 64, 64)
 
-        self._ui_title = QLabel(self._title)
+        self._ui_title = Label(self._title)
         self._ui_title.setObjectName("g_message_title")
         self._ui_title.setWordWrap(True)
         self._ui_title.setIndent(88)
 
-        self._ui_text = QLabel(self._text)
+        self._ui_text = Label(self._text)
         self._ui_text.setObjectName("g_message_text")
         self._ui_text.setWordWrap(True)
         self._ui_text.setIndent(88)
@@ -137,6 +144,7 @@ class MessageDialog(Dialog):
         self._ui_buttons_layout.addStretch(1)
 
         self._ui_buttons = QWidget(self)
+        self._ui_buttons.setMinimumHeight(30)
         self._ui_buttons.setLayout(self._ui_buttons_layout)
 
         self._ui_layout = QVBoxLayout()
@@ -220,8 +228,7 @@ class MessageDialog(Dialog):
         self._ui_icon.setPixmap(self._icon)
 
     def buttons(self):
-        """Returns a list of all the buttons that have been added to the message box.
-        """
+        """Returns a list of all the buttons that have been added to the message box."""
 
         return [item[3] for item in self._buttons]
 
@@ -247,8 +254,12 @@ class MessageDialog(Dialog):
         return MessageDialog.InvalidRole
 
     def addButton(self, button, role=None):
+        """Add button
 
-        name = "Untitled"
+        Args:
+            button: button to add
+            role: button role
+        """
 
         if isinstance(button, str):
             name = button
@@ -261,17 +272,12 @@ class MessageDialog(Dialog):
             name = button.text()
             value = -1
         else:
-            raise Exception("Invalid argument passed")
+            raise Exception("Invalid argument passed, %s" % str(button))
 
         def triggered(cls, _btn):
             """Wrap button callback"""
 
-            def fn(flag):
-                """Button clicked"""
-
-                cls._button_clicked(_btn)
-
-            return fn
+            return lambda flag: cls._button_clicked(_btn)
 
         btn = button if isinstance(button, QPushButton) else QPushButton(name)
         btn.role = role
@@ -282,7 +288,11 @@ class MessageDialog(Dialog):
         self._update_size()
 
     def setStandardButtons(self, buttons):
-        """Set a standard buttons"""
+        """Set a standard buttons
+
+        Args:
+            buttons (list): list of buttons with standard roles
+        """
 
         if not buttons:
             return
@@ -294,11 +304,13 @@ class MessageDialog(Dialog):
             self.addButton(button)
 
     def _button_clicked(self, button):
-        """"""
+        """Button clicked proxy function"""
 
         self.buttonClicked.emit(button)
 
     def _update_size(self):
+        """Update window size"""
+
         self.adjustSize()
         self.setFixedSize(self.size().width(), self.size().height())
 

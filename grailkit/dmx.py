@@ -62,13 +62,19 @@ class DMXFrame(object):
         """
         super(DMXFrame, self).__init__()
 
+        self._length = 513
+
         if frame and len(frame) > 0:
             for value in frame:
                 self._bytes.append(int(value))
 
-            self._bytes += [0] * (512 - len(frame))
+            self._bytes += [0] * (self._length - len(frame))
         else:
-            self._bytes = [0] * 512
+            self._bytes = [0] * self._length
+
+    def __len__(self):
+
+        return len(self._bytes)
 
     def __getitem__(self, key):
         """Get channel value by index
@@ -78,7 +84,7 @@ class DMXFrame(object):
         Raises:
             IndexError if index is out of range"""
 
-        if key < 0 or key > 511:
+        if key < 0 or key > self._length-1:
             raise IndexError("Index out of range. Index must be from 0 to 511 as DMX512 have 512 channels.")
 
         return self._bytes[key]
@@ -94,7 +100,7 @@ class DMXFrame(object):
             IndexError if index is out of range
         """
 
-        if key < 0 or key > 511:
+        if key < 0 or key > self._length-1:
             raise IndexError("Index out of range. Index must be from 0 to 511 as DMX512 have 512 channels.")
 
         if not isinstance(value, int) or (value > 255 or value < 0):
@@ -111,7 +117,7 @@ class DMXFrame(object):
             IndexError if index is out of range
         """
 
-        if key < 0 or key > 511:
+        if key < 0 or key > self._length:
             raise IndexError("Index out of range. Index must be from 0 to 511 as DMX512 have 512 channels.")
 
         self._bytes[key] = 0
@@ -123,7 +129,7 @@ class DMXFrame(object):
             key (int): channel index
         """
 
-        raise AttributeError("There is no DMX channel with this index.")
+        raise AttributeError("There is no DMX channel with index %d" % key)
 
     def __str__(self):
         """Returns string representation"""
@@ -163,14 +169,14 @@ class DMXDevice(object):
         }
 
     # DMX packet start and end codes
-    _DMX_OPEN = b'\x7e'
-    _DMX_CLOSE = b'\xe7'
+    _DMX_OPEN = b'\x7E'
+    _DMX_CLOSE = b'\xE7'
 
     # packet label
-    _DMX_LABEL = b'\x06\x01\x02'
+    _DMX_LABEL = b'\x06'
     # this code seems to initialize the communications.
     _DMX_INIT1 = b'\x03\x02\x00\x00\x00'
-    _DMX_INIT2 = b'\n\x02\x00\x00\x00'
+    _DMX_INIT2 = b'\x0A\x02\x00\x00\x00'
 
     receive = Signal(DMXFrame)
 
@@ -182,16 +188,19 @@ class DMXDevice(object):
             mode: transmit or receive
         """
 
-        self._stream = serial.Serial(port)
+        self._stream = serial.Serial(port, baudrate=57600, timeout=1, stopbits=serial.STOPBITS_TWO)
+        self._stream.reset_output_buffer()
+        self._stream.reset_input_buffer()
+
         self._thread = None
         self._buffer = ''
 
-        if mode is self.MODE_TX:
+        if mode == self.MODE_TX:
             # this writes the initialization codes to the DMX
             self._stream.write(self._DMX_OPEN + self._DMX_INIT1 + self._DMX_CLOSE)
             self._stream.write(self._DMX_OPEN + self._DMX_INIT2 + self._DMX_CLOSE)
 
-        if mode is self.MODE_RX:
+        elif mode == self.MODE_RX:
             # start thread to constantly read data
             self._thread = threading.Thread(target=self._receive, args=(self._stream,))
             self._thread.start()
@@ -203,7 +212,20 @@ class DMXDevice(object):
             frame (DMXFrame): list of int representing DMX channels
         """
 
-        self._stream.send(self._DMX_OPEN + self._DMX_LABEL + bytes(frame) + self._DMX_CLOSE)
+        data = bytearray()
+        data.extend(self._DMX_OPEN)
+        data.extend(self._DMX_LABEL)
+        data.append(len(frame) & 0xFF)
+        data.append(len(frame) >> 8)
+        data.extend(bytes(frame))
+        data.extend(self._DMX_CLOSE)
+
+        self._stream.write(data)
+
+    def close(self):
+        """Close serial port connection"""
+
+        self._stream.close()
 
     def _receive(self):
         """Receive DMX frame data"""
@@ -218,3 +240,30 @@ class DMXDevice(object):
             self._buffer = self._buffer[end_index:]
 
             self.receive.emit(DMXFrame(buffer))
+
+
+def main():
+    """Test this module"""
+
+    print('Available ports:')
+    ports = serial_ports()
+    for port in ports:
+        print('\t', port)
+    print('\n')
+
+    frame = DMXFrame()
+
+    for x in range(4):
+        frame[x*16+1] = 255  # brightness
+        frame[x*16+2] = 255  # red
+        frame[x*16+3] = 255  # green
+        frame[x*16+4] = 255  # blue
+
+    device = DMXDevice(ports[1])
+
+    for t in range(1):
+        print('Sending frame %d with L=%d' % (t+1, len(frame)))
+        device.send(frame)
+
+if __name__ == '__main__':
+    main()

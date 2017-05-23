@@ -7,29 +7,14 @@
 """
 import sys
 
-from PyQt5.QtCore import QRect
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QStyle, QApplication
 
 from grailkit.qt import *
 
 
-class FramelessExample(Frameless):
-
-    def __init__(self):
-        super(FramelessExample, self).__init__()
-
-        self.setGeometry(0, 0, 300, 200)
-
-    def paintEvent(self, event):
-        p = QPainter()
-        p.begin(self)
-
-        p.fillRect(QRect(0, 0, self.width(), self.height()), QColor("#ff0000"))
-
-        p.end()
-
 class ExampleDialog(Dialog):
+    """Example dialog with list, welcome, toolbar"""
 
     def __init__(self):
         super(ExampleDialog, self).__init__()
@@ -50,36 +35,96 @@ class ExampleDialog(Dialog):
                                                 icon=QApplication.style().standardIcon(QStyle.SP_MessageBoxQuestion)))
         self.ui_welcome.addWidget(WelcomeAction(title='Second action',
                                                 icon=QApplication.style().standardIcon(QStyle.SP_MessageBoxWarning)))
-        self.ui_welcome.addWidget(WelcomeAction(title='Third action',
-                                                icon=QApplication.style().standardIcon(QStyle.SP_MessageBoxCritical)))
+
+        self.ui_toolbar = Toolbar()
+        self.ui_toolbar.addWidget(Label('Untitled Project'))
+        self.ui_toolbar.addStretch()
+        self.ui_toolbar.addWidget(Button('Go'))
+        self.ui_toolbar.addWidget(Button('Stop'))
+        self.ui_toolbar.addWidget(Button('|<'))
+        self.ui_toolbar.addWidget(Button('>|'))
+        self.ui_toolbar.addStretch()
+        self.ui_toolbar.addWidget(Button('MIDI'))
+        self.ui_toolbar.addWidget(Button('OSC'))
+
+        self.ui_splitter = Splitter()
+        self.ui_splitter.addWidget(self.ui_list)
+        self.ui_splitter.addWidget(self.ui_welcome)
+        self.ui_splitter.setSizes([200, self.ui_splitter.width() - 200])
+
+        self.ui_layout = VLayout()
+        self.ui_layout.addWidget(self.ui_toolbar)
+        self.ui_layout.addWidget(self.ui_splitter)
+
+        self.setLayout(self.ui_layout)
+        self.setWindowTitle('Test dialog')
+        self.setGeometry(300, 300, 600, 400)
+
+
+class SettingsDialog(Dialog):
+    """Sample settings dialog"""
+
+    def __init__(self):
+        super(SettingsDialog, self).__init__()
+
+        self.__ui__()
+
+    def __ui__(self):
+
+        self.ui_list = List()
+        self.ui_list.addItem(ListItem('General'))
+        self.ui_list.addItem(ListItem('Plugins'))
+        self.ui_list.addItem(ListItem('Bible'))
+
+        self.ui_panel_layout = VLayout()
+        self.ui_panel_layout.addWidget(Label('Hello world'))
+        self.ui_panel_layout.addWidget(Switch())
+        self.ui_panel_layout.addWidget(Button('Go!'))
+
+        self.ui_panel = Component()
+        self.ui_panel.setLayout(self.ui_panel_layout)
 
         self.ui_layout = HLayout()
         self.ui_layout.addWidget(self.ui_list)
-        self.ui_layout.addWidget(self.ui_welcome)
+        self.ui_layout.addWidget(self.ui_panel)
 
         self.setLayout(self.ui_layout)
 
+        self.setWindowTitle('Settings')
+        self.setGeometry(200, 200, 400, 300)
 
-def main():
-
-    app = Application(sys.argv)
-
-    fl = FramelessExample()
-    fl.show()
-
-    dialog = ExampleDialog()
-    dialog.show()
-
-    about_dialog = AboutDialog()
-    about_dialog.show()
-
-    message_dialog = MessageDialog()
-    message_dialog.show()
-
-    progress_dialog = ProgressDialog()
-    progress_dialog.show()
-
-    sys.exit(app.exec())
 
 if __name__ == '__main__':
-    main()
+
+    # application
+    app = Application(sys.argv)
+
+    # about dialog
+    about_dialog = AboutDialog(title='GrailKit',
+                               description="This is test of GrailKit components library")
+    about_dialog.move(QPoint(450, 20))
+    about_dialog.show()
+
+    # message dialog
+    message_dialog = MessageDialog.question(title="The title",
+                                            text="Text message dialog")
+    message_dialog.move(0, 150)
+    message_dialog.show()
+
+    # progress dialog
+    progress_dialog = ProgressDialog(title="Some progress",
+                                     text="Wait until something happens...")
+    progress_dialog.setRange(0, 100)
+    progress_dialog.setValue(60)
+    progress_dialog.move(QPoint(0, 20))
+    progress_dialog.show()
+
+    # example dialog with toolbar, welcome, list
+    dialog = ExampleDialog()
+    dialog.moveCenter()
+    dialog.show()
+
+    settings = SettingsDialog()
+    settings.show()
+
+    sys.exit(app.exec())

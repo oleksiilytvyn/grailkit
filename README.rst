@@ -31,7 +31,7 @@ Requirements
 
 This library is Pure Python and depends on following other projects:
 
-* PyQt (qt components)
-* pyglet (openGL components)
+* PyQt (Qt components)
+* pyglet (OpenGL components)
 * python-rtmidi (MIDI module)
 * pyserial (DMX module)

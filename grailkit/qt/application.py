@@ -36,10 +36,8 @@ class Application(QApplication):
         sys.excepthook = self.unhandledException
 
         # fix for retina displays
-        try:
+        if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
             self.setAttribute(Qt.AA_UseHighDpiPixmaps)
-        except:
-            pass
 
         # use GTK style if available
         for style in QStyleFactory.keys():
