@@ -10,21 +10,29 @@
     :license: GNU, see LICENSE for more details.
 """
 
+# core
 from grailkit.qt.application import Application
 from grailkit.qt.layout import VLayout, HLayout
 from grailkit.qt.icon import Icon
 
+# components
 from grailkit.qt.component import Component
 from grailkit.qt.spacer import Spacer
+from grailkit.qt.label import Label
 from grailkit.qt.switch import Switch
+from grailkit.qt.button import Button
 from grailkit.qt.search_edit import SearchEdit
+from grailkit.qt.splitter import Splitter
 
+# lists
 from grailkit.qt.list import List, ListItem
 from grailkit.qt.welcome import Welcome, WelcomeAction
+from grailkit.qt.toolbar import Toolbar
 
+# dialogs & windows
 from grailkit.qt.dialog import Dialog
 from grailkit.qt.frameless import Frameless
-from grailkit.qt.balloon_dialog import BalloonDialog
+from grailkit.qt.popup import Popup
 from grailkit.qt.about_dialog import AboutDialog
 from grailkit.qt.message_dialog import MessageDialog
 from grailkit.qt.progress_dialog import ProgressDialog

@@ -4,6 +4,9 @@
     ~~~~~~~~~~~~~~~~~~~
 
     Layout management component
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 from .component import Component
 
@@ -26,7 +29,7 @@ class Layout(Component):
         """
 
         if not isinstance(component, Component):
-            raise ValueError('Given value is not a Component')
+            raise ValueError('Given value is not instance of Component')
 
         self._components.append(component)
 

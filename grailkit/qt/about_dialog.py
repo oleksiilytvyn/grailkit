@@ -10,9 +10,9 @@
 """
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QPixmap, QIcon, QDesktopServices
-from PyQt5.QtWidgets import QStyle, QApplication, QPushButton, QPlainTextEdit, QLabel, QWidget, QBoxLayout
+from PyQt5.QtWidgets import QStyle, QApplication, QPlainTextEdit, QBoxLayout
 
-from grailkit.qt import Dialog
+from grailkit.qt import Dialog, Button, Label, Component
 
 
 class AboutDialog(Dialog):
@@ -37,12 +37,12 @@ class AboutDialog(Dialog):
 
         self._ui_pixmap = QApplication.style().standardIcon(QStyle.SP_MessageBoxInformation)
 
-        self._ui_icon = QLabel(self)
+        self._ui_icon = Label(self)
         self._ui_icon.setPixmap(self._ui_pixmap.pixmap(64))
         self._ui_icon.setAlignment(Qt.AlignCenter)
         self._ui_icon.setGeometry(48, 52, 64, 64)
 
-        self._ui_title = QLabel(self._title, self)
+        self._ui_title = Label(self._title, self)
         self._ui_title.setObjectName("g_about_title")
         self._ui_title.setGeometry(160, 34, 311, 26)
 
@@ -55,13 +55,13 @@ class AboutDialog(Dialog):
         self._ui_description.viewport().setCursor(Qt.ArrowCursor)
         self._ui_description.setGeometry(156, 74, 311, 88)
 
-        self._ui_btn_help = QPushButton("Help")
+        self._ui_btn_help = Button("Help")
         self._ui_btn_help.clicked.connect(self.help)
 
-        self._ui_btn_report = QPushButton("Report a problem")
+        self._ui_btn_report = Button("Report a problem")
         self._ui_btn_report.clicked.connect(self.report)
 
-        self.ui_btn_close = QPushButton("Close")
+        self.ui_btn_close = Button("Close")
         self.ui_btn_close.setDefault(True)
         self.ui_btn_close.clicked.connect(self.close)
 
@@ -71,7 +71,7 @@ class AboutDialog(Dialog):
         self._ui_buttons_layout.addWidget(self._ui_btn_report)
         self._ui_buttons_layout.addWidget(self.ui_btn_close)
 
-        self._ui_buttons = QWidget(self)
+        self._ui_buttons = Component(self)
         self._ui_buttons.setLayout(self._ui_buttons_layout)
         self._ui_buttons.setGeometry(8, 172, 484 - 16, 50)
 

@@ -17,11 +17,11 @@ from grailkit.qt import Dialog
 from grailkit.util import OS_MAC
 
 
-class BalloonDialog(Dialog):
+class Popup(Dialog):
     """Dialog without title bar and frame, but with rounded corners and pointing triangle"""
 
     def __init__(self, parent=None):
-        super(BalloonDialog, self).__init__(parent)
+        super(Popup, self).__init__(parent)
 
         self._close_on_focus_lost = True
         self._background_color = QColor(255, 255, 255)
@@ -43,11 +43,11 @@ class BalloonDialog(Dialog):
         self.setContentsMargins(12, 12, 12, 19)
 
     def paintEvent(self, event):
-        """Paint a dialog"""
+        """Draw a dialog"""
 
         # corner radius
         roundness = 5
-        # pointing triangle size
+        # triangle pointer size
         side = 5
 
         painter = QPainter()

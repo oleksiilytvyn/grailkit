@@ -891,6 +891,8 @@ class DNA:
     TYPE_LIBRARY = 24
     TYPE_FILE = 25
     TYPE_SONG = 26
+    TYPE_LAYOUT = 31
+    TYPE_VIEW = 32
 
     # enumerate all types of entities
     TYPES = (
@@ -904,7 +906,9 @@ class DNA:
         TYPE_CUE,
         TYPE_LIBRARY,
         TYPE_FILE,
-        TYPE_SONG
+        TYPE_SONG,
+        TYPE_LAYOUT,
+        TYPE_VIEW
         )
 
     # types and their default factories

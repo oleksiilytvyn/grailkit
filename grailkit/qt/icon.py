@@ -19,7 +19,7 @@ class Icon(QIcon):
         super(Icon, self).__init__(path)
 
     def coloredPixmap(self, width, height, color, original_color=QColor('black')):
-        """Create a pixmap from original icon, changing black color to given color
+        """Create a pixmap from original icon, changing `original_color` color to given color
 
         Args:
             width (int): width of pixmap

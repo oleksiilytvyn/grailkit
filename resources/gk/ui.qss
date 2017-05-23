@@ -1,23 +1,53 @@
 /**
+ * @section Component, Dialog
+ */
+
+Component,
+Dialog {
+    background-color: #4b5056;
+    }
+
+/***
+ * @section Splitter
+ */
+
+Splitter::handle {
+    background-color: #343434;
+    }
+
+/**
+ * @section Label
+ */
+
+Label {
+    color: #f1f1f1;
+    }
+
+/**
  * @section Button
  */
 
-AboutDialog QPushButton,
-AboutDialog QToolButton {
+Button {
     background: #e6e6e6;
     color: #31343a;
     border: none;
     border-radius: 3px;
     padding: 4px 8px;
     margin: 3px;
+
+    background: #4facfe;
+    border: 1px solid #2c71ae;
     }
 
-AboutDialog QToolButton {
-    padding: 2px;
-    }
+    Button:hover {
+        background: #f1f1f1;
+        color: #31343a;
+
+        background: #6bbaff;
+        }
 
 /**
- * @section scrollbar
+ * @section Scrollbar
  */
 
 QScrollBar:horizontal {
@@ -79,7 +109,7 @@ QScrollBar:horizontal {
         }
 
 /**
- * @section GSearchEdit
+ * @section SearchEdit
  */
 
 SearchEdit {
@@ -100,7 +130,7 @@ SearchEdit {
         }
 
 /**
- * @section GListWidget
+ * @section List
  */
 
 List {
@@ -126,7 +156,7 @@ List {
         }
 
 /**
- * @section GWelcomeWidget
+ * @section Welcome
  */
 
 Welcome {
@@ -151,7 +181,7 @@ Welcome {
         }
 
 /**
- * @section
+ * @section WelcomeAction
  */
 
 WelcomeAction {
@@ -179,7 +209,7 @@ WelcomeAction {
         }
 
 /**
- * @section GAboutDialog
+ * @section AboutDialog
  */
 
 AboutDialog {
@@ -198,19 +228,24 @@ AboutDialog {
         }
 
 /**
- * @section GBalloonDialog
+ * @section Popup
  */
 
-BalloonDialog {}
+Popup {
+    background: #eee;
+    }
 
 /**
- * @section GMessageDialog
+ * @section MessageDialog
  */
 
-MessageDialog {}
+MessageDialog {
+    background: #eee;
+    }
 
     MessageDialog #g_message_title {
         font-weight: bold;
+        color: #000;
         }
 
     MessageDialog #g_message_text {
@@ -218,13 +253,16 @@ MessageDialog {}
         }
 
 /**
- * @section GMessageDialog
+ * @section ProgressDialog
  */
 
-ProgressDialog {}
+ProgressDialog {
+    background: #eee;
+    }
 
     ProgressDialog #g_progress_title {
         font-weight: bold;
+        color: #000;
         }
 
     ProgressDialog #g_progress_text {

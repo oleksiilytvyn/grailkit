@@ -3,14 +3,19 @@
     grailkit.qt.button
     ~~~~~~~~~~~~~~~~~~
 
-    
+    Button component
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 
-from PyQt5.QtWidgets import QAbstractButton
+from PyQt5.QtWidgets import QPushButton
+
+from grailkit.qt import Component
 
 
-class Button(QAbstractButton):
+class Button(QPushButton, Component):
     """Basic button widget"""
 
-    def __init__(self, parent=None):
-        super(Button, self).__init__(parent)
+    def __init__(self, *args):
+        super(Button, self).__init__(*args)

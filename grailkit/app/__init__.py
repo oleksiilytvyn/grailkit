@@ -4,6 +4,9 @@
     ~~~~~~~~~~~~
 
     Application kit for creating GUI applications based on pyglet and OpenGL
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: GNU, see LICENSE for more details.
 """
 
 from .application import Application
