@@ -8,47 +8,34 @@
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
 """
-from grailkit.qt import Component, HLayout, Spacer
+from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QPainter
+from PyQt5.QtWidgets import QStyleOption, QStyle, QToolBar
+
+from grailkit.qt import Spacer,Component
 
 
-class Toolbar(Component):
+class Toolbar(QToolBar, Component):
     """Toolbar component"""
 
     def __init__(self, parent=None):
         super(Toolbar, self).__init__(parent)
 
-        self._layout = HLayout()
-        self._layout.setSpacing(8)
-        self._layout.setContentsMargins(8, 2, 8, 2)
-
         self.setMaximumHeight(36)
         self.setMinimumHeight(36)
-
-        self.setLayout(self._layout)
-
-    def addAction(self, action):
-        pass
-
-    def addSeparator(self):
-        """Add separator to the toolbar"""
-
-        self.addWidget(ToolbarSeparator())
+        self.setIconSize(QSize(16, 16))
 
     def addStretch(self):
         """Add space stretch"""
 
         self.addWidget(Spacer())
 
-    def addWidget(self, component):
-        """Add widget to the toolbar
+    def paintEvent(self, event):
+        """Paint component with CSS styles"""
 
-        Args:
-            component (Component): component widget
-        """
+        option = QStyleOption()
+        option.initFrom(self)
 
-        self._layout.addWidget(component)
+        painter = QPainter(self)
 
-
-class ToolbarSeparator(Component):
-
-    pass
+        self.style().drawPrimitive(QStyle.PE_Widget, option, painter, self)

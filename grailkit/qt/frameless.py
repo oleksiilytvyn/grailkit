@@ -22,9 +22,6 @@ class Frameless(Dialog):
     def __init__(self, parent=None):
         super(Frameless, self).__init__(parent)
 
-        # set a widget background
-        self.setStyleSheet("background-color: #000000;")
-
         # set window flags
         self.setWindowFlags((Qt.Dialog if OS_MAC else Qt.Tool) |
                             Qt.FramelessWindowHint |

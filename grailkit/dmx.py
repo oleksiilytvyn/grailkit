@@ -49,7 +49,7 @@ def serial_ports():
     return result
 
 
-class DMXFrame(object):
+class Universe(object):
     """Representation of DMX channels"""
 
     _bytes = []
@@ -60,9 +60,9 @@ class DMXFrame(object):
         Args:
             frame (list): DMX channel values
         """
-        super(DMXFrame, self).__init__()
+        super(Universe, self).__init__()
 
-        self._length = 513
+        self._length = 512
 
         if frame and len(frame) > 0:
             for value in frame:
@@ -178,7 +178,7 @@ class DMXDevice(object):
     _DMX_INIT1 = b'\x03\x02\x00\x00\x00'
     _DMX_INIT2 = b'\x0A\x02\x00\x00\x00'
 
-    receive = Signal(DMXFrame)
+    receive = Signal(Universe)
 
     def __init__(self, port, mode=MODE_TX):
         """Create DMX device
@@ -209,7 +209,7 @@ class DMXDevice(object):
         """Send channel information to device
 
         Args:
-            frame (DMXFrame): list of int representing DMX channels
+            frame (Universe): list of int representing DMX channels
         """
 
         data = bytearray()
@@ -239,7 +239,7 @@ class DMXDevice(object):
             buffer = self._buffer[start_index:end_index]
             self._buffer = self._buffer[end_index:]
 
-            self.receive.emit(DMXFrame(buffer))
+            self.receive.emit(Universe(buffer))
 
 
 def main():
@@ -251,7 +251,7 @@ def main():
         print('\t', port)
     print('\n')
 
-    frame = DMXFrame()
+    frame = Universe()
 
     for x in range(4):
         frame[x*16+1] = 255  # brightness

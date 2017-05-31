@@ -47,6 +47,24 @@ Button {
         }
 
 /**
+ * @section Toolbar
+ */
+
+Toolbar {
+    background: #4b5056;
+    border-top: 1px solid #4b5056;
+    padding: 5px;
+    min-height: 24px;
+    }
+
+    Toolbar QToolButton {
+        border: 1px solid transparent;
+        background: none;
+        border-radius: 3px;
+        padding: 2px;
+        }
+
+/**
  * @section Scrollbar
  */
 
