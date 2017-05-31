@@ -12,7 +12,7 @@
 
 # core
 from grailkit.qt.application import Application
-from grailkit.qt.layout import VLayout, HLayout
+from grailkit.qt.layout import VLayout, HLayout, GridLayout
 from grailkit.qt.icon import Icon
 
 # components
@@ -28,6 +28,7 @@ from grailkit.qt.splitter import Splitter
 from grailkit.qt.list import List, ListItem
 from grailkit.qt.welcome import Welcome, WelcomeAction
 from grailkit.qt.toolbar import Toolbar
+from grailkit.qt.tree import Tree, TreeItem
 
 # dialogs & windows
 from grailkit.qt.dialog import Dialog
