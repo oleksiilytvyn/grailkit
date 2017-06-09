@@ -35,29 +35,38 @@ class TestGrailkitDNA(unittest.TestCase):
         def named_slot(ref):
             bucket.append('named slot')
 
-        signal = core.Signal(int)
+        class T:
+
+            def foo(self, ref):
+                ref.append('class slot')
+
+        t = T()
+
+        signal = core.Signal(list)
         signal.connect(slot)
         signal.connect(named_slot, name='slot')
+        signal.connect(lambda ref: bucket.append('lambda slot'))
+        signal.connect(t.foo)
         signal.emit(bucket)
 
         # two signals called at once
-        self.assertEqual(len(bucket), 2)
+        self.assertEqual(len(bucket), 4)
 
         signal.emit(bucket, name='slot')
 
         # last called slot is named
-        self.assertEqual(bucket[2], 'named slot')
+        self.assertEqual(bucket[4], 'named slot')
 
         # count signals
-        self.assertEqual(len(signal), 2)
+        self.assertEqual(len(signal), 4)
 
         signal.disconnect(named_slot)
         signal.emit(bucket)
         signal.emit(bucket, name='slot')
 
         # count signals an calls
-        self.assertEqual(len(signal), 1)
-        self.assertEqual(len(bucket), 4)
+        self.assertEqual(len(signal), 4)
+        self.assertEqual(len(bucket), 10)
 
     def test_dna_create(self):
         """Test creation of new DNA file"""

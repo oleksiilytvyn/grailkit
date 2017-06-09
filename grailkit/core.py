@@ -9,10 +9,13 @@
     :license: GNU, see LICENSE for more details.
 """
 import math
+import weakref
 
 
 class Signal(object):
-    """Callback mechanism for DNA"""
+    """Callback mechanism for DNA
+    This class uses weak references to callbacks so methods can be deleted
+    if no references exists"""
 
     def __init__(self, *args):
         """Create signal
@@ -23,6 +26,7 @@ class Signal(object):
 
         self._args = [type(x) for x in args]
         self._fns = {}
+        self._flush_keys = []
 
     def __len__(self):
         """Returns number of connected slots"""
@@ -45,10 +49,12 @@ class Signal(object):
         if not callable(fn):
             raise ValueError("Given object is not callable")
 
+        ref = self._wrap(fn)
+
         if not name:
             name = len(self._fns)
 
-        self._fns[name] = fn
+        self._fns[name] = ref
 
     def disconnect(self, fn):
         """Remove function from list, if it previously added to it
@@ -57,17 +63,18 @@ class Signal(object):
             fn (callable): function to remove
         """
 
-        ref = None
+        found_key = None
 
-        for key in self._fns:
-            if fn == self._fns[key]:
-                ref = key
+        for key, value in self._fns.items():
+            if value[0] and fn == value[1]():
+                found_key = key
+
                 break
 
-        if ref:
-            del self._fns[ref]
+        if found_key:
+            del self._fns[found_key]
 
-    def emit(self, *args, name=False):
+    def emit(self, *args, name=False, **kwargs):
         """Emit signal
         If `name` argument was given, only slot with this name will be called
         otherwise all slots will be called
@@ -77,14 +84,132 @@ class Signal(object):
             name (str): give name of slot to be called
         """
 
-        if name:
-            if name in self._fns:
-                self._fns[name](*args)
-
-            return
+        if name and name in self._fns:
+            return self._call(name, *args, **kwargs)
 
         for key in self._fns:
-            self._fns[key](*args)
+            self._call(key, *args, **kwargs)
+
+        # remove dead references
+        self._flush()
+
+    def _wrap(self, fn):
+        """Returns typle with parent object and method"""
+
+        if hasattr(fn, '__self__'):
+            return weakref.ref(fn.__self__), weakref.ref(fn.__func__)
+        else:
+            return None, fn
+
+    def _call(self, name, *args, **kwargs):
+        """Call method, if reference is dead flush"""
+
+        ref = self._fns[name]
+        obj = ref[0]
+        fun = ref[1]
+
+        # bound
+        if callable(obj) and obj() and callable(fun):
+            callback = getattr(obj(), fun().__name__)
+            callback(*args, **kwargs)
+        # unbound
+        elif obj is None and fun:
+            fun(*args, **kwargs)
+        # non exists
+        else:
+            self._flush_keys.append(name)
+
+    def _flush(self):
+
+        for key in set(self._flush_keys):
+            if key in self._fns:
+                del self._fns[key]
+
+        self._flush_keys = []
+
+
+class Signalable(object):
+    """Like a Signal but with messages and bundles"""
+    # todo: implement this using weakref module
+
+    def __init__(self):
+
+        self.__slots = {}
+        self.__bundle_slots = []
+
+    def __bool__(self):
+        """Returns True"""
+
+        return True
+
+    def __len__(self):
+        """Returns number of registered callbacks"""
+
+        return sum(len(v) for k, v in self.__slots.items()) + len(self.__bundle_slots)
+
+    def connect(self, message, fn):
+        """Connect listener `fn` to slot `message`
+
+        Args:
+            message (str): slot name
+            fn (callable): function to call
+        Raises:
+            ValueError if at least one of arguments is not supported
+        """
+
+        if not isinstance(message, str):
+            raise ValueError("Can't connect to slot '%s', given value is not of type string" % message)
+
+        if not callable(fn):
+            raise ValueError("Given function is not callable.")
+
+        if message not in self.__slots:
+            self.__slots[message] = []
+
+        self.__slots[message].append(fn)
+
+    def disconnect(self, message, fn):
+        """Disconnect listener from slot
+
+        Args:
+            message (str): slot name
+            fn (callable): function to call
+        """
+
+        if message in self.__slots:
+            self.__slots[message].remove(fn)
+
+    def emit(self, message, *args):
+        """Trigger all listeners of message
+
+        Args:
+            message (str): slot name
+            *args: list of arguments
+        """
+        if message in self.__slots:
+            for fn in self.__slots[message]:
+                fn(*args)
+
+    def connect_bundle(self, fn):
+        """Connect a bundle listener"""
+
+        if not callable(fn):
+            raise ValueError("Given function is not callable.")
+
+        if fn not in self.__bundle_slots:
+            self.__bundle_slots.append(fn)
+
+    def disconnect_bundle(self, fn):
+        """Remove bundle listener"""
+
+        if fn in self.__bundle_slots:
+            self.__bundle_slots.remove(fn)
+
+    def emit_bundle(self, bundle):
+        """Emit bundle of messages"""
+
+        for fn in self.__bundle_slots:
+            fn(bundle)
 
 
 class Color(object):
@@ -93,20 +218,60 @@ class Color(object):
     __slots__ = ['r', 'g', 'b', 'a']
 
     def __init__(self, r=0.0, g=0.0, b=0.0, a=1.0):
+        """Create color
+
+        Args:
+            r (float, int): Red value
+            g (float, int): Green value
+            b (float, int): Blue value
+            a (float, int): Opacity value
+        """
         self.r = r
         self.g = g
         self.b = b
         self.a = a
 
-    def hex(self):
+    def to_hex(self):
         """Returns color in RGB hex format"""
 
-        return '#' + str([self.r, self.g, self.b])
+        return '#%02x%02x%02x' % (self.r, self.g, self.b)
 
-    def hex_rgba(self):
+    def to_hex_rgba(self):
         """Returns color in RGBA hex format"""
 
-        return '#' + str([self.r, self.g, self.b, self.a])
+        return '#%02x%02x%02x%02x' % (self.r, self.g, self.b, self.a)
+
+    @staticmethod
+    def from_hex(value):
+        """Create color instance from rgb hex string
+
+        Args:
+            value (str): rgb color in hex format
+        """
+
+        if value[0] == '#':
+            value = value[1:]
+
+        r = 0.0
+        g = 0.0
+        b = 0.0
+        a = 0.0
+
+        if len(value) == 3:
+            r = int(value[:1]*2, 16)
+            g = int(value[1:2]*2, 16)
+            b = int(value[2:3]*2, 16)
+        elif len(value) == 6:
+            r = int(value[:2], 16)
+            g = int(value[2:4], 16)
+            b = int(value[4:6], 16)
+        elif len(value) == 8:
+            r = int(value[:2], 16)
+            g = int(value[2:4], 16)
+            b = int(value[4:6], 16)
+            a = int(value[6:8], 16)
+
+        return Color(r, g, b, a)
 
 
 class Point(object):
@@ -195,6 +360,7 @@ class Rect(Point):
         self.height = height
 
     def __contains__(self, point):
+
         return self.contains(point)
 
     def center(self):
