@@ -85,7 +85,7 @@ class TestGrailkitDNA(unittest.TestCase):
         db_obj.close()
 
         self.assertTrue(os.path.isfile(db_path))
-        self.assertEquals(db_obj.location, db_path)
+        self.assertEqual(db_obj.location, db_path)
 
     def test_dna_corrupted(self):
         """Try to load corrupted DNA file"""

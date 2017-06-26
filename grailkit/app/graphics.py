@@ -4,25 +4,86 @@
     ~~~~~~~~~~~~~~~~~~~~~
 
     OpenGL library for drawing primitives and text
+    https://github.com/memononen/nanovg
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
 """
-
+import pyglet
 from pyglet.gl import *
-from pyglet.glu import *
-
-from grailkit.core import Color, Rect, Point
 
 
 class Graphics(object):
-    """Class for handling drawing"""
+    """Draw 2d graphics easily using OpenGL"""
 
     def __init__(self, context=None):
+        super(Graphics, self).__init__()
+
+        self._context = context
+        self._color = (0, 0, 0, 0)
+        self._batch = pyglet.graphics.Batch()
+
+    @property
+    def color(self):
+        """Paint color"""
+
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        """Set paint color"""
+
         pass
 
-    def fill(self, r, g, b, a=1.0):
+    def clear(self):
+        """Clear canvas"""
+
+        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT)
+
+    def clear_rect(self, x, y, width, height):
+        """Sets all pixels in the rectangle defined by starting point (x, y) and size (width, height)
+        to transparent black, erasing any previously drawn content.
+
+        Args:
+            x (int, float): x coordinate
+            y (int, float): y coordinate
+            width (int, float): width
+            height (int, float): height
+        """
+
+        # todo: Implement this
         pass
 
-    def rect(self, x, y, width, height):
+    def fill_rect(self, x, y, width, height):
+        """Draws a filled rectangle at (x, y) position whose size is determined by `width` and `height`.
+
+        Args:
+            x (int, float): x coordinate
+            y (int, float): y coordinate
+            width (int, float): width
+            height (int, float): height
+        """
+
+        # todo: Implement this
         pass
+
+    def stroke_rect(self, x, y, width, height):
+        """Paints a rectangle which has a starting point at (x, y) and has a `width` width and an `height` height onto
+        the canvas, using the current stroke style.
+
+        Args:
+            x (int, float): x coordinate
+            y (int, float): y coordinate
+            width (int, float): width
+            height (int, float): height
+        """
+
+        # todo: Implement this
+        pass
+
+    def end(self):
+        """Draw graphics"""
+
+        self._batch.draw()
+

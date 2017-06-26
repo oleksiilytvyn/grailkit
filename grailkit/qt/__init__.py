@@ -29,6 +29,7 @@ from grailkit.qt.list import List, ListItem
 from grailkit.qt.welcome import Welcome, WelcomeAction
 from grailkit.qt.toolbar import Toolbar
 from grailkit.qt.tree import Tree, TreeItem
+from grailkit.qt.table import Table, TableItem
 
 # dialogs & windows
 from grailkit.qt.dialog import Dialog

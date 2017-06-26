@@ -52,29 +52,25 @@ def serial_ports():
 class Universe(object):
     """Representation of DMX channels"""
 
-    _bytes = []
-
     def __init__(self, frame=None):
         """Create DMX data frame
 
         Args:
-            frame (list): DMX channel values
+            frame (list, set, None): DMX channel values
         """
         super(Universe, self).__init__()
 
         self._length = 512
+        self._bytes = self._bytes = [0] * self._length
 
         if frame and len(frame) > 0:
-            for value in frame:
-                self._bytes.append(int(value))
-
-            self._bytes += [0] * (self._length - len(frame))
-        else:
-            self._bytes = [0] * self._length
+            for index, value in enumerate(frame):
+                self._bytes[index] = int(value)
 
     def __len__(self):
+        """Returns frame length"""
 
-        return len(self._bytes)
+        return self._length
 
     def __getitem__(self, key):
         """Get channel value by index
@@ -84,7 +80,7 @@ class Universe(object):
         Raises:
             IndexError if index is out of range"""
 
-        if key < 0 or key > self._length-1:
+        if key < 0 or key >= self._length:
             raise IndexError("Index out of range. Index must be from 0 to 511 as DMX512 have 512 channels.")
 
         return self._bytes[key]
@@ -100,7 +96,7 @@ class Universe(object):
             IndexError if index is out of range
         """
 
-        if key < 0 or key > self._length-1:
+        if key < 0 or key >= self._length:
             raise IndexError("Index out of range. Index must be from 0 to 511 as DMX512 have 512 channels.")
 
         if not isinstance(value, int) or (value > 255 or value < 0):
@@ -117,7 +113,7 @@ class Universe(object):
             IndexError if index is out of range
         """
 
-        if key < 0 or key > self._length:
+        if key < 0 or key >= self._length:
             raise IndexError("Index out of range. Index must be from 0 to 511 as DMX512 have 512 channels.")
 
         self._bytes[key] = 0
@@ -178,8 +174,6 @@ class DMXDevice(object):
     _DMX_INIT1 = b'\x03\x02\x00\x00\x00'
     _DMX_INIT2 = b'\x0A\x02\x00\x00\x00'
 
-    receive = Signal(Universe)
-
     def __init__(self, port, mode=MODE_TX):
         """Create DMX device
 
@@ -187,6 +181,8 @@ class DMXDevice(object):
             port (str): serial port name
             mode: transmit or receive
         """
+
+        self.receive = Signal(Universe)
 
         self._stream = serial.Serial(port, baudrate=57600, timeout=1, stopbits=serial.STOPBITS_TWO)
         self._stream.reset_output_buffer()

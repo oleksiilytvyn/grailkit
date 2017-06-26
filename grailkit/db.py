@@ -73,7 +73,8 @@ class DataBase:
             if file_copy:
                 util.copy_file(file_copy, file_path)
             else:
-                open(file_path, 'w+')
+                file_handle = open(file_path, 'w+')
+                file_handle.close()
                 execute_query = True
 
         self._connection = lite.connect(file_path)

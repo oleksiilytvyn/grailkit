@@ -17,8 +17,6 @@ from grailkit.util import OS_MAC
 class Frameless(Dialog):
     """Frameless dialog that stays on top and doesn't shown in menu bar"""
 
-    # todo: remove shadow system decoration
-
     def __init__(self, parent=None):
         super(Frameless, self).__init__(parent)
 

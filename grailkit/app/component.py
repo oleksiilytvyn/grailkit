@@ -20,9 +20,31 @@ class Component(object):
         self.y = 0
         self.width = 0
         self.height = 0
+        self.anchor_x = 0
+        self.anchor_y = 0
+
+        self._focused = False
 
     def size(self):
+        """Returns width and height of component"""
+
         return self.width, self.height
+
+    def minimum(self):
+        """Returns minimum size of component"""
+
+        return self.width * 0.2, self.height * 0.2
+
+    def maximum(self):
+        """Returns maximum size of component"""
+
+        return self.width, self.height
+
+    @property
+    def focused(self):
+        """Returns True if focus on this this component"""
+
+        return self._focused
 
     def on_focus(self, focused):
         """Component looses or receives focus event
@@ -31,10 +53,4 @@ class Component(object):
             focused (bool): True if component received focus
         """
 
-        pass
-
-    def on_draw(self):
-        pass
-
-    def on_mouse(self):
         pass

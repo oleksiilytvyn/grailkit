@@ -48,3 +48,13 @@ class Icon(QIcon):
         """
 
         self.addPixmap(self.coloredPixmap(width, height, color), mode, state)
+
+    @staticmethod
+    def colored(path, color, original_color=QColor('black')):
+
+        icon = Icon(path)
+        size = icon.availableSizes()[0]
+        width = size.width()
+        height = size.height()
+
+        return QIcon(icon.coloredPixmap(width, height, color, original_color))
