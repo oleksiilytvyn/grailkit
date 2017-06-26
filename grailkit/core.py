@@ -8,7 +8,6 @@
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
 """
-import math
 import weakref
 
 
@@ -93,10 +92,11 @@ class Signal(object):
         # remove dead references
         self._flush()
 
-    def _wrap(self, fn):
+    @classmethod
+    def _wrap(cls, fn):
         """Returns typle with parent object and method"""
 
-        if hasattr(fn, '__self__'):
+        if hasattr(fn, '__self__') and hasattr(fn, '__func__'):
             return weakref.ref(fn.__self__), weakref.ref(fn.__func__)
         else:
             return None, fn
@@ -120,6 +120,7 @@ class Signal(object):
             self._flush_keys.append(name)
 
     def _flush(self):
+        """Delete dead references"""
 
         for key in set(self._flush_keys):
             if key in self._fns:
@@ -130,12 +131,11 @@ class Signal(object):
 
 class Signalable(object):
     """Like a Signal but with messages and bundles"""
-    # todo: implement this using weakref module
 
     def __init__(self):
 
         self.__slots = {}
-        self.__bundle_slots = []
+        self.__bundle_slots = Signal()
 
     def __bool__(self):
         """Returns True"""
@@ -164,9 +164,9 @@ class Signalable(object):
             raise ValueError("Given function is not callable.")
 
         if message not in self.__slots:
-            self.__slots[message] = []
+            self.__slots[message] = Signal()
 
-        self.__slots[message].append(fn)
+        self.__slots[message].connect(fn)
 
     def disconnect(self, message, fn):
         """Disconnect listener from slot
@@ -177,7 +177,7 @@ class Signalable(object):
         """
 
         if message in self.__slots:
-            self.__slots[message].remove(fn)
+            self.__slots[message].disconnect(fn)
 
     def emit(self, message, *args):
         """Trigger all listeners of message
@@ -187,29 +187,22 @@ class Signalable(object):
             *args: list of arguments
         """
         if message in self.__slots:
-            for fn in self.__slots[message]:
-                fn(*args)
+            self.__slots[message].emit(*args)
 
     def connect_bundle(self, fn):
         """Connect a bundle listener"""
 
-        if not callable(fn):
-            raise ValueError("Given function is not callable.")
-
-        if fn not in self.__bundle_slots:
-            self.__bundle_slots.append(fn)
+        self.__bundle_slots.connect(fn)
 
     def disconnect_bundle(self, fn):
         """Remove bundle listener"""
 
-        if fn in self.__bundle_slots:
-            self.__bundle_slots.remove(fn)
+        self.__bundle_slots.disconnect(fn)
 
     def emit_bundle(self, bundle):
         """Emit bundle of messages"""
 
-        for fn in self.__bundle_slots:
-            fn(bundle)
+        self.__bundle_slots.emit(bundle)
 
 
 class Color(object):
@@ -272,135 +265,3 @@ class Color(object):
             a = int(value[6:8], 16)
 
         return Color(r, g, b, a)
-
-
-class Point(object):
-    """2d point representation"""
-
-    __slots__ = ['x', 'y']
-
-    def __init__(self, x=0.0, y=0.0):
-        self.x = x
-        self.y = y
-
-    def __len__(self):
-        return self.length()
-
-    def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Point(self.x - other.x, self.y - other.y)
-
-    def __mul__(self, other):
-        return Point(self.x * other.x, self.y * other.y)
-
-    def __truediv__(self, other):
-        return Point(self.x / other.x, self.y / other.y)
-
-    def __floordiv__(self, other):
-        return Point(self.x // other.x, self.y // other.y)
-
-    def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
-
-    def __isub__(self, other):
-        self.x -= other.x
-        self.y -= other.y
-
-    def __imul__(self, other):
-        self.x *= other.x
-        self.y *= other.y
-
-    def __itruediv__(self, other):
-        self.x /= other.x
-        self.y /= other.y
-
-    def __ifloordiv__(self, other):
-        self.x //= other.x
-        self.y //= other.y
-
-    def __eq__(self, other):
-        return self.x == other.y and self.y == other.y
-
-    def __ne__(self, other):
-        return self.x != other.y and self.y != other.y
-
-    def __lt__(self, other):
-        return self.length() < other.length()
-
-    def __le__(self, other):
-        return self.length() <= other.length()
-
-    def __gt__(self, other):
-        return self.length() > other.length()
-
-    def __ge__(self, other):
-        return self.length() >= other.length()
-
-    def __bool__(self):
-        return self.x != 0 and self.y != 0
-
-    def length(self):
-        """Returns length from (0, 0) to point"""
-
-        return math.sqrt((0 - self.x) ** 2 + (0 - self.y) ** 2)
-
-
-class Rect(Point):
-    """2d rectangle in 2d space"""
-
-    __slots__ = ['x', 'y', 'width', 'height']
-
-    def __init__(self, x=0.0, y=0.0, width=0.0, height=0.0):
-        super(Rect, self).__init__(x, y)
-
-        self.width = width
-        self.height = height
-
-    def __contains__(self, point):
-
-        return self.contains(point)
-
-    def center(self):
-        """Return center point"""
-
-        return Point(self.x + self.width / 2, self.y + self.height / 2)
-
-    def contains(self, point):
-        """Returns weather point in rect"""
-
-        return (self.x <= point.x <= self.x + self.width) and (self.y <= point.y <= self.y + self.height)
-
-    def area(self):
-        """Area of square"""
-
-        return self.width * self.height
-
-    def intersect(self, other):
-        """Returns intersection of rectangles as new rectangle"""
-
-        if self.x < other.x:
-            r1 = self
-            r2 = other
-        else:
-            r1 = other
-            r2 = self
-
-        left = max(r1.x, r2.x)
-        right = min(r1.x + r1.width, r2.x + r2.width)
-        bottom = max(r1.y + r1.height, r2.y + r1.height)
-        top = min(r1.y, r2.y)
-
-        return Rect(left, top, left - right, top - bottom)
-
-    def union(self, other):
-        """Returns union of rectangles as new rectangle"""
-
-        x = min(self.x, other.x)
-        y = min(self.y, other.y)
-        w = max(self.x + self.width, other.x + other.width) - x
-        h = max(self.y + self.height, other.y + other.height) - y
-
-        return Rect(x, y, w, h)

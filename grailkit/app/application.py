@@ -9,9 +9,8 @@
     :license: GNU, see LICENSE for more details.
 """
 import sys
-
-from PyQt5.QtCore import QSharedMemory, Qt
-from PyQt5.QtWidgets import QApplication, QStyleFactory
+import socket
+import pyglet
 
 
 class Application(object):
@@ -25,55 +24,98 @@ class Application(object):
         if self.__instance:
             raise Exception("Only one instance of Application class is allowed")
 
-        self._name = ''
-        self._organization = ''
-        self._domain = ''
-
-        self._qt_app = QApplication(argv)
-        self._qt_app.lastWindowClosed.connect(self.quit)
-        self._shared_memory = None
-        self._sys_exception_handler = sys.excepthook
+        self._name = 'Application'
+        self._organization = 'Organization'
+        self._domain = 'example.com'
+        self._version = '0.1'
+        self._argv = argv
+        self._socket = None
+        self._port = 65432
+        self._already_running = False
 
         # set a exception handler
-        sys.excepthook = self.unhandled_exception
+        self.__exception_handler = sys.excepthook
+        sys.excepthook = self.on_exception
 
-        # fix for retina displays
-        try:
-            self._qt_app.setAttribute(Qt.AA_UseHighDpiPixmaps)
-        except:
-            pass
-
-        # use GTK style if available
-        for style in QStyleFactory.keys():
-            if "gtk" in style.lower():
-                self._qt_app.setStyle(QStyleFactory.create('gtk'))
+        self._bind()
 
         # prevent from running more than one instance
         if self.is_single_instance() and self.is_already_running():
-            self.quit()
+            self.on_instance()
 
     @property
     def name(self):
+        """This property holds the name of this application"""
+
         return self._name
+
+    @name.setter
+    def name(self, value):
+        """Name of application
+
+        Args:
+            value (str): application name
+        """
+
+        self._name = value
+
+    @property
+    def organization(self):
+        """This property holds the name of the organization that wrote this application"""
+
+        return self._organization
+
+    @organization.setter
+    def organization(self, value):
+        """Set the name of organization
+
+        Args:
+            value (str): organization name
+        """
+
+        self._organization = value
+
+    @property
+    def domain(self):
+        """This property holds the Internet domain of the organization that wrote this application"""
+
+        return self._domain
+
+    @domain.setter
+    def domain(self, value):
+        """Set domain name of organization
+
+        Args:
+            value (str): internet domain name
+        """
+
+        self._domain = value
+
+    @property
+    def version(self):
+        """This property holds version of this application"""
+
+        return self._version
+
+    @version.setter
+    def version(self, value):
+        """Set version of application
+
+        Args:
+            value (str): version string
+        """
+
+        self._version = value
 
     def run(self):
         """Run application event loop"""
 
-        pass
+        pyglet.app.run()
 
     def quit(self):
         """Quit application event loop"""
 
-        if self._shared_memory and self._shared_memory.isAttached():
-            self._shared_memory.detach()
-
-        self._qt_app.quit()
-
-    def on_instance(self):
-        """This method called when current instance is not firstly launched.
-        Re-implement this method to show dialog when application is already running."""
-
-        pass
+        pyglet.app.exit()
 
     def is_single_instance(self):
         """Return True if multiple instances not allowed,
@@ -82,7 +124,7 @@ class Application(object):
         Returns: bool
         """
 
-        return False
+        return True
 
     def is_already_running(self):
         """Check for another instances of this application
@@ -90,22 +132,33 @@ class Application(object):
         Returns: bool
         """
 
-        self._shared_memory = QSharedMemory(self._name)
+        return self._already_running
 
-        if self._shared_memory.attach():
-            self.on_instance()
+    def on_instance(self):
+        """This method called when current instance is not firstly launched.
+        Re-implement this method to show dialog when application is already running."""
 
-            return True
-        else:
-            self._shared_memory.create(1)
+        self.quit()
+        sys.exit()
 
-        return False
-
-    def unhandled_exception(self, exception_type, value, traceback_object):
+    def on_exception(self, exception_type, value, traceback_object):
         """Re-implement this method to catch exceptions"""
 
         # call default handler by default
-        self._sys_exception_handler(exception_type, value, traceback_object)
+        self.__exception_handler(exception_type, value, traceback_object)
+
+    def _bind(self):
+        """Bind socket"""
+        # todo: replace with another solution that can check application name
+
+        self._already_running = False
+
+        try:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self._socket.bind(('localhost', self._port))
+        except:
+            self._already_running = True
 
     @classmethod
     def instance(cls):

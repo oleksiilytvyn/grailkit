@@ -29,16 +29,14 @@ def path_app():
         path to current python script
     """
 
-    apppath = sys.path[0]
-
     if hasattr(sys, 'frozen'):
-        apppath = os.path.dirname(sys.executable)
+        path = os.path.dirname(sys.executable)
     elif '__file__' in locals():
-        apppath = os.path.dirname(__file__)
+        path = os.path.dirname(__file__)
     else:
-        apppath = sys.path[0]
+        path = sys.path[0]
 
-    return os.path.abspath(apppath)
+    return os.path.abspath(path)
 
 
 def path_appdata(app_name):
@@ -52,11 +50,11 @@ def path_appdata(app_name):
     """
 
     if sys.platform == 'win32':
-        appdata = os.path.join(os.environ['APPDATA'], app_name)
+        path = os.path.join(os.environ['APPDATA'], app_name)
     else:
-        appdata = os.path.expanduser(os.path.join("~", "." + app_name))
+        path = os.path.expanduser(os.path.join("~", "." + app_name))
 
-    return os.path.abspath(appdata)
+    return os.path.abspath(path)
 
 
 def copy_file(source, destination):

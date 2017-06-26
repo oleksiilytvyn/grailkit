@@ -156,7 +156,7 @@ class MessageDialog(Dialog):
 
         self.setLayout(self._ui_layout)
         self.setWindowTitle(self._title if not OS_MAC else "")
-        self.setMinimumSize(420, 80)
+        self.setMinimumSize(360, 60)
         self._update_size()
         self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
 

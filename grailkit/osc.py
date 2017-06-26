@@ -1390,7 +1390,7 @@ class OSCBundle(object):
 class OSCClient(object):
     """Send OSCMessage's and OSCBundle's to multiple servers"""
 
-    def __init__(self, address='', port=False):
+    def __init__(self, address='127.0.0.1', port=False):
         """Initialize the client.
 
         Args:
@@ -1398,12 +1398,29 @@ class OSCClient(object):
             port (int): recipient port
         """
 
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._sock.setblocking(0)
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._socket.setblocking(0)
         self._clients = []
+        self._closed = False
 
         if address and port:
             self.add(address, port)
+
+    def __len__(self):
+        """Returns number of clients"""
+
+        return len(self._clients)
+
+    def __bool__(self):
+        """Returns True if at least one client is available"""
+
+        return len(self) > 0
+
+    @property
+    def clients(self):
+        """Returns list of receipts"""
+
+        return self._clients
 
     def add(self, address, port):
         """Add a recipient
@@ -1411,9 +1428,36 @@ class OSCClient(object):
         Args:
             address (str): ip address of server
             port (int): port of server
+        Raises:
+            ValueError if one of arguments is invalid
         """
 
+        if not isinstance(address, str):
+            raise ValueError("Given address is not a string")
+
+        if not isinstance(port, int) or port <= 0:
+            raise ValueError("Given port number is not int or invalid")
+
         self._clients.append((address, port))
+
+    def remove(self, address, port):
+        """Remove a recipient
+
+        Args:
+            address (str): ip address of server
+            port (int): port of server
+        """
+
+        for client in self._clients:
+            if client[0] == address and client[1] == port:
+                self._clients.remove(client)
+
+                break
+
+    def clear(self):
+        """Clear list of receipts"""
+
+        self._clients = []
 
     def send(self, message):
         """Sends an OSCBundle or OSCMessage to the servers.
@@ -1422,10 +1466,26 @@ class OSCClient(object):
             message (OSCMessage, OSCBundle): a OSCMessage or OSCBundle to send
         """
 
+        if not (isinstance(message, OSCMessage) or isinstance(message, OSCBundle)):
+            raise ValueError("Given message is not a OSCMessage or OSCBundle")
+
+        # create new socket if previously closed
+        if self._closed:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self._socket.setblocking(0)
+            self._closed = False
+
         dgram = message.build().dgram
 
         for address in self._clients:
-            self._sock.sendto(dgram, address)
+            self._socket.sendto(dgram, address)
+
+    def close(self):
+        """Close socket connection"""
+
+        if not self._closed:
+            self._socket.close()
+            self._closed = True
 
 
 class _UDPRequestHandler(socketserver.BaseRequestHandler):
@@ -1467,7 +1527,7 @@ class OSCServer(socketserver.UDPServer):
     OSCServer and socketserver.ThreadingMixIn or socketserver.ForkingMixIn
     """
 
-    def __init__(self, address, port):
+    def __init__(self, address='127.0.0.1', port=9000):
         """Initialize OSCServer class
 
         Args:
@@ -1476,8 +1536,6 @@ class OSCServer(socketserver.UDPServer):
         """
 
         super(OSCServer, self).__init__((address, port), _UDPRequestHandler)
-
-        self._clients = []
 
     def verify_request(self, request, client_address):
         """Returns true if the data looks like a valid OSC UDP datagram.
@@ -1492,16 +1550,6 @@ class OSCServer(socketserver.UDPServer):
         data = request[0]
 
         return OSCBundle.is_valid(data) or OSCMessage.is_valid(data)
-
-    def add(self, address, port):
-        """Add client address
-
-        Args:
-            address (string): string representation of ip address, for example: '127.0.0.1'
-            port (int): port of server
-        """
-
-        self._clients.append((address, port))
 
     def handle(self, address, message, date):
         """Handle receiving of OSCMessage or OSCBundle
