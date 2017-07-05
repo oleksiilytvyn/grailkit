@@ -57,17 +57,19 @@ def discover(location):
         List of modules loaded
     """
 
+    # todo: add loading of packages in directory
+
     location = os.path.abspath(location)
-    module = os.path.basename(location)
+    module_name = os.path.basename(location)
     files = filter(re.compile('.py$', re.IGNORECASE).search, os.listdir(location))
     plugins = map(lambda fp: '.' + os.path.splitext(fp)[0], files)
 
     # import parent module / namespace
-    importlib.import_module(module)
+    importlib.import_module(module_name)
     modules = []
 
     for plugin in plugins:
         if not plugin.startswith('__'):
-            modules.append(importlib.import_module(plugin, package=module))
+            modules.append(importlib.import_module(plugin, package=module_name))
 
     return modules

@@ -77,9 +77,15 @@ class SettingsDialog(Dialog):
         self.ui_list.addItem(ListItem('Bible'))
 
         self.ui_panel_layout = VLayout()
+        self.ui_panel_layout.setSpacing(4)
         self.ui_panel_layout.addWidget(Label('Hello world'))
         self.ui_panel_layout.addWidget(Switch())
+        self.ui_panel_layout.addWidget(LineEdit())
+        search = SearchEdit()
+        search.setPlaceholderText("Search...")
+        self.ui_panel_layout.addWidget(search)
         self.ui_panel_layout.addWidget(Button('Go!'))
+        self.ui_panel_layout.addWidget(Spacer())
 
         self.ui_panel = Component()
         self.ui_panel.setLayout(self.ui_panel_layout)
@@ -106,10 +112,15 @@ if __name__ == '__main__':
     about_dialog.show()
 
     # message dialog
-    message_dialog = MessageDialog.question(title="The title",
-                                            text="Text message dialog")
+    message_dialog = MessageDialog(title="The title",
+                                   text="Text message dialog",
+                                   buttons=[MessageDialog.Ok, MessageDialog.Cancel, MessageDialog.Cancel],
+                                   icon=MessageDialog.Information)
     message_dialog.move(0, 150)
     message_dialog.show()
+
+    m = MessageDialog.information(None, 'The title', 'The message about something happened')
+    m.show()
 
     # progress dialog
     progress_dialog = ProgressDialog(title="Some progress",

@@ -24,16 +24,16 @@ class TestGrailkitCore(unittest.TestCase):
     def test_get_app_path(self):
         """Test app path"""
 
-        self.assertIsInstance(util.path_app(), str)
-        self.assertTrue(len(util.path_app()) > 0)
+        self.assertIsInstance(util.application_location(), str)
+        self.assertTrue(len(util.application_location()) > 0)
 
     def test_get_data_path(self):
         """Test path of data folder"""
 
         app = 'APP_NAME'
 
-        self.assertIsInstance(util.path_appdata(app), str)
-        self.assertTrue(util.path_appdata(app).index(app) >= 0)
+        self.assertIsInstance(util.data_location(app), str)
+        self.assertTrue(util.data_location(app).index(app) >= 0)
 
     def test_copy_file(self):
         """Test file copy if file exists"""

@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from grailkit.qt import Dialog, Label
+from grailkit.qt import Dialog, Label, Button
 from grailkit.util import OS_MAC
 
 
@@ -155,6 +155,7 @@ class MessageDialog(Dialog):
         self._ui_layout.addWidget(self._ui_buttons, 0, Qt.AlignBottom)
 
         self.setLayout(self._ui_layout)
+        self._ui_icon.raise_()
         self.setWindowTitle(self._title if not OS_MAC else "")
         self.setMinimumSize(360, 60)
         self._update_size()
@@ -266,7 +267,7 @@ class MessageDialog(Dialog):
             value = -1
         elif button in MessageDialog.StandardButton:
             name = MessageDialog.StandardButtonRoleName[button][1]
-            role = MessageDialog.StandardButtonRoleName[button][0]
+            role = button
             value = button
         elif isinstance(button, QPushButton):
             name = button.text()
@@ -279,7 +280,7 @@ class MessageDialog(Dialog):
 
             return lambda flag: cls._button_clicked(_btn)
 
-        btn = button if isinstance(button, QPushButton) else QPushButton(name)
+        btn = button if isinstance(button, Button) else Button(name)
         btn.role = role
         btn.clicked.connect(triggered(self, btn))
 
@@ -307,6 +308,7 @@ class MessageDialog(Dialog):
         """Button clicked proxy function"""
 
         self.buttonClicked.emit(button)
+        self.done(button.role)
 
     def _update_size(self):
         """Update window size"""

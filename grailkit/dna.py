@@ -950,6 +950,7 @@ class DNA:
         self.property_changed = Signal(int, str, str)
         self.entity_changed = Signal(int)
         self.entity_removed = Signal(int)
+        self.entity_added = Signal(int)
 
         self._changed = False
         self._location = file_path
@@ -1034,10 +1035,13 @@ class DNA:
                 self._db.execute("INSERT OR IGNORE INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
                                  (entity_id, key, self._write_type(value, force_type), force_type))
 
-        # emit entity changed
-        self.entity_changed.emit(cursor.lastrowid)
+        entity = self._entity(entity_id, factory)
 
-        return self._entity(entity_id, factory)
+        # emit entity changed
+        self.entity_changed.emit(entity.id)
+        self.entity_added.emit(entity.id)
+
+        return entity
 
     def _copy(self, entity, name=None, parent=None, entity_type=None, index=-1, factory=None):
         """Create copy of given entity and override properties if needed
@@ -1092,7 +1096,10 @@ class DNA:
             self._db.execute("INSERT OR IGNORE INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
                              (copy_id, key, self._write_type(value, force_type), force_type))
 
-        return self._entity(copy_id, factory=factory)
+        entity = self._entity(copy_id, factory=factory)
+        self.entity_added.emit(entity.id)
+
+        return entity
 
     def _entity(self, entity_id, factory=None):
         """Get entity by `entity_id`
@@ -1416,15 +1423,16 @@ class DNA:
         self._db.commit()
         self._changed = False
 
-    def save_copy(self, file_path):
+    def save_copy(self, file_path, create=True):
         """Save a copy of this file to `file_path` location
 
         Args:
             file_path (str): path to copy of current file
+            create (bool): If True file will be created
         """
 
         self.save()
-        self._db.copy(file_path)
+        self._db.copy(file_path, create=create)
 
     def close(self):
         """Close connection"""
@@ -1973,6 +1981,15 @@ class Library(DNA):
                             factory=factory)
 
         return item
+
+    def copy(self, entity):
+        """Copy existing entity into library
+
+        Args:
+            entity (DNAEntity): entity to be copied
+        """
+
+        self._copy(entity)
 
     def root(self):
         """Get a library entity

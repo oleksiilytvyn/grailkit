@@ -9,13 +9,13 @@
     :license: GNU, see LICENSE for more details.
 """
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QStyle, QToolButton, QLineEdit
+from PyQt5.QtGui import QIcon, QPainter, QColor, QFont
+from PyQt5.QtWidgets import QStyle, QToolButton, QLineEdit, QStyleOption
 
-from grailkit.qt import Component
+from grailkit.qt import LineEdit
 
 
-class SearchEdit(QLineEdit, Component):
+class SearchEdit(LineEdit):
     """Basic edit input for search with clear button"""
 
     keyPressed = pyqtSignal('QKeyEvent')
@@ -23,6 +23,8 @@ class SearchEdit(QLineEdit, Component):
 
     def __init__(self, parent=None):
         super(SearchEdit, self).__init__(parent)
+
+        self._placeholder = "Search"
 
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.textChanged.connect(self._text_changed)
@@ -74,6 +76,38 @@ class SearchEdit(QLineEdit, Component):
         super(SearchEdit, self).focusOutEvent(event)
 
         self.focusOut.emit(event)
+
+    def paintEvent(self, event):
+
+        color = QColor('#777')
+        p = QPainter(self)
+        opt = QStyleOption()
+        opt.initFrom(self)
+
+        # draw custom placeholder
+        if not self.hasFocus() and not self.text() and self._placeholder:
+            self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+            font = p.font()
+            new_font = QFont().resolve(font)
+            new_font.setPointSize(12)
+            p.setFont(new_font)
+
+            p.setPen(color)
+            fm = self.fontMetrics()
+            min_left = max(0, -fm.minLeftBearing())
+            ph = self.rect().adjusted(min_left + 3, 0, 0, 0)
+            elided_text = fm.elidedText(self._placeholder, Qt.ElideRight, ph.width())
+            p.drawText(ph, Qt.AlignCenter, elided_text)
+
+            p.setFont(font)
+        else:
+            QLineEdit.paintEvent(self, event)
+
+    def setPlaceholderText(self, text):
+        self._placeholder = text
+
+    def placeholderText(self):
+        return self._placeholder
 
     def _text_changed(self, text):
         """Process text changed event"""

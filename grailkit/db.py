@@ -62,8 +62,7 @@ class DataBase:
         directory = os.path.dirname(os.path.realpath(file_path))
         execute_query = False
 
-        if not create and (not os.path.exists(directory) or
-           not os.path.isfile(file_path)):
+        if not create and not util.file_exists(file_path):
             raise DataBaseError("Database file not exists. Unable to open sqlite file @ %s." % file_path)
 
         if not os.path.exists(directory):
@@ -190,17 +189,28 @@ class DataBase:
 
         self._connection.row_factory = factory
 
-    def copy(self, file_path):
+    def copy(self, file_path, create=False):
         """Copy database to new file location
 
         Args:
             file_path (str): path to new file
+            create (bool): create file if not exists
         """
 
         directory = os.path.dirname(os.path.realpath(file_path))
 
-        if not os.path.exists(directory) or not os.path.isfile(file_path):
+        if not file_path:
+            raise ValueError('Path to the file is invalid')
+
+        if not create and not util.file_exists(file_path):
             raise DataBaseError('Unable to copy database, file %s not exists.' % file_path)
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        if not os.path.isfile(file_path):
+            file_handle = open(file_path, 'w+')
+            file_handle.close()
 
         db = lite.connect(file_path)
         query = "".join(line for line in self._connection.iterdump())

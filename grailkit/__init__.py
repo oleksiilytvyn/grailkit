@@ -12,13 +12,13 @@
 """
 
 import os
-from grailkit.util import path_appdata
+from grailkit.util import data_location
 
 # library version
 __version__ = '0.3.3'
 
 # path to shader folder
-PATH_SHARED = path_appdata("grail-shared")
+PATH_SHARED = data_location("grail-shared")
 
 # path to library
 PATH_LIBRARY = os.path.join(PATH_SHARED, "library.grail-library")
