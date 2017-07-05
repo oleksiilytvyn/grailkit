@@ -18,11 +18,13 @@ class Component(object):
 
         self.x = 0
         self.y = 0
+        self.z = 0
         self.width = 0
         self.height = 0
         self.anchor_x = 0
         self.anchor_y = 0
 
+        self._parent = None
         self._focused = False
 
     def size(self):
@@ -41,6 +43,23 @@ class Component(object):
         return self.width, self.height
 
     @property
+    def is_owned(self):
+        """Returns True if component owned by parent container"""
+
+        return bool(self._parent)
+
+    @property
+    def parent(self):
+        """Returns reference to parent container"""
+
+        return self._parent
+
+    def set_parent(self, parent=None):
+        """Set parent container of this component"""
+
+        self._parent = parent
+
+    @property
     def focused(self):
         """Returns True if focus on this this component"""
 
@@ -52,5 +71,15 @@ class Component(object):
         Args:
             focused (bool): True if component received focus
         """
+
+        pass
+
+    def on_draw(self):
+        """Draw component"""
+
+        pass
+
+    def on_update(self):
+        """Update component state"""
 
         pass

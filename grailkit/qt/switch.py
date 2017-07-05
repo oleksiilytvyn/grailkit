@@ -19,9 +19,10 @@ from grailkit.qt import Component
 class Switch(QAbstractButton, Component):
     """Simple two state switch widget"""
 
-    state_changed = pyqtSignal(bool)
+    changed = pyqtSignal(bool)
 
     def __init__(self, parent=None, state=True):
+
         super(Switch, self).__init__(parent)
 
         self._state = state
@@ -84,19 +85,19 @@ class Switch(QAbstractButton, Component):
         """React to mouse click"""
 
         self._state = not self._state
-        self.state_changed.emit(self._state)
+        self.changed.emit(self._state)
 
     def sizeHint(self):
         """Resize rule"""
 
         return QSize(52, 24)
 
-    def setState(self, state):
+    def setValue(self, flag):
         """Set state of switch"""
 
-        self._state = state
+        self._state = bool(flag)
 
-    def state(self):
+    def value(self):
         """Get state of switch"""
 
         return self._state

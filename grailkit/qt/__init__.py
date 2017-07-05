@@ -21,8 +21,10 @@ from grailkit.qt.spacer import Spacer
 from grailkit.qt.label import Label
 from grailkit.qt.switch import Switch
 from grailkit.qt.button import Button
-from grailkit.qt.search_edit import SearchEdit
 from grailkit.qt.splitter import Splitter
+
+from grailkit.qt.line_edit import LineEdit
+from grailkit.qt.search_edit import SearchEdit
 
 # lists
 from grailkit.qt.list import List, ListItem

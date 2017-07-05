@@ -15,14 +15,13 @@ import shutil
 import platform
 
 # Platform constants
-OS_ANY = True
 OS_WIN = platform.system() == "Windows"
 OS_MAC = platform.system() == "Darwin"
 OS_UNIX = platform.system() == "unix"
 OS_LINUX = platform.system() == "Linux"
 
 
-def path_app():
+def application_location():
     """Get the path to main script file no matter how it's run.
 
     Returns:
@@ -39,7 +38,7 @@ def path_app():
     return os.path.abspath(path)
 
 
-def path_appdata(app_name):
+def data_location(app_name):
     """Returns path to application data folder
 
     Args:
@@ -90,7 +89,8 @@ def millis_now():
 
 def default_key(obj, key, default=None):
     """Get value by attribute in object or by key in dict
-    if property exists returns value otherwise return `default` value
+    if property exists returns value otherwise return `default` value.
+    If object not exist or object don't have property returns `default`
 
     Args:
         obj (dict): dictionary
@@ -104,3 +104,13 @@ def default_key(obj, key, default=None):
         return getattr(obj, key, default)
     else:
         return default
+
+
+def file_exists(path):
+    """Check if file exists
+
+    Args:
+        path (str): path to file
+    """
+
+    return os.path.exists(os.path.dirname(os.path.realpath(path))) and os.path.isfile(path)

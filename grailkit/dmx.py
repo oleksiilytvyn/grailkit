@@ -17,7 +17,7 @@ import threading
 from grailkit.core import Signal
 
 
-def serial_ports():
+def dmx_serial_ports():
     """Lists serial port names
 
     Returns
@@ -49,19 +49,27 @@ def serial_ports():
     return result
 
 
-class Universe(object):
+class DMXError(Exception):
+    """Base class for dmx module exceptions"""
+
+    pass
+
+
+class DMXUniverse(object):
     """Representation of DMX channels"""
 
-    def __init__(self, frame=None):
+    def __init__(self, frame=None, universe=0):
         """Create DMX data frame
 
         Args:
             frame (list, set, None): DMX channel values
+            universe (int): number if DMX universe
         """
-        super(Universe, self).__init__()
+        super(DMXUniverse, self).__init__()
 
         self._length = 512
         self._bytes = self._bytes = [0] * self._length
+        self._universe = universe
 
         if frame and len(frame) > 0:
             for index, value in enumerate(frame):
@@ -137,6 +145,12 @@ class Universe(object):
 
         return bytes(self._bytes)
 
+    @property
+    def universe(self):
+        """Returns universe number"""
+
+        return self._universe
+
 
 class DMXDevice(object):
     """DMX device using RS245 protocol"""
@@ -182,7 +196,7 @@ class DMXDevice(object):
             mode: transmit or receive
         """
 
-        self.receive = Signal(Universe)
+        self.receive = Signal(DMXUniverse)
 
         self._stream = serial.Serial(port, baudrate=57600, timeout=1, stopbits=serial.STOPBITS_TWO)
         self._stream.reset_output_buffer()
@@ -205,7 +219,7 @@ class DMXDevice(object):
         """Send channel information to device
 
         Args:
-            frame (Universe): list of int representing DMX channels
+            frame (DMXUniverse): list of int representing DMX channels
         """
 
         data = bytearray()
@@ -235,25 +249,25 @@ class DMXDevice(object):
             buffer = self._buffer[start_index:end_index]
             self._buffer = self._buffer[end_index:]
 
-            self.receive.emit(Universe(buffer))
+            self.receive.emit(DMXUniverse(buffer))
 
 
 def main():
     """Test this module"""
 
     print('Available ports:')
-    ports = serial_ports()
+    ports = dmx_serial_ports()
     for port in ports:
         print('\t', port)
     print('\n')
 
-    frame = Universe()
+    frame = DMXUniverse()
 
     for x in range(4):
-        frame[x*16+1] = 255  # brightness
-        frame[x*16+2] = 255  # red
-        frame[x*16+3] = 255  # green
-        frame[x*16+4] = 255  # blue
+        frame[x*16] = 255  # brightness
+        frame[x*16+1] = 255  # red
+        frame[x*16+2] = 255  # green
+        frame[x*16+3] = 255  # blue
 
     device = DMXDevice(ports[1])
 

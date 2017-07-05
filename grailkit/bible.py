@@ -25,7 +25,7 @@ import json
 import sqlite3 as lite
 
 from grailkit import PATH_SHARED
-from grailkit.util import copy_file, default_key
+from grailkit.util import copy_file, default_key, file_exists
 from grailkit.dna import DNA
 
 
@@ -681,7 +681,7 @@ class BibleHost:
         except (BibleError, lite.OperationalError):
             return False
 
-        if os.path.exists(bible_path) and os.path.isfile(bible_path) and not replace:
+        if file_exists(file_path) and not replace:
             raise BibleHostError("Bible with id %s already installed" % (bible.identifier,))
 
         # just copy file to new location
@@ -718,7 +718,7 @@ class BibleHost:
             True if bible file is valid
         """
 
-        if not (os.path.exists(file_path) and os.path.isfile(file_path)):
+        if not file_exists(file_path):
             return False
 
         return True
