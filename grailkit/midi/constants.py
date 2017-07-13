@@ -146,3 +146,9 @@ FPS_24 = 0xE8
 FPS_25 = 0xE7
 FPS_29 = 0xE3
 FPS_30 = 0xE2
+
+
+def is_status(byte):
+    """Return True if the given byte is a MIDI status byte, False otherwise."""
+
+    return (byte & 0x80) == 0x80

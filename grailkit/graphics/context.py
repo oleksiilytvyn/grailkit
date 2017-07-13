@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.app.graphics
-    ~~~~~~~~~~~~~~~~~~~~~
+    grailkit.graphics.context
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     OpenGL library for drawing primitives and text
     https://github.com/memononen/nanovg
@@ -13,11 +13,11 @@ import pyglet
 from pyglet.gl import *
 
 
-class Graphics(object):
+class Context(object):
     """Draw 2d graphics easily using OpenGL"""
 
     def __init__(self, context=None):
-        super(Graphics, self).__init__()
+        super(Context, self).__init__()
 
         self._context = context
         self._color = (0, 0, 0, 0)

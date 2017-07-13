@@ -9,7 +9,6 @@
     :license: GNU, see LICENSE for more details.
 """
 from .component import Component
-from .graphics import Graphics
 
 
 class Layout(Component):

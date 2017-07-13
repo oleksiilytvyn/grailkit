@@ -7,7 +7,17 @@
 
     https://github.com/asweigart/pyperclip
 """
-import pyperclip
+try:
+    import pyperclip
+except ImportError:
+    def copy(data): pass
+
+    def paste(): pass
+
+    pyperclip = {
+        copy: copy,
+        paste: paste
+        }
 
 
 def copy(data):

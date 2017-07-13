@@ -6,9 +6,11 @@
     Launch testing application using all grailkit Qt components
 """
 import sys
+import datetime
 
-from PyQt5.QtCore import QPoint
-from PyQt5.QtWidgets import QStyle, QApplication
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 from grailkit.qt import *
 
@@ -59,6 +61,54 @@ class ExampleDialog(Dialog):
         self.setLayout(self.ui_layout)
         self.setWindowTitle('Test dialog')
         self.setGeometry(300, 300, 600, 400)
+
+
+class DisplayTexture(QImage):
+
+    def __init__(self, *args):
+        super(DisplayTexture, self).__init__(*args)
+
+    def render(self):
+
+        _time = datetime.datetime.now()
+        text = "%s:%s:%s" % (str(_time.hour).zfill(2), str(_time.minute).zfill(2), str(_time.second).zfill(2))
+        padding = 10
+
+        p = QPainter()
+        p.begin(self)
+        p.setRenderHints(QPainter.Antialiasing | QPainter.TextAntialiasing | QPainter.SmoothPixmapTransform)
+        p.fillRect(self.rect(), Qt.black)
+
+        p.setPen(QColor('#fff'))
+        box = QRect(self.rect().topLeft(), self.rect().bottomRight())
+        box.adjust(padding, padding, -padding, -padding)
+
+        p.drawText(box, Qt.AlignCenter | Qt.TextWordWrap, text)
+
+        p.end()
+
+
+class TextureDialog(QWidget):
+
+    def __init__(self, parent=None, texture=None):
+        super(TextureDialog, self).__init__(parent)
+
+        self._texture = texture
+
+        self.setGeometry(300, 300, 300, 400)
+
+    def paintEvent(self, QPaintEvent):
+
+        p = QPainter()
+        p.begin(self)
+
+        p.setRenderHints(QPainter.Antialiasing | QPainter.TextAntialiasing | QPainter.SmoothPixmapTransform)
+        p.fillRect(self.rect(), Qt.black)
+
+        if self._texture:
+            p.drawImage(self.rect(), self._texture)
+
+        p.end()
 
 
 class SettingsDialog(Dialog):
@@ -137,5 +187,27 @@ if __name__ == '__main__':
 
     settings = SettingsDialog()
     settings.show()
+
+    # texture example
+
+    tex = DisplayTexture(QSize(300, 400), QImage.Format_RGB32)
+    tex.render()
+
+    display_1 = TextureDialog(None, tex)
+    display_1.setWindowTitle("Texture 1")
+    display_1.show()
+
+    display_2 = TextureDialog(None, tex)
+    display_2.setWindowTitle("Texture 2")
+    display_2.show()
+
+    def repaint_texture():
+        tex.render()
+        display_1.repaint()
+        display_2.repaint()
+
+    timer = QTimer()
+    timer.timeout.connect(repaint_texture)
+    timer.start(100)
 
     sys.exit(app.exec())

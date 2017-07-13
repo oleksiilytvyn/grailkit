@@ -48,16 +48,16 @@ class Plugin(object, metaclass=PluginRegistry):
         return cls.__registry__
 
 
-def discover(location):
+def discover(location, packages=False, exclude=None):
     """Load and execute python modules in given location
 
     Args:
         location (str): path to plugins folder
+        packages (bool): If True sub-modules will be also loaded
+        exclude (list): list of excluded modules, if modules also included. see `include_modules` argument
     Returns:
         List of modules loaded
     """
-
-    # todo: add loading of packages in directory
 
     location = os.path.abspath(location)
     module_name = os.path.basename(location)
@@ -67,7 +67,15 @@ def discover(location):
     # import parent module / namespace
     importlib.import_module(module_name)
     modules = []
+    exclude = exclude or []
 
+    # include packages
+    if packages:
+        for name in os.listdir(location):
+            if os.path.isfile(os.path.join(location, name + '/__init__.py')) and name not in exclude:
+                modules.append(importlib.import_module(name, package=module_name))
+
+    # include modules
     for plugin in plugins:
         if not plugin.startswith('__'):
             modules.append(importlib.import_module(plugin, package=module_name))
