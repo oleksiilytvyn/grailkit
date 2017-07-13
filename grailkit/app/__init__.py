@@ -12,6 +12,5 @@
 
 from .application import Application
 from .component import Component
-from .graphics import Graphics
 from .layout import Layout, GridLayout, VLayout, HLayout
 from .window import Window

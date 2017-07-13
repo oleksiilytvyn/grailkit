@@ -3,8 +3,8 @@
     grailkit.midi
     ~~~~~~~~~~~~~
 
-    MIDI library based on python-rtmidi library but with better interface
-    CAUTION! This module is highly unstable and incomplete
+    MIDI I/O library based on rtmidi (python-rtmidi),
+    but with simple and better interface
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
@@ -14,38 +14,25 @@ import rtmidi
 from grailkit.core import Signal
 
 
-def is_status(byte):
-    """Return True if the given byte is a MIDI status byte, False otherwise."""
-
-    return (byte & 0x80) == 0x80
-
-
-def _available(_type='in'):
-    """Returns list of available input or output ports"""
-
-    dev = rtmidi.MidiIn() if _type == 'in' else rtmidi.MidiOut()
-    ports = dev.get_ports()
-    del dev
-
-    return ports
-
-
-def input_ports():
-    """Returns list of all available input ports"""
-
-    return _available(_type='in')
-
-
-def output_ports():
-    """Returns list of all available output ports"""
-
-    return _available(_type='out')
-
-
 class MidiError(Exception):
     """Base exception class for MIDI exceptions"""
 
     pass
+
+
+class MidiMessage(list):
+    """Representation of midi message data"""
+
+    def __init__(self, _list, _delta):
+        super(MidiMessage, self).__init__(_list)
+
+        self._time = _delta
+
+    @property
+    def time_delta(self):
+        """Returns delta time in seconds between this and previous message"""
+
+        return self._time
 
 
 class MidiIn(object):
@@ -56,38 +43,38 @@ class MidiIn(object):
 
         self._dev = rtmidi.MidiIn()
 
-        if virtual:
-            self._dev.open_virtual_port(name)
-        else:
-            self._dev.open_port(port, name)
+        try:
+            if virtual:
+                self._dev.open_virtual_port(name)
+            else:
+                self._dev.open_port(port, name)
+        except TypeError:
+            raise MidiError("Unable to open%s port '%s' with name '%s'. "
+                            "Port number is invalid" % (" virtual" if virtual else "", port, name))
+        except rtmidi.RtMidiError as error:
+            raise MidiError(error)
 
         # signals
         self.received = Signal(object)
+        self.error = Signal(int, str)
 
-        self._dev.set_callback(self._received)
+        self._dev.set_callback(self._received, None)
+        self._dev.set_error_callback(self._error, None)
 
-    def _received(self, message):
+    def _received(self, message, user_data=None):
         """Trigger signal when message received"""
 
-        self.received.emit(message)
+        self.received.emit(MidiMessage(message[0], message[1]))
+
+    def _error(self, error_type, error_message, user_data=None):
+        """Error callback"""
+
+        self.error.emit(error_type, error_message)
 
     def close(self):
         """Close device"""
 
         self._dev.close_port()
-
-    def poll(self):
-        """Poll for MIDI input.
-
-        Checks whether a MIDI event is available in the input buffer and returns a two-element tuple with
-        the MIDI message and a delta time. The MIDI message is a list of integers representing the data bytes of
-        the message, the delta time is a float representing the time in seconds elapsed since the reception
-        of the previous MIDI event.
-
-        The function does not block. When no MIDI message is available, it returns None.
-        """
-
-        return self._dev.get_message()
 
     def ignore_types(self, sysex=True, timing=True, active_sense=True):
         """Enable/Disable input filtering of certain types of MIDI events.
@@ -118,7 +105,7 @@ class MidiIn(object):
         defines in RtMidi.cpp and recompile.
         """
 
-        self._dev.ignore_types(self, sysex=sysex, timing=timing, active_sense=active_sense)
+        self._dev.ignore_types(sysex=sysex, timing=timing, active_sense=active_sense)
 
     @classmethod
     def open(cls, port=0, name=None):
@@ -136,8 +123,8 @@ class MidiIn(object):
         To change the port name, delete its instance, create a new one and open the port again giving a different name.
 
         Raises:
-            RtMidiError: Raised when trying to open a MIDI port when a
-                         (virtual) port has already been opened by this instance.
+            MidiError: Raised when trying to open a MIDI port when a
+                       (virtual) port has already been opened by this instance.
         """
 
         return MidiIn(port=port, name=name, virtual=False)
@@ -166,8 +153,8 @@ class MidiIn(object):
         Raises:
             NotImplementedError: Raised when trying to open a virtual MIDI port with the Windows MultiMedia API,
                                  which does not support virtual ports.
-            RtMidiError: Raised when trying to open a virtual port when a
-                         (virtual) port has already been opened by this instance.
+            MidiError: Raised when trying to open a virtual port when a
+                       (virtual) port has already been opened by this instance.
         """
 
         return MidiIn(name=name, virtual=True)
@@ -215,10 +202,12 @@ class MidiOut(object):
     def __init__(self, port=0, name=None, virtual=False):
         """Open midi output device"""
 
+        self._dev = rtmidi.MidiOut()
+
         if virtual:
-            self._dev = rtmidi.MidiOut(name=name)
+            self._dev.open_virtual_port(name)
         else:
-            self._dev = rtmidi.MidiOut(port=port, name=name)
+            self._dev.open_port(port, name)
 
     def send(self, data):
         """Send a MIDI message to the output port.

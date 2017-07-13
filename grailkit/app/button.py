@@ -8,8 +8,9 @@
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
 """
+from grailkit.graphics.context import Context
+
 from .component import Component
-from .graphics import Graphics
 
 
 class Button(Component):
@@ -21,7 +22,7 @@ class Button(Component):
     def on_draw(self):
         """Draw component"""
 
-        g = Graphics()
+        g = Context()
         g.color = (20, 20, 20, 255)
         g.fill_rect(self.x, self.y, self.width, self.y)
         g.end()

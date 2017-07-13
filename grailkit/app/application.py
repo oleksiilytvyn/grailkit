@@ -149,7 +149,7 @@ class Application(object):
 
     def _bind(self):
         """Bind socket"""
-        # todo: replace with another solution that can check application name
+        # xxx: replace with another solution that can check application name
 
         self._already_running = False
 

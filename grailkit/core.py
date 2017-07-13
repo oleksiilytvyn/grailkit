@@ -9,6 +9,10 @@
     :license: GNU, see LICENSE for more details.
 """
 import weakref
+import logging
+
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class Signal(object):
@@ -108,15 +112,22 @@ class Signal(object):
         obj = ref[0]
         fun = ref[1]
 
-        # bound
-        if callable(obj) and obj() and callable(fun):
-            callback = getattr(obj(), fun().__name__)
-            callback(*args, **kwargs)
-        # unbound
-        elif obj is None and fun:
-            fun(*args, **kwargs)
-        # non exists
-        else:
+        try:
+            # bound
+            if callable(obj) and obj() and callable(fun):
+                callback = getattr(obj(), fun().__name__)
+                callback(*args, **kwargs)
+            # unbound
+            elif obj is None and fun:
+                fun(*args, **kwargs)
+            # non exists
+            else:
+                self._flush_keys.append(name)
+        # Error caused by callback
+        except RuntimeError as e:
+            logging.warning("Slot %s removed because of exception raised.\n "
+                            "Original exception was: %s" %
+                            (str(fun), str(e)))
             self._flush_keys.append(name)
 
     def _flush(self):
