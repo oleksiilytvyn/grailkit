@@ -20,6 +20,8 @@ from grailkit.util import OS_MAC
 class Popup(Dialog):
     """Dialog without title bar and frame, but with rounded corners and pointing triangle"""
 
+    # todo: fix bug when popup show at right position but part of dialog is on second screen or offscreen
+
     def __init__(self, parent=None):
         super(Popup, self).__init__(parent)
 

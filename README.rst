@@ -13,20 +13,36 @@ Grailkit includes handling of Project, CueList's, Cue and reading/writing to *.g
 Reading and writing to grail bible format.
 Also grailkit implements new PyQt5 widgets and dialogs.
 
-Modules and features:
+Modules and features
+--------------------
 
-* db - sqlite database wrapper
-* osc - Open Sound Control in pure python
-* dna - grail format I/O
-* dmx - DMX I/O based on RS245
+Core:
+
+* db - Thin sqlite database wrapper
 * core - Signals and basic types
-* midi - live MIDI input/output
-* artnet - Art-Net implementation
-* plug - plugin loading/registration
-* util - utility functions, constants and classes
-* bible - grail bible format I/O
-* bible_parse - parsing bible formats to grail format
-* graphics - OpenGL graphics context and basic data types like Point, Rectangle, Color
+* plug - Plugin loading/registration
+* util - Utility functions, constants and classes
+
+Grail file format:
+
+* dna - Grail format I/O
+* bible - Grail bible format I/O
+* bible_parse - Parsing other bible formats to grail format
+
+Protocols & communication:
+
+* osc - Open Sound Control protocol in pure python
+* dmx - DMX I/O based on RS245 (experimental)
+* midi - MIDI I/O library
+* artnet - Artistic License Art-Net (tm) implementation (experimental)
+
+GUI:
+
+* qt - Qt components
+* app - pyglet application classes (experimental)
+* graphics - OpenGL graphics context and basic data types like Point, Rectangle, Color (experimental)
+* clipboard - access OS clipboard (experimental)
+
 
 Requirements
 ------------
