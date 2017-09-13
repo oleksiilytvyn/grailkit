@@ -5,6 +5,9 @@
 
     Parse other bible formats into grail bible format.
 
+    Bibles in OSIS format can be downloaded here:
+    https://github.com/matt-cook/bible
+
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: GNU, see LICENSE for more details.
 """

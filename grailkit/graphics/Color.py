@@ -122,11 +122,20 @@ class Color(object):
         return Color(*colorsys.hsv_to_rgb(h, s, v))
 
 
-Colors = {
-    'black': '#000000',
-    'white': '#ffffff',
-    'grey': '#cccccc',
-    'red': '#ff0000',
-    'green': '#00ff00',
-    'blue': '#0000ff'
-    }
+class Colors:
+    """Manage defaults colors"""
+
+    COLORS = {
+        'black': '#000000',
+        'white': '#ffffff',
+        'grey': '#cccccc',
+        'red': '#ff0000',
+        'green': '#00ff00',
+        'blue': '#0000ff'
+        }
+
+    @staticmethod
+    def by_name(name):
+        """Returns color by name"""
+
+        return Color(name)

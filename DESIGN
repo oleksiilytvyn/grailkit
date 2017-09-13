@@ -3,8 +3,8 @@ Principles
 ----------
 
 * Grailkit is a set of modules for cross-platform application creation
-* No dependencies if possible
-* Pure python if possible
+* Pure python
+
 
 The modules
 -----------
@@ -35,10 +35,10 @@ dmx
 
 dna
     Grail format file I/O, Grail files support many nodes,
-    properties and events on their creation, change or delition
+    properties and events on their creation, change or deletion
 
 midi
-    *Experimental* Midi protocol implementation
+    MIDI protocol implementation
 
 osc
     Open Sound Control protocol in pure python
