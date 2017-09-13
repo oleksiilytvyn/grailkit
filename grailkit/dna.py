@@ -749,6 +749,17 @@ class CueEntity(DNAEntity):
               COLOR_PURPLE,
               COLOR_GRAY)
 
+    COLOR_NAMES = (
+        'Default',
+        'Red',
+        'Orange',
+        'Yellow',
+        'Green',
+        'Blue',
+        'Purple',
+        'Gray'
+        )
+
     @property
     def number(self):
         """Identifier of cue assigned by user"""

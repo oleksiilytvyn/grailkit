@@ -573,6 +573,28 @@ class Bible(DNA):
                             LIMIT ?""",
                             (keyword, keyword, keyword, chapter, verse, limit), factory=verse_factory)
 
+    def match_text(self, text, limit=3):
+        """Search for text accourances
+
+        Args:
+            text (str): search string
+            limit (int): limit results
+        """
+
+        keyword = "%" + text.lstrip().rstrip().lower() + "%"
+
+        return self._db.all("""SELECT 
+                                `verses`.`osisid`,
+                                `verses`.`book`,
+                                `verses`.`chapter`,
+                                `verses`.`verse`,
+                                `verses`.`text`,
+                                `books`.`name` as book_name
+                               FROM verses 
+                               LEFT JOIN `books` ON `verses`.`book` = `books`.`id`
+                               WHERE lowercase(`verses`.`text`) LIKE ? LIMIT ?""",
+                            (keyword, limit), factory=verse_factory)
+
     def json_info(self):
         """Create json information string"""
 
@@ -672,17 +694,18 @@ class BibleHost:
         """
 
         if not cls.verify(file_path):
-            return False
+            raise BibleHostError("Unable to install bible from file \"%s\" due to file corruption." % file_path)
 
         try:
             bible = Bible(file_path)
             bible.close()
             bible_path = os.path.join(cls._location, bible.identifier + '.grail-bible')
-        except (BibleError, lite.OperationalError):
-            return False
+        except (BibleError, lite.OperationalError) as error:
+            raise BibleHostError("Unable to install bible from file \"%s\"."
+                                 "File may be corrupted or in wrong format." % file_path)
 
-        if file_exists(file_path) and not replace:
-            raise BibleHostError("Bible with id %s already installed" % (bible.identifier,))
+        if cls.info(bible.identifier) and not replace:
+            raise BibleHostError("Bible %s (%s) already installed" % (bible.title, bible.identifier,))
 
         # just copy file to new location
         copy_file(file_path, bible_path)

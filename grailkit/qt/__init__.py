@@ -25,6 +25,7 @@ from grailkit.qt.splitter import Splitter
 
 from grailkit.qt.line_edit import LineEdit
 from grailkit.qt.search_edit import SearchEdit
+from grailkit.qt.text_edit import TextEdit
 
 # lists
 from grailkit.qt.list import List, ListItem
