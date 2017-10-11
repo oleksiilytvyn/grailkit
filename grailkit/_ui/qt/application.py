@@ -1,47 +1,61 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.app.application
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+    grailkit.ui.qt.application
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Application instance management
-
-    :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    
 """
+import re
 import sys
-import socket
-import pyglet
+
+from PyQt5.QtCore import QSharedMemory, QFile, Qt
+from PyQt5.QtWidgets import QApplication, QStyleFactory
+
+# load qt resources
+import grailkit.resources
+import grailkit._ui.abstract as abstract
 
 
-class Application(object):
-    """Application event loop"""
+class Application(abstract.Application):
+    """Application instance"""
 
     __instance = None
 
     def __init__(self, argv):
+        super(Application, self).__init__(argv)
 
-        # don't allow creation of multiple instances
-        if self.__instance:
-            raise Exception("Only one instance of Application class is allowed")
+        self._qt_instance = QApplication(argv)
+        self._qt_instance.lastWindowClosed.connect(self.quit)
 
-        self._name = 'Application'
-        self._organization = 'Organization'
-        self._domain = 'example.com'
-        self._version = '0.1'
-        self._argv = argv
-        self._socket = None
-        self._port = 65432
-        self._already_running = False
+        # fix for retina displays
+        if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+            self._qt_instance.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
-        # set a exception handler
-        self.__exception_handler = sys.excepthook
-        sys.excepthook = self.on_exception
+        # use GTK style if available
+        for style in QStyleFactory.keys():
+            if "gtk" in style.lower():
+                self._qt_instance.setStyle(QStyleFactory.create("gtk"))
 
-        self._bind()
+        self._qt_instance.setStyleSheet(self.__stylesheet)
 
-        # prevent from running more than one instance
-        if self.is_single_instance() and self.is_already_running():
-            self.on_instance()
+        self._shared_memory = None
+
+    @property
+    def __stylesheet(self):
+        """Get the application stylesheet
+
+        Returns: stylesheet string
+        """
+
+        file_path = ":/gk/ui.qss"
+        data = ""
+        stream = QFile(file_path)
+
+        if stream.open(QFile.ReadOnly):
+            data = str(stream.readAll())
+            stream.close()
+
+        return re.sub(r'(\\n)|(\\r)|(\\t)', '', data)[2:-1]
 
     @property
     def name(self):
@@ -57,6 +71,7 @@ class Application(object):
             value (str): application name
         """
 
+        self._qt_instance.setApplicationName(value)
         self._name = value
 
     @property
@@ -73,6 +88,7 @@ class Application(object):
             value (str): organization name
         """
 
+        self._qt_instance.setOrganizationName(value)
         self._organization = value
 
     @property
@@ -89,6 +105,7 @@ class Application(object):
             value (str): internet domain name
         """
 
+        self._qt_instance.setOrganizationDomain(value)
         self._domain = value
 
     @property
@@ -105,17 +122,19 @@ class Application(object):
             value (str): version string
         """
 
+        self._qt_instance.setApplicationVersion(value)
         self._version = value
 
     def run(self):
         """Run application event loop"""
 
-        pyglet.app.run()
+        return self._qt_instance.exec()
 
     def quit(self):
         """Quit application event loop"""
 
-        pyglet.app.exit()
+        if self._shared_memory and self._shared_memory.isAttached():
+            self._shared_memory.detach()
 
     def is_single_instance(self):
         """Return True if multiple instances not allowed,
@@ -132,33 +151,21 @@ class Application(object):
         Returns: bool
         """
 
-        return self._already_running
+        self._shared_memory = QSharedMemory(self.name)
+
+        if self._shared_memory.attach():
+            self.on_instance()
+            return True
+        else:
+            self._shared_memory.create(1)
+
+        return False
 
     def on_instance(self):
         """This method called when current instance is not firstly launched.
         Re-implement this method to show dialog when application is already running."""
 
-        self.quit()
-        sys.exit()
-
-    def on_exception(self, exception_type, value, traceback_object):
-        """Re-implement this method to catch exceptions"""
-
-        # call default handler by default
-        self.__exception_handler(exception_type, value, traceback_object)
-
-    def _bind(self):
-        """Bind socket"""
-        # xxx: replace with another solution that can check application name
-
-        self._already_running = False
-
-        try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self._socket.bind(('localhost', self._port))
-        except:
-            self._already_running = True
+        pass
 
     @classmethod
     def instance(cls):
