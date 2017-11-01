@@ -18,8 +18,6 @@ Features
 * OSC protocol implementation
 * ArtNet protocol implementation
 * MIDI protocol
-* Sqlite3 wrapper
-* Qt widgets
 
 Installation
 ------------

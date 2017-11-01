@@ -6,7 +6,7 @@
     Core types and widely used components
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    :license: MIT, see LICENSE for more details.
 """
 import weakref
 import logging

@@ -1,5 +1,13 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.tests.test_dmx
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
+    Tests for dmx module
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: MIT, see LICENSE for more details.
+"""
 import unittest
 from grailkit.dmx import DMXUniverse
 

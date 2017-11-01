@@ -4,7 +4,7 @@
     ~~~~~
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    :license: MIT, see LICENSE for more details.
 """
 
 try:
@@ -29,18 +29,32 @@ setup(
     keywords=['framework', 'grail', 'development', 'osc', 'midi', 'artnet', 'dmx'],
     zip_safe=False,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
+        'Intended Audience :: Information Technology',
+        'Intended Audience :: Telecommunications Industry',
         'Operating System :: OS Independent',
+        'Environment :: Other Environment',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.0',
+        'Programming Language :: Python :: 3.1',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: System :: Networking',
         'Topic :: Multimedia :: Sound/Audio',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
+        'License :: OSI Approved :: MIT License'
     ],
     install_requires=['pyserial', 'python-rtmidi']
 )

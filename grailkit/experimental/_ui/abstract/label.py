@@ -6,7 +6,7 @@
     Label component
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    :license: MIT, see LICENSE for more details.
 """
 from .component import Component
 
