@@ -19,11 +19,6 @@ bible
 bible_parse
     Create grail bible format files from other formats
 
-clipboard
-    *Experimental* Copy and paste to clipboard
-
-    May be based on https://github.com/asweigart/pyperclip
-
 core
     Core functionality used by other modules.
 
@@ -48,6 +43,3 @@ plug
 
 util
     Utility functions and classes
-
-app
-    *Experimental* GUI for pyglet library

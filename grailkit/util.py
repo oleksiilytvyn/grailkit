@@ -94,7 +94,7 @@ def default_key(obj, key, default=None):
 
     Args:
         obj (dict): dictionary
-        key (str): key of property
+        key (str, int): key of property
         default (object): Object that returned if key not found
     """
 
