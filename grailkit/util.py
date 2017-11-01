@@ -6,7 +6,7 @@
     Utility functions and constants
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    :license: MIT, see LICENSE for more details.
 """
 import os
 import sys
@@ -93,7 +93,7 @@ def default_key(obj, key, default=None):
     If object not exist or object don't have property returns `default`
 
     Args:
-        obj (dict): dictionary
+        obj (object, dict, list): dictionary
         key (str, int): key of property
         default (object): Object that returned if key not found
     """

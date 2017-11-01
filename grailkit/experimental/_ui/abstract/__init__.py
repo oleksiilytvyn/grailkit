@@ -6,7 +6,7 @@
     This module contains abstract classes for grailkit.ui
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    :license: MIT, see LICENSE for more details.
 """
 
 # Core

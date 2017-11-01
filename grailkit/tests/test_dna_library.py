@@ -1,5 +1,13 @@
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.tests.test_dna_library
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    Tests for dna library classes
+
+    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :license: MIT, see LICENSE for more details.
+"""
 import unittest
 
 import os

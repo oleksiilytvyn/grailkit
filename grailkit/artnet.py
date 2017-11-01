@@ -10,7 +10,7 @@
     Art-Net(tm) Designed by and Copyright Artistic License Holdings Ltd.
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    :license: MIT, see LICENSE for more details.
 """
 import uuid
 import time

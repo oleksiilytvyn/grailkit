@@ -9,7 +9,7 @@
     https://github.com/matt-cook/bible
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
-    :license: GNU, see LICENSE for more details.
+    :license: MIT, see LICENSE for more details.
 """
 import os
 import xml.etree.ElementTree as ElementTree
