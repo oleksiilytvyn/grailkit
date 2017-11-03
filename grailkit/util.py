@@ -25,7 +25,7 @@ def application_location():
     """Get the path to main script file no matter how it's run.
 
     Returns:
-        path to current python script
+        str: path to current python script
     """
 
     if hasattr(sys, 'frozen'):
@@ -42,10 +42,10 @@ def data_location(app_name):
     """Returns path to application data folder
 
     Args:
-        app_name: name of application
+        app_name (str): name of application
 
     Returns:
-        path to folder
+        str: path to folder
     """
 
     if sys.platform == 'win32':
@@ -64,7 +64,7 @@ def copy_file(source, destination):
         destination: file destination path
 
     Returns:
-        returns True if copy is successful.
+        bool: True if copy is successful otherwise False
     """
 
     directory = os.path.dirname(os.path.realpath(destination))
@@ -82,7 +82,11 @@ def copy_file(source, destination):
 
 
 def millis_now():
-    """Returns time in milliseconds since epoch"""
+    """Get current time in ms
+
+    Returns:
+        int: time in milliseconds since epoch
+    """
 
     return int(round(time.time() * 1000))
 
@@ -111,6 +115,8 @@ def file_exists(path):
 
     Args:
         path (str): path to file
+    Returns:
+        bool: True if file exists, False otherwise
     """
 
     return os.path.exists(os.path.dirname(os.path.realpath(path))) and os.path.isfile(path)

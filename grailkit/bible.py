@@ -8,7 +8,7 @@
     Grail bible format consists of standard grail DNA format plus
     two additional tables: `books` and `verses`
 
-    Sql structure:
+    SQL structure:
 
     .. code:: sql
 

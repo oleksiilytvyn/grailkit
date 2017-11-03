@@ -4,7 +4,7 @@
     ~~~~~~~~~~~~
 
     Implementation of grail file format.
-    This file format used for all internal grail data.
+    This file format used for all internal grail data structures.
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.

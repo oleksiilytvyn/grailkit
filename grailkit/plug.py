@@ -3,7 +3,7 @@
     grailkit.plug
     ~~~~~~~~~~~~~
 
-    Simple plugin loading mechanism
+    Simple plugin discovery, loading & registration mechanisms
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
@@ -31,12 +31,13 @@ class PluginRegistry(type):
             cls.__registry__ = set()
 
         cls.__registry__.add(cls)
+
         # Remove base classes
         cls.__registry__ -= set(args[1])
 
 
 class Plugin(object, metaclass=PluginRegistry):
-    """Basic plugin class"""
+    """Base plugin class"""
 
     def __init__(self):
         pass
@@ -56,7 +57,7 @@ def discover(location, packages=False, exclude=None):
         packages (bool): If True sub-modules will be also loaded
         exclude (list): list of excluded modules, if modules also included. see `include_modules` argument
     Returns:
-        List of modules loaded
+        list: modules loaded
     """
 
     location = os.path.abspath(location)
