@@ -4,7 +4,8 @@
     ~~~~~~~~~~~~
 
     Send DMX signal over Serial Port USB interfaces
-    Caution this module is experimental
+
+    CAUTION! This module is highly unstable and incomplete
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.

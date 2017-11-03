@@ -4,10 +4,10 @@
     ~~~~~~~~~~~~~~~
 
     ArtNet implementation in pure Python
-    Based on https://github.com/philchristensen/python-artnet
-    CAUTION! This module is highly unstable and incomplete
-
     Art-Net(tm) Designed by and Copyright Artistic License Holdings Ltd.
+    Based on https://github.com/philchristensen/python-artnet
+
+    CAUTION! This module is highly unstable and incomplete
 
     :copyright: (c) 2017 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
@@ -22,6 +22,7 @@ import socketserver
 
 from grailkit.dmx import DMXUniverse
 
+# TODO: Check this module
 
 DEFAULT_PORT = 6454
 
