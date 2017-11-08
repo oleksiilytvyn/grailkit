@@ -1499,7 +1499,7 @@ class _UDPRequestHandler(socketserver.BaseRequestHandler):
 
             callback(self.client_address, packet.message, packet.time)
         except OSCParseError:
-            pass
+            logging.warning("OSCParseError: Could not parse OSC packet")
 
 
 class OSCServer(socketserver.UDPServer):
