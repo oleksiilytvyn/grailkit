@@ -10,14 +10,14 @@
 """
 import weakref
 import logging
-
+from grailkit.util import object_type
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class Signal(object):
-    """Callback mechanism for DNA
-    This class uses weak references to callbacks so methods can be deleted
+    """Callback mechanism for DNA objects
+    This class uses weak references to callbacks, so methods can be deleted
     if no references exists"""
 
     def __init__(self, *args):
@@ -27,7 +27,7 @@ class Signal(object):
             *args: template of arguments
         """
 
-        self._args = [type(x) for x in args]
+        self._args = [object_type(x) for x in args]
         self._fns = {}
         self._flush_keys = []
 
@@ -40,6 +40,12 @@ class Signal(object):
         """Returns True and prevent from converting to False when number of slots 0"""
 
         return True
+
+    @property
+    def template(self):
+        """Returns string template of types of signal"""
+
+        return ", ".join("<%s>" % str(x.__name__) for x in self._args)
 
     def connect(self, fn, name=False):
         """Add function to list of callbacks

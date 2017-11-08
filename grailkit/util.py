@@ -11,6 +11,7 @@
 import os
 import sys
 import time
+import types
 import shutil
 import platform
 
@@ -19,6 +20,24 @@ OS_WIN = platform.system() == "Windows"
 OS_MAC = platform.system() == "Darwin"
 OS_UNIX = platform.system() == "unix"
 OS_LINUX = platform.system() == "Linux"
+
+BUILTIN_TYPES = (
+    bool,
+    int,
+    float,
+    complex,
+    str,
+    dict,
+    list,
+    set,
+    frozenset,
+    tuple,
+    bytes,
+    bytearray,
+    types.FunctionType,
+    types.LambdaType,
+    types.BuiltinFunctionType
+    )
 
 
 def application_location():
@@ -100,6 +119,8 @@ def default_key(obj, key, default=None):
         obj (object, dict, list): dictionary
         key (str, int): key of property
         default (object): Object that returned if key not found
+    Returns:
+        object: value by given key or default
     """
 
     if obj and isinstance(obj, dict):
@@ -120,3 +141,28 @@ def file_exists(path):
     """
 
     return os.path.exists(os.path.dirname(os.path.realpath(path))) and os.path.isfile(path)
+
+
+def is_builtin(type_object):
+    """Check if object type is built-in
+
+    Args:
+        type_object (type, object): object or type to check
+    Returns:
+        bool: True if built-in else False
+    """
+
+    return isinstance(type_object, type) or isinstance(type_object, BUILTIN_TYPES)
+
+
+def object_type(object_ref):
+    """Get type of anything
+
+    Args:
+        object_ref (object, type): Object or type
+    Returns:
+        type: Type of given object
+    """
+
+    return object_ref if isinstance(object_ref, type) else type(object_ref)
+

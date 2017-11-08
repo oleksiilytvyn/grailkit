@@ -17,13 +17,15 @@ import threading
 
 from grailkit.core import Signal
 
+# todo: check this modules
+
 
 def dmx_serial_ports():
     """Lists serial port names
 
-    Returns
-        A list of the serial ports available on the system
-    Raises
+    Returns:
+        List of the serial ports available on the system
+    Raises:
         EnvironmentError on unsupported or unknown platforms
     """
     if sys.platform.startswith('win'):
@@ -64,7 +66,7 @@ class DMXUniverse(object):
 
         Args:
             frame (list, set, None): DMX channel values
-            universe (int): number if DMX universe
+            universe (int): DMX universe number
         """
         super(DMXUniverse, self).__init__()
 
@@ -77,7 +79,7 @@ class DMXUniverse(object):
                 self._bytes[index] = int(value)
 
     def __len__(self):
-        """Returns frame length"""
+        """Returns number of channels in this DMX universe"""
 
         return self._length
 
@@ -87,7 +89,10 @@ class DMXUniverse(object):
         Args:
             key (int): channel index
         Raises:
-            IndexError if index is out of range"""
+            IndexError if index is out of range
+        Returns:
+            int: value of DMX channel
+        """
 
         if key < 0 or key >= self._length:
             raise IndexError("Index out of range. Index must be from 0 to 511 as DMX512 have 512 channels.")
@@ -132,6 +137,8 @@ class DMXUniverse(object):
 
         Args:
             key (int): channel index
+        Raises:
+            AttributeError: always rises exception
         """
 
         raise AttributeError("There is no DMX channel with index %d" % key)
@@ -185,6 +192,7 @@ class DMXDevice(object):
 
     # packet label
     _DMX_LABEL = b'\x06'
+
     # this code seems to initialize the communications.
     _DMX_INIT1 = b'\x03\x02\x00\x00\x00'
     _DMX_INIT2 = b'\x0A\x02\x00\x00\x00'

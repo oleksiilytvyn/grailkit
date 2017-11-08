@@ -102,5 +102,33 @@ class TestGrailkitCore(unittest.TestCase):
         self.assertEqual(util.default_key('string', 'property'), None)
         self.assertEqual(util.default_key(json.dumps('{"key": "value"}'), 'key'), None)
 
+    def test_builtin(self):
+        """Test is_builtin"""
+
+        # Basic types will pass
+        self.assertTrue(util.is_builtin(bool))
+        self.assertTrue(util.is_builtin(int))
+        self.assertTrue(util.is_builtin(float))
+        self.assertTrue(util.is_builtin(complex))
+        self.assertTrue(util.is_builtin(str))
+        self.assertTrue(util.is_builtin(dict))
+        self.assertTrue(util.is_builtin(list))
+        self.assertTrue(util.is_builtin(set))
+        self.assertTrue(util.is_builtin(frozenset))
+        self.assertTrue(util.is_builtin(tuple))
+        self.assertTrue(util.is_builtin(bytes))
+        self.assertTrue(util.is_builtin(bytearray))
+
+        # Check by value
+        self.assertTrue(util.is_builtin(True))
+        self.assertTrue(util.is_builtin(False))
+        self.assertTrue(util.is_builtin([1, 2, 3]))
+        self.assertTrue(util.is_builtin((1, 2, 3)))
+        self.assertTrue(util.is_builtin({'a': 1, 'b': 2}))
+
+        # Not a type
+        self.assertFalse(util.is_builtin(None))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -10,7 +10,7 @@
 """
 import os
 import re
-import sqlite3 as lite
+import sqlite3
 import logging
 
 from grailkit import util
@@ -76,8 +76,8 @@ class DataBase:
                 file_handle.close()
                 execute_query = True
 
-        self._connection = lite.connect(file_path)
-        self._connection.row_factory = lite.Row
+        self._connection = sqlite3.connect(file_path)
+        self._connection.row_factory = sqlite3.Row
         self._location = file_path
 
         def lowercase(char):
@@ -180,7 +180,7 @@ class DataBase:
         cursor = self.cursor
         cursor.execute(query, data)
 
-    def set_factory(self, factory=lite.Row):
+    def set_factory(self, factory=sqlite3.Row):
         """Set sqlite row factory
 
         Args:
@@ -212,7 +212,7 @@ class DataBase:
             file_handle = open(file_path, 'w+')
             file_handle.close()
 
-        db = lite.connect(file_path)
+        db = sqlite3.connect(file_path)
         query = "".join(line for line in self._connection.iterdump())
 
         db.executescript(query)
@@ -229,7 +229,7 @@ class DataBase:
 
         try:
             self._connection.commit()
-        except lite.ProgrammingError:
+        except sqlite3.ProgrammingError:
             logging.info("Unable to commit into %s, connection was closed" % (self._location, ))
 
         # close if this connection is not used by others
@@ -273,11 +273,11 @@ class DataBaseHost:
         Args:
             db_ref (DataBase): reference to database error
         Raises:
-            DataBaseError if wrong object were passed
+            DataBaseError: If wrong object were passed
         """
 
         if not db_ref or not isinstance(db_ref, DataBase):
-            raise DataBaseError("DataBase object doesn't exists or is not instance of DataBase class.")
+            raise DataBaseError("DataBase object doesn't exists or it's not an instance of DataBase class.")
 
         file_path = os.path.abspath(db_ref.location)
 
@@ -294,7 +294,8 @@ class DataBaseHost:
     def close():
         """Close all connections
 
-        Returns: True if all connections closed successfully
+        Returns:
+            bool: True if all connections closed successfully
         """
 
         for key in DataBaseHost._list:

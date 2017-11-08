@@ -73,13 +73,13 @@ class DNAEntity:
 
     @property
     def id(self):
-        """Entity identifier"""
+        """Returns entity identifier number"""
 
         return self._id
 
     @property
     def dna(self):
-        """Returns parent DNA where this entity belongs"""
+        """Returns parent DNA object, where this entity belongs"""
 
         return self._dna
 
@@ -91,7 +91,7 @@ class DNAEntity:
 
     @property
     def parent_id(self):
-        """Parent identifier"""
+        """Returns parent entity identifier"""
 
         return self._parent
 
