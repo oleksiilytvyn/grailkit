@@ -1533,6 +1533,12 @@ class OSCServer(socketserver.UDPServer):
 
         return OSCBundle.is_valid(data) or OSCMessage.is_valid(data)
 
+    def server_bind(self):
+        """Called by constructor to bind the socket."""
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.bind(self.server_address)
+        self.server_address = self.socket.getsockname()
+
     def handle(self, address, message, date):
         """Handle receiving of OSCMessage or OSCBundle
 

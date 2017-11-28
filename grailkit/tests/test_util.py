@@ -22,11 +22,13 @@ from grailkit import util
 class TestGrailkitCore(unittest.TestCase):
 
     def setUp(self):
-        # Create a temporary directory
+        """Create a temporary directory"""
+
         self.test_dir = tempfile.mkdtemp()
 
     def tearDown(self):
-        # Remove the directory after the test
+        """Remove the directory after the test"""
+
         shutil.rmtree(self.test_dir)
 
     def test_get_app_path(self):

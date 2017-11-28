@@ -21,12 +21,14 @@ import grailkit.bible_parse as parse
 class TestGrailkitBible(unittest.TestCase):
 
     def setUp(self):
-        # Create a temporary directory
+        """Create a temporary directory"""
+
         self.test_dir = tempfile.mkdtemp()
         self.res_dir = os.path.abspath(__file__[:-3])
 
     def tearDown(self):
-        # Remove the directory after the test
+        """Remove the directory after the test"""
+
         shutil.rmtree(self.test_dir)
 
     def test_parse(self):

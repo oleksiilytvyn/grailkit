@@ -8,13 +8,13 @@
 import sys
 import time
 import grailkit.midi as midi
-from grailkit.midi.constants import NOTE_OFF, NOTE_ON, CONTROL_CHANGE
+from grailkit.midi.constants import NOTE_ON, CONTROL_CHANGE
 
 
 def main():
     """Test some midi"""
 
-    lauchcontrol_xl_port = None
+    launch_control_xl_port = None
 
     print("Available ports:")
 
@@ -22,15 +22,15 @@ def main():
         print(" - %s" % name)
 
         if name == 'Launch Control XL':
-            lauchcontrol_xl_port = index
+            launch_control_xl_port = index
 
-    if not lauchcontrol_xl_port:
+    if not launch_control_xl_port:
         print("Port not found")
         return False
 
-    port_in = midi.MidiIn(lauchcontrol_xl_port)
+    port_in = midi.MidiIn(launch_control_xl_port)
     port_in.ignore_types(False, False, False)
-    port_out = midi.MidiOut(lauchcontrol_xl_port)
+    port_out = midi.MidiOut(launch_control_xl_port)
 
     channels = [0]*8
     matrix = [0, 1, 0, 0, 2, 0, 0, 0,
@@ -44,18 +44,17 @@ def main():
 
     # port_out.send([176, 0, 127])
 
-    def exit():
-        sys.exit()
-
     def callback(data):
+        """Midi message received"""
+
         cc, note, velocity, *_rest = data
 
-        for i, n in enumerate(range(77, 85)):
-            if cc == CONTROL_CHANGE and n == note:
-                channels[i] = velocity
+        for key, value in enumerate(range(77, 85)):
+            if cc == CONTROL_CHANGE and value == note:
+                channels[key] = velocity
 
-        for i, n in enumerate([41, 42, 43, 44, 57, 58, 59, 60]):
-            port_out.send([NOTE_ON, n, channels[i]])
+        for key, value in enumerate([41, 42, 43, 44, 57, 58, 59, 60]):
+            port_out.send([NOTE_ON, value, channels[key]])
 
         print(data)
 
@@ -64,7 +63,7 @@ def main():
 
         # exit on 'device' button press
         if cc == NOTE_ON and note == 105:
-            exit()
+            sys.exit()
 
     port_in.received.connect(callback)
 

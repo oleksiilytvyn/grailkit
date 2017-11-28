@@ -116,11 +116,11 @@ def default_key(obj, key, default=None):
     If object not exist or object don't have property returns `default`
 
     Args:
-        obj (object, dict, list): dictionary
+        obj (object, list, tuple, dict): dictionary
         key (str, int): key of property
-        default (object): Object that returned if key not found
+        default: Object that returned if key not found
     Returns:
-        object: value by given key or default
+        value by given key or default
     """
 
     if obj and isinstance(obj, dict):

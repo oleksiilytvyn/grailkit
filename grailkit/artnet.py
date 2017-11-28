@@ -22,7 +22,9 @@ import socketserver
 
 from grailkit.dmx import DMXUniverse
 
-# TODO: Check this module
+# todo: Check this module
+# todo: remove dependency on bitstring
+# todo: add doc-strings
 
 DEFAULT_PORT = 6454
 
@@ -307,7 +309,7 @@ class ArtNetPollReplyPacket(ArtNetPacket):
     version = 1
     universe = 0
     status1 = 2
-    status2 = bitstring.Bits('0b0111').int
+    status2 = 7
 
     num_ports = 0
     port_types = '\0\0\0\0'
@@ -358,16 +360,21 @@ class ArtNetPollReplyPacket(ArtNetPacket):
         ArtNetPollReplyPacket.counter += 1
 
     def format_ip_address(self):
+        """Format ip address string (127.0.0.1) into four bytes """
+
         address = socket.gethostbyname(socket.gethostname())
-        return bitstring.pack('uint:8, uint:8, uint:8, uint:8', *[int(x) for x in address.split('.')]).bytes
+
+        return struct.pack('BBBB', *[int(x) for x in address.split('.')])
 
     @classmethod
     def parse_ip_address(cls, b, fmt):
-        b = bitstring.BitStream(bytes=b.read(fmt))
-        address = b.readlist(','.join(['uint:8'] * 4))
-        return '.'.join([str(x) for x in address])
+        """Parse ip address datagram"""
+
+        return '.'.join([str(x) for x in struct.unpack('BBBB', b)])
 
     def format_short_name(self):
+        """Format short-name datagram"""
+
         return self.short_name[0:18].ljust(18)
 
     @classmethod
