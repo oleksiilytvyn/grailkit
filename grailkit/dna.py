@@ -342,10 +342,7 @@ class DNAEntity:
             factory: object factory
         """
 
-        return self._dna._copy(entity,
-                               parent=self._id,
-                               index=-1,
-                               factory=factory)
+        return self._dna._copy(entity, parent=self._id, factory=factory)
 
     def clear(self):
         """Remove all child entities"""
@@ -1953,10 +1950,7 @@ class Project(DNA):
     def create(self, name="Untitled cuelist"):
         """Create a cuelist"""
 
-        return self._create(name=name,
-                            parent=self._id,
-                            entity_type=DNA.TYPE_CUELIST,
-                            factory=CuelistEntity)
+        return self._create(name=name, parent=self._id, entity_type=DNA.TYPE_CUELIST, factory=CuelistEntity)
 
     def _create_project(self):
         """Create project entities"""
@@ -1969,10 +1963,7 @@ class Project(DNA):
                                       'description': 'Grail project'
                                      })
         self._id = self._project._id
-
-        self._create(name="settings",
-                     entity_type=DNA.TYPE_SETTINGS,
-                     parent=self._id)
+        self._create(name="settings", entity_type=DNA.TYPE_SETTINGS, parent=self._id)
 
 
 class LibraryError(DNAError):
@@ -1999,9 +1990,7 @@ class Library(DNA):
         self._dna_proxy = DNAProxy(self)
 
         if not self.root() and create:
-            self._create("Grail Library",
-                         parent=0,
-                         entity_type=DNA.TYPE_LIBRARY)
+            self._create("Grail Library", parent=0, entity_type=DNA.TYPE_LIBRARY)
 
         if self.root() is None:
             raise LibraryError("Library entity not found in file %s" % (file_path,))

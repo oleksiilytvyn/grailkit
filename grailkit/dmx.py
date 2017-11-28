@@ -12,6 +12,8 @@
 """
 import sys
 import glob
+# serial package named pyserial in pip, ignore this inspection
+# noinspection PyPackageRequirements
 import serial
 import threading
 
