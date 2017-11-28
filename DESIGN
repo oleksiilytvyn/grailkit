@@ -4,15 +4,11 @@ Principles
 
 * Grailkit is a set of modules for creative cross-platform applications
 * Pure python
-* Private and Commercial use
+* Private and Commercial use (MIT license)
 
 
 The modules
 -----------
-
-artnet
-    *Experimental* ArtNet protocol implementation in pure python.
-    May be based on https://github.com/philchristensen/python-artnet
 
 bible
     Read and write to grail bible format.
