@@ -20,12 +20,14 @@ from grailkit.dna import DNA, Library
 class TestGrailkitProject(unittest.TestCase):
 
     def setUp(self):
-        # Create a temporary directory
+        """Create a temporary directory"""
+
         self.test_dir = tempfile.mkdtemp()
         self.res_dir = os.path.abspath(__file__[:-3])
 
     def tearDown(self):
-        # Remove the directory after the test
+        """Remove the directory after the test"""
+
         shutil.rmtree(self.test_dir)
 
     def test_library(self):

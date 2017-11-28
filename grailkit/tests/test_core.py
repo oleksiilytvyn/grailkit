@@ -9,9 +9,6 @@
     :license: MIT, see LICENSE for more details.
 """
 import types
-import os
-import shutil
-import tempfile
 
 import unittest
 from unittest.mock import Mock
@@ -35,9 +32,17 @@ class TestGrailkitCore(unittest.TestCase):
     def test_signal_types(self):
         """Test signal types template"""
 
-        class A: pass
+        class A:
+            """Test class"""
 
-        class B(A): pass
+            def __init__(self):
+                pass
+
+        class B(A):
+            """Test class with dependency on A"""
+
+            def __init__(self):
+                super(B, self).__init__()
 
         self.assertEqual(Signal(int, str, float).template, '<int>, <str>, <float>')
         self.assertEqual(Signal(int, int, int).template, '<int>, <int>, <int>')

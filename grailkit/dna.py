@@ -594,8 +594,8 @@ class SongEntity(DNAEntity):
 
         content = self._content
 
-        self._year = int(default_key(content, 'year', 2000))
-        self._track = int(default_key(content, 'track', 1))
+        self._year = int(default_key(content, 'year', default=2000))
+        self._track = int(default_key(content, 'track', default=1))
         self._album = default_key(content, 'album', 'Unknown')
         self._artwork = None
         self._language = default_key(content, 'language', '')
@@ -719,6 +719,22 @@ class CuelistEntity(DNAEntity):
         """
 
         return self._dna._entity(cue_id)
+
+    def create(self, name, entity_type=None, index=-1, properties=None, factory=None):
+        """Create entity with DNA.TYPE_CUE by default
+
+        Args:
+            name (str): name of entity
+            entity_type (int): entity type
+            index (int): index where entity will be inserted
+            properties (dict): properties list
+            factory: factory
+        """
+
+        if entity_type is None:
+            entity_type = DNA.TYPE_CUE
+
+        super(CuelistEntity, self).create(name, entity_type, index=-1, properties=properties, factory=factory)
 
 
 class CueEntity(DNAEntity):
@@ -870,6 +886,22 @@ class CueEntity(DNAEntity):
             parent (DNA): parent DNA
         """
         super(CueEntity, self).__init__(parent)
+
+    def create(self, name, entity_type=None, index=-1, properties=None, factory=None):
+        """Create entity with DNA.TYPE_CUE by default
+
+        Args:
+            name (str): name of entity
+            entity_type (int): entity type
+            index (int): index where entity will be inserted
+            properties (dict): properties list
+            factory: factory
+        """
+
+        if entity_type is None:
+            entity_type = DNA.TYPE_CUE
+
+        super(CueEntity, self).create(name, entity_type, index=-1, properties=properties, factory=factory)
 
 
 class DNA:

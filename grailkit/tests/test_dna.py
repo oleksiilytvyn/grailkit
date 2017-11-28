@@ -38,15 +38,22 @@ class TestGrailkitDNA(unittest.TestCase):
         bucket = []
 
         def slot(ref):
-            bucket.append('regular slot')
+            """Regular slot callback"""
+
+            ref.append('regular slot')
 
         def named_slot(ref):
-            bucket.append('named slot')
+            """Named slot callback"""
+
+            ref.append('named slot')
 
         class T:
+            """Test class"""
 
             def foo(self, ref):
-                ref.append('class slot')
+                """Class slot callback"""
+
+                ref.append('class slot %s' % str(self))
 
         t = T()
 

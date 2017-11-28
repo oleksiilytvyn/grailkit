@@ -94,7 +94,7 @@ class DataBase:
             Args:
                 char (str): string to process
             """
-            char = re.sub(r'[\[_\]\.\-,!\(\)\"\':;]', '', char)
+            char = re.sub(r'[\[_\].\-,!()\"\':;]', '', char)
             char = re.sub('[\s+]', '', char)
 
             return char.lower()

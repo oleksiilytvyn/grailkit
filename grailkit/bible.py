@@ -514,9 +514,9 @@ class Bible(DNA):
                             `books`.`abbr`
                             FROM books
                             WHERE
-                             lowercase(title) LIKE lowercase( ? )
-                             OR lowercase(short) LIKE lowercase( ? )
-                             OR lowercase(full) LIKE lowercase( ? )
+                             lowercase(`title`) LIKE lowercase( ? )
+                             OR lowercase(`short`) LIKE lowercase( ? )
+                             OR lowercase(`full`) LIKE lowercase( ? )
                             """, (keyword, keyword, keyword), factory=book_factory)
 
     def match_reference(self, keyword, limit=3):
@@ -574,7 +574,7 @@ class Bible(DNA):
                             (keyword, keyword, keyword, chapter, verse, limit), factory=verse_factory)
 
     def match_text(self, text, limit=3):
-        """Search for text accourances
+        """Search for text occurrences
 
         Args:
             text (str): search string
@@ -700,7 +700,7 @@ class BibleHost:
             bible = Bible(file_path)
             bible.close()
             bible_path = os.path.join(cls._location, bible.identifier + '.grail-bible')
-        except (BibleError, lite.OperationalError) as error:
+        except (BibleError, lite.OperationalError):
             raise BibleHostError("Unable to install bible from file \"%s\"."
                                  "File may be corrupted or in wrong format." % file_path)
 
