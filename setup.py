@@ -26,7 +26,7 @@ setup(
     download_url='https://bitbucket.org/grailapp/grail-kit/get/default.zip',
     platforms='any',
     packages=['grailkit'],
-    keywords=['framework', 'grail', 'development', 'osc', 'midi', 'dmx'],
+    keywords=['framework', 'grail', 'development', 'osc', 'midi', 'dmx', 'utilities'],
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
