@@ -11,6 +11,5 @@ pipelines:
           - pip install python-rtmidi
             # run tests
           - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'
-        deploy:
             # Upload to PyPi
           - deploy-pypi.sh
