@@ -16,8 +16,9 @@ Features
 * Bible formats parsing
 * DMX protocol based on USB serial port
 * OSC protocol implementation
-* ArtNet protocol implementation
 * MIDI protocol
+* Plugin architecture
+* Utility functions
 
 Installation
 ------------
@@ -42,4 +43,6 @@ Table of contents
     osc
     dna
     bible
+    bible_parse
+    plug
     util
