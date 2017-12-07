@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if [[ "$PYPI_USERNAME" || -z "$PYPI_PASSWORD" ]]; then
+if [[ -z "$PYPI_USERNAME" || -z "$PYPI_PASSWORD" ]]; then
     echo "You must set PYPI_USERNAME and PYPI_PASSWORD to run this script"
     exit 1
 fi
