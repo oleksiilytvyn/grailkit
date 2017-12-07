@@ -1,5 +1,5 @@
-# This is a simple configuration to test Grailkit components
-image: python:3.3
+# This is a simple configuration to test Grailkit components and upload to PyPi
+image: python:3.6
 
 pipelines:
 
@@ -11,3 +11,6 @@ pipelines:
           - pip install python-rtmidi
             # run tests
           - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'
+        deploy:
+            # Upload to PyPi
+          - deploy-pypi.sh
