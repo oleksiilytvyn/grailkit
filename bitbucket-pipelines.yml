@@ -12,4 +12,4 @@ pipelines:
             # run tests
           - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'
             # Upload to PyPi
-          - ./deploy-pypi.sh
+          - bash ./deploy-pypi.sh
