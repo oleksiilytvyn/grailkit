@@ -7,7 +7,7 @@
     library which consists of UI components for PyQt,
     grail files IO and networking libraries
 
-    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :copyright: (c) 2018 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
 """
 
@@ -15,7 +15,7 @@ import os
 from grailkit.util import data_location
 
 # library version
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 # path to shader folder
 PATH_SHARED = data_location("grail-shared")
