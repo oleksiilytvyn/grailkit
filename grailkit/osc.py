@@ -6,10 +6,11 @@
     OSC protocol implementation in pure python,
     Code from OSC project (https://bitbucket.org/grailapp/osc)
 
-    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :copyright: (c) 2018 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
 """
 
+import re
 import time
 import struct
 import socket
@@ -20,7 +21,7 @@ import builtins
 import calendar
 import socketserver
 
-__version__ = '0.6'
+__version__ = '0.6.1'
 __all__ = [
     'OSCType',
     'OSCPacket',
@@ -37,7 +38,7 @@ __all__ = [
     'NTPError',
     'OSCParseError',
     'OSCBuildError'
-]
+    ]
 
 
 class NTPError(Exception):
@@ -202,7 +203,7 @@ class OSCType(object):
         TYPE_STRING,
         TYPE_IMPULSE,
         TYPE_TIMETAG
-    )
+        )
 
     # map of types and corresponding io methods
     TYPES_MAP = {
@@ -218,7 +219,7 @@ class OSCType(object):
         TYPE_DOUBLE: 'double',
         TYPE_INT64: 'int64',
         TYPE_UTF8_STRING: 'utf8_string'
-    }
+        }
 
     @classmethod
     def is_supported(cls, _type):
@@ -242,7 +243,7 @@ class OSCType(object):
         """
 
         builtin_type = type(value)
-        arg_type = None
+        arg_type = cls.TYPE_NULL
 
         if builtin_type == builtins.str:
             arg_type = cls.TYPE_STRING
@@ -256,7 +257,7 @@ class OSCType(object):
             arg_type = cls.TYPE_TRUE
         elif builtin_type == builtins.bool and not value:
             arg_type = cls.TYPE_FALSE
-        elif value is None:
+        elif value == None:
             arg_type = cls.TYPE_NULL
         elif builtin_type == builtins.str and len(value) == 1:
             arg_type = cls.TYPE_CHAR
@@ -783,16 +784,19 @@ class OSCPacket(object):
 class OSCMessage(object):
     """Builds arbitrary OSCMessage instances."""
 
-    def __init__(self, address=None):
+    def __init__(self, address="/"):
         """Initialize a new OSCMessage.
 
         Args:
-            address: The osc address to send this message to.
+            address (str): The osc address to send this message to.
         """
 
-        self._address = address
+        self._address = "/"
         self._args = []
         self._dgram = b''
+
+        # OSC address will be checked here
+        self.address = address
 
     def __iter__(self):
         """Returns an iterator over the arguments of this message in pairs (osc type tag, value)"""
@@ -879,7 +883,16 @@ class OSCMessage(object):
 
     @address.setter
     def address(self, value):
-        """Sets the OSC address this message will be sent to."""
+        """Sets the OSC address this message will be sent to.
+
+        Args:
+            value (str): OSC message address pattern
+        """
+
+        if not value.startswith('/'):
+            raise ValueError("Given '%s' OSC address doesn't start with /." % str(value))
+        elif not self.is_valid_address(value):
+            raise ValueError("Given '%s' OSC address doesn't matches with valid address pattern." % str(value))
 
         self._address = value
 
@@ -926,7 +939,7 @@ class OSCMessage(object):
         """
 
         if _type and not OSCType.is_supported(_type):
-            raise ValueError('_type is not supported')
+            raise ValueError('Given type is not supported')
 
         if not _type:
             _type = OSCType.tag(value)
@@ -960,7 +973,7 @@ class OSCMessage(object):
             raise IndexError("Index is out of range.")
 
         if _type and not OSCType.is_supported(_type):
-            raise ValueError('_type is not supported')
+            raise ValueError('Given type is not supported')
 
         if not _type:
             _type = OSCType.tag(value)
@@ -1133,6 +1146,18 @@ class OSCMessage(object):
         """
 
         return dgram.startswith(b'/')
+
+    @staticmethod
+    def is_valid_address(address):
+        """Check if given value is valid OSC-string address pattern
+
+        Args:
+            address (str): OSC address pattern
+        Returns:
+            True if valid
+        """
+
+        return address == '/' or re.compile("^/[a-zA-Z0-9/_\-?*\[\]]+").match(address)
 
 
 class OSCBundle(object):
