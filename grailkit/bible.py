@@ -15,7 +15,7 @@
         CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
         CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
 
-    :copyright: (c) 2017 by Oleksii Lytvyn.
+    :copyright: (c) 2018 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
 """
 import os
