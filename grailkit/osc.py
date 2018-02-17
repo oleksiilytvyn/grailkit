@@ -21,7 +21,7 @@ import builtins
 import calendar
 import socketserver
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 __all__ = [
     'OSCType',
     'OSCPacket',
@@ -784,11 +784,12 @@ class OSCPacket(object):
 class OSCMessage(object):
     """Builds arbitrary OSCMessage instances."""
 
-    def __init__(self, address="/"):
+    def __init__(self, address="/", args=None):
         """Initialize a new OSCMessage.
 
         Args:
             address (str): The osc address to send this message to.
+            args (list): list of args to add to message
         """
 
         self._address = "/"
@@ -797,6 +798,10 @@ class OSCMessage(object):
 
         # OSC address will be checked here
         self.address = address
+
+        if args and len(args) > 0:
+            for value in args:
+                self.add(value)
 
     def __iter__(self):
         """Returns an iterator over the arguments of this message in pairs (osc type tag, value)"""
@@ -1165,17 +1170,22 @@ class OSCBundle(object):
 
     _BUNDLE_PREFIX = b"#bundle\x00"
 
-    def __init__(self, timestamp=IMMEDIATELY):
+    def __init__(self, timestamp=IMMEDIATELY, messages=None):
         """Build a new bundle with the associated timestamp.
 
         Args:
-           timestamp: system time represented as a floating point number of
-                      seconds since the epoch in UTC or IMMEDIATELY.
+            timestamp (int): system time represented as a floating point number of
+                       seconds since the epoch in UTC or IMMEDIATELY.
+            messages (list): List of OSCMessage's to add to bundle
         """
 
         self._timestamp = timestamp
         self._contents = []
         self._dgram = b''
+
+        if messages and len(messages) > 0:
+            for value in messages:
+                self.add(value)
 
     def __iter__(self):
         """Returns an iterator over the bundle's content."""

@@ -829,7 +829,7 @@ class CueEntity(DNAEntity):
             ValueError if given value is not float or int
         """
 
-        if not isinstance(value, int) or not isinstance(value, float):
+        if not (isinstance(value, int) or isinstance(value, float)):
             raise ValueError('Given value must be of int or float type')
 
         self.set('pre-wait', value, force_type=DNA.ARG_FLOAT)
@@ -850,7 +850,7 @@ class CueEntity(DNAEntity):
             ValueError if given value is not float or int
         """
 
-        if not isinstance(value, int) or not isinstance(value, float):
+        if not (isinstance(value, int) or isinstance(value, float)):
             raise ValueError('Given value must be of int or float type')
 
         self.set('post-wait', value, force_type=DNA.ARG_FLOAT)
@@ -1269,12 +1269,17 @@ class DNA:
             entity_id (int): id of an entity
             parent (int): parent entity id
         """
+
         if parent:
-            entity = self._db.get("SELECT id, parent FROM entities WHERE id = ? AND parent = ?", (entity_id, parent))
+            entity = self._db.get("SELECT parent FROM entities WHERE id = ? AND parent = ?", (entity_id, parent))
+            parent_id = entity[0] if entity else None
 
             # return False since there is no entity to remove
             if not entity:
                 return False
+        else:
+            parent_id = self._db.get("SELECT parent FROM entities WHERE id = ?", (entity_id,))
+            parent_id = parent_id[0] if parent_id else None
 
         self._changed = True
 
@@ -1283,7 +1288,8 @@ class DNA:
         self._db.connection.commit()
 
         # emit entity changed signal
-        self.entity_removed.emit(entity_id)
+        # emit parent id, as we can't use removed entity
+        self.entity_removed.emit(parent_id)
 
         self._remove_childs(entity_id)
 
@@ -1404,6 +1410,25 @@ class DNA:
                              (entity_id, key))
 
         return bool(value)
+
+    def _contains(self, entity_id, child_id):
+        """Check if entity contains a child
+
+        Args:
+            entity_id (int): entity id
+            child_id (int): child entity id
+        """
+
+        value = False
+        raw_childs = self._db.all("SELECT id FROM entities WHERE parent = ?", (entity_id,))
+
+        for child in raw_childs:
+            if child[0] == child_id:
+                return True
+
+            value = self._contains(child[0], child_id)
+
+        return value
 
     def _properties(self, entity_id):
         """Get list of all properties linked to entity
@@ -1651,6 +1676,10 @@ class DNAProxy:
     def has_childs(self, *args, **kwargs):
         """Returns Tru if entity has childs"""
         return self._dna_ref._has_childs(*args, **kwargs)
+
+    def contains(self, *args, **kwargs):
+        """Check if entity contains an child with given id"""
+        return self._dna_ref._contains(*args, **kwargs)
 
     def has(self, *args, **kwargs):
         """Check if property exists"""
