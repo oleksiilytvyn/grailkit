@@ -162,6 +162,12 @@ class Signalable(object):
     def __len__(self):
         """Returns number of registered callbacks"""
 
+        return self.callbacks_length
+
+    @property
+    def callbacks_length(self):
+        """Returns number of registered callbacks"""
+
         return sum(len(v) for k, v in self.__slots.items()) + len(self.__bundle_slots)
 
     def connect(self, message, fn):
