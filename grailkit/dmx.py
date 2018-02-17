@@ -67,7 +67,7 @@ class DMXUniverse(object):
         """Create DMX data frame
 
         Args:
-            frame (list, set, None): DMX channel values
+            frame (list, set, tuple, None): DMX channel values
             universe (int): DMX universe number
         """
         super(DMXUniverse, self).__init__()
@@ -204,7 +204,7 @@ class DMXDevice(object):
 
         Args:
             port (str): serial port name
-            mode: transmit or receive
+            mode (int): transmit or receive
         """
 
         self.receive = Signal(DMXUniverse)
