@@ -23,7 +23,7 @@ def create_factory(object_def, cursor, row):
     """Create object factory
 
     Args:
-        object_def: callable object
+        object_def (callable): callable object
         cursor (sqlite3.Cursor): database cursor
         row (sqlite3.Row): database row object
     Returns:
@@ -131,7 +131,7 @@ class DataBase:
         Args:
             query (str): SQL query string
             data (tuple): tuple of data
-            factory: sqlite row factory
+            factory (callable): sqlite row factory
         Returns:
             first row
         """
@@ -153,7 +153,7 @@ class DataBase:
         Args:
             query (str): SQL query string
             data (tuple): tuple of data
-            factory: sqlite row factory for this query only
+            factory (callable): sqlite row factory for this query only
         Returns:
             list of fetched rows
         """
@@ -181,10 +181,15 @@ class DataBase:
         cursor.execute(query, data)
 
     def set_factory(self, factory=sqlite3.Row):
-        """Set sqlite row factory
+        """Set sqlite row factory function.
+        If you call `set_factory` without arguments default factory will be used
+
+        Example:
+            def string_factory(cursor, row):
+                return [str(value) for value in row]
 
         Args:
-            factory (sqlite3.Row): factory object
+            factory (callable): factory object
         """
 
         self._connection.row_factory = factory
@@ -286,7 +291,11 @@ class DataBaseHost:
 
     @classmethod
     def has(cls, file_path):
-        """Returns True if `file_path` in list of opened connections"""
+        """Returns True if `file_path` in list of opened connections
+
+        Args:
+            file_path (str): file location
+        """
 
         return os.path.abspath(file_path) in cls._list
 

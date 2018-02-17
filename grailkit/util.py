@@ -79,8 +79,8 @@ def copy_file(source, destination):
     """Copy file 'source' to file 'destination'
 
     Args:
-        source: path of file to be copied
-        destination: file destination path
+        source (str): path of file to be copied
+        destination (str): file destination path
 
     Returns:
         bool: True if copy is successful otherwise False
@@ -118,7 +118,7 @@ def default_key(obj, key, default=None):
     Args:
         obj (object, list, tuple, dict): dictionary
         key (str, int): key of property
-        default: Object that returned if key not found
+        default (object): Object that returned if key not found
     Returns:
         value by given key or default
     """

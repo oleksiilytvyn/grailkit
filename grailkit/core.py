@@ -10,6 +10,7 @@
 """
 import weakref
 import logging
+
 from grailkit.util import object_type
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -24,7 +25,7 @@ class Signal(object):
         """Create signal
 
         Args:
-            *args: template of arguments
+            *args: list of types, used as template of arguments
         """
 
         self._args = [object_type(x) for x in args]
@@ -37,7 +38,7 @@ class Signal(object):
         return len(self._fns)
 
     def __bool__(self):
-        """Returns True and prevent from converting to False when number of slots 0"""
+        """Returns True and prevent from converting to False when number of slots is 0"""
 
         return True
 
@@ -47,7 +48,7 @@ class Signal(object):
 
         return ", ".join("<%s>" % str(x.__name__) for x in self._args)
 
-    def connect(self, fn, name=False):
+    def connect(self, fn, name=None):
         """Add function to list of callbacks
 
         Args:
@@ -91,6 +92,7 @@ class Signal(object):
         Args:
             *args: arguments to pass to callbacks
             name (str): give name of slot to be called
+            **kwargs: keyword arguments to pass to callbacks
         """
 
         if name and name in self._fns:
@@ -104,7 +106,11 @@ class Signal(object):
 
     @classmethod
     def _wrap(cls, fn):
-        """Returns typle with parent object and method"""
+        """Returns typle with parent object and method
+
+        Args:
+            fn (callable): callable to wrap with weakref
+        """
 
         if hasattr(fn, '__self__') and hasattr(fn, '__func__'):
             return weakref.ref(fn.__self__), weakref.ref(fn.__func__)
@@ -112,7 +118,13 @@ class Signal(object):
             return None, fn
 
     def _call(self, name, *args, **kwargs):
-        """Call method, if reference is dead flush"""
+        """Call method, if reference is dead then flush
+
+        Args:
+            name (str): slot name
+            *args (list): list of argument to be passed
+            **kwargs (dict): dict of arguments to be passed
+        """
 
         ref = self._fns[name]
         obj = ref[0]
@@ -134,6 +146,7 @@ class Signal(object):
             logging.warning("Slot %s removed because of exception raised.\n "
                             "Original exception was: %s" %
                             (str(fun), str(e)))
+
             self._flush_keys.append(name)
 
     def _flush(self):
@@ -213,16 +226,28 @@ class Signalable(object):
             self.__slots[message].emit(*args)
 
     def connect_bundle(self, fn):
-        """Connect a bundle listener"""
+        """Connect a bundle listener
+
+        Args:
+            fn (callable): callback listener
+        """
 
         self.__bundle_slots.connect(fn)
 
     def disconnect_bundle(self, fn):
-        """Remove bundle listener"""
+        """Remove bundle listener
+
+        Args:
+            fn (callable): callback listener
+        """
 
         self.__bundle_slots.disconnect(fn)
 
     def emit_bundle(self, bundle):
-        """Emit bundle of messages"""
+        """Emit bundle of messages
+
+        Args:
+            bundle (list): bundle of messages
+        """
 
         self.__bundle_slots.emit(bundle)

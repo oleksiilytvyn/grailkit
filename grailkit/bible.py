@@ -22,7 +22,7 @@ import os
 import re
 import glob
 import json
-import sqlite3 as lite
+import sqlite3
 
 from grailkit import PATH_SHARED
 from grailkit.util import copy_file, default_key, file_exists
@@ -33,8 +33,8 @@ def verse_factory(cursor, row):
     """Parse sqlite row into Verse object
 
     Args:
-        cursor: sqlite3 cursor
-        row: row data
+        cursor (sqlite3.Cursor): sqlite3 cursor
+        row (sqlite3.Row): row data
 
     Returns:
         Verse object parsed from sqlite row
@@ -47,8 +47,8 @@ def book_factory(cursor, row):
     """Parse sqlite row into Book object
 
     Args:
-        cursor: sqlite3 cursor
-        row: row data
+        cursor (sqlite3.Cursor): sqlite3 cursor
+        row (sqlite3.Row): row data
 
     Returns:
         Book object parsed from sqlite row
@@ -338,6 +338,9 @@ class Bible(DNA):
     def __init__(self, file_path):
         """Read grail bible file into Bible class
 
+        Args:
+            file_path (str): file location
+
         Raises:
             DNAError if file does not exists
         """
@@ -624,6 +627,7 @@ class BibleHost:
 
     # location of shared folder
     _location = os.path.join(PATH_SHARED, "bibles/")
+
     # list of available bibles
     _list = {}
 
@@ -700,7 +704,7 @@ class BibleHost:
             bible = Bible(file_path)
             bible.close()
             bible_path = os.path.join(cls._location, bible.identifier + '.grail-bible')
-        except (BibleError, lite.OperationalError):
+        except (BibleError, sqlite3.OperationalError):
             raise BibleHostError("Unable to install bible from file \"%s\"."
                                  "File may be corrupted or in wrong format." % file_path)
 
@@ -736,7 +740,7 @@ class BibleHost:
         """Check file to be valid grail-bible file
 
         Args:
-            file_path: path to bible file
+            file_path (str): path to bible file
         Returns:
             True if bible file is valid
         """

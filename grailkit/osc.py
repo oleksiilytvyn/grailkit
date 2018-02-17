@@ -21,7 +21,7 @@ import builtins
 import calendar
 import socketserver
 
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 __all__ = [
     'OSCType',
     'OSCPacket',
@@ -143,6 +143,8 @@ class OSCMidi(object):
 class OSCColor(object):
     """Representation of OSC color type in RGBA format"""
 
+    # todo: Add slots for better performance
+
     def __init__(self, r, g, b, a):
         self.r = r
         self.g = g
@@ -202,7 +204,11 @@ class OSCType(object):
         TYPE_COLOR,
         TYPE_STRING,
         TYPE_IMPULSE,
-        TYPE_TIMETAG
+        TYPE_TIMETAG,
+
+        TYPE_INT64,
+        TYPE_DOUBLE,
+        TYPE_UTF8_STRING
         )
 
     # map of types and corresponding io methods
@@ -482,7 +488,7 @@ class OSCType(object):
         # read
         if index != -1:
             try:
-                return struct.unpack('>q', data[index:index + _INT64_DGRAM_LEN]), index + _INT64_DGRAM_LEN
+                return struct.unpack('>q', data[index:index + _INT64_DGRAM_LEN])[0], index + _INT64_DGRAM_LEN
             except (struct.error, TypeError) as e:
                 raise OSCParseError('Could not parse datagram %s' % e)
         # write
@@ -510,7 +516,7 @@ class OSCType(object):
         # read
         if index != -1:
             try:
-                return struct.unpack('>d', data[index:index + _DOUBLE_DGRAM_LEN]), index + _DOUBLE_DGRAM_LEN
+                return struct.unpack('>d', data[index:index + _DOUBLE_DGRAM_LEN])[0], index + _DOUBLE_DGRAM_LEN
             except (struct.error, TypeError) as e:
                 raise OSCParseError('Could not parse datagram %s' % e)
         # write
