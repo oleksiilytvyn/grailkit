@@ -104,19 +104,6 @@ class Signal(object):
         # remove dead references
         self._flush()
 
-    @classmethod
-    def _wrap(cls, fn):
-        """Returns typle with parent object and method
-
-        Args:
-            fn (callable): callable to wrap with weakref
-        """
-
-        if hasattr(fn, '__self__') and hasattr(fn, '__func__'):
-            return weakref.ref(fn.__self__), weakref.ref(fn.__func__)
-        else:
-            return None, fn
-
     def _call(self, name, *args, **kwargs):
         """Call method, if reference is dead then flush
 
@@ -157,6 +144,19 @@ class Signal(object):
                 del self._fns[key]
 
         self._flush_keys = []
+
+    @classmethod
+    def _wrap(cls, fn):
+        """Returns typle with parent object and method
+
+        Args:
+            fn (callable): callable to wrap with weakref
+        """
+
+        if hasattr(fn, '__self__') and hasattr(fn, '__func__'):
+            return weakref.ref(fn.__self__), weakref.ref(fn.__func__)
+        else:
+            return None, fn
 
 
 class Signalable(object):

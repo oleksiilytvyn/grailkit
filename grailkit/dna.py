@@ -773,6 +773,14 @@ class CueEntity(DNAEntity):
         'Gray'
         )
 
+    def __init__(self, parent):
+        """Create a cue instance
+
+        Args:
+            parent (DNA): parent DNA
+        """
+        super(CueEntity, self).__init__(parent)
+
     @property
     def number(self):
         """Identifier of cue assigned by user"""
@@ -875,14 +883,6 @@ class CueEntity(DNAEntity):
             raise ValueError('Follow type is not supported')
 
         self.set("follow", value)
-
-    def __init__(self, parent):
-        """Create a cue instance
-
-        Args:
-            parent (DNA): parent DNA
-        """
-        super(CueEntity, self).__init__(parent)
 
     def create(self, name, entity_type=None, index=-1, properties=None, factory=None):
         """Create entity with DNA.TYPE_CUE by default
@@ -1017,6 +1017,29 @@ class DNA:
         """Return True if changes not saved"""
 
         return self._changed
+
+    def save(self):
+        """Save all changes"""
+
+        self._db.commit()
+        self._changed = False
+
+    def save_copy(self, file_path, create=True):
+        """Save a copy of this file to `file_path` location
+
+        Args:
+            file_path (str): path to copy of current file
+            create (bool): If True file will be created
+        """
+
+        self.save()
+        self._db.copy(file_path, create=create)
+
+    def close(self):
+        """Close connection"""
+
+        self._db.close()
+        self._changed = False
 
     def _create(self, name="", parent=0, entity_type=None, index=-1, properties=None, factory=None):
         """Returns new DNAEntity inside this DNA file
@@ -1482,29 +1505,6 @@ class DNA:
         # emit property changed signal
         self.property_changed.emit(entity_id, new_key, self._get(entity_id, new_key))
 
-    def save(self):
-        """Save all changes"""
-
-        self._db.commit()
-        self._changed = False
-
-    def save_copy(self, file_path, create=True):
-        """Save a copy of this file to `file_path` location
-
-        Args:
-            file_path (str): path to copy of current file
-            create (bool): If True file will be created
-        """
-
-        self.save()
-        self._db.copy(file_path, create=create)
-
-    def close(self):
-        """Close connection"""
-
-        self._db.close()
-        self._changed = False
-
     def _factory(self, factory, raw_entities):
         """Return list of entities created by factory from raw_entities
 
@@ -1865,18 +1865,6 @@ class Project(DNA):
 
         return len(self.cuelists())
 
-    def _root(self):
-        """Returns root project entity"""
-
-        if self._project:
-            return self._project
-
-        root = self._entities(filter_type=DNA.TYPE_PROJECT, filter_parent=0)
-        root = root[0] if len(root) > 0 else None
-        self._project = root
-
-        return root
-
     @property
     def dna(self):
         """Get a proxy for dna"""
@@ -1980,6 +1968,18 @@ class Project(DNA):
         """Create a cuelist"""
 
         return self._create(name=name, parent=self._id, entity_type=DNA.TYPE_CUELIST, factory=CuelistEntity)
+
+    def _root(self):
+        """Returns root project entity"""
+
+        if self._project:
+            return self._project
+
+        root = self._entities(filter_type=DNA.TYPE_PROJECT, filter_parent=0)
+        root = root[0] if len(root) > 0 else None
+        self._project = root
+
+        return root
 
     def _create_project(self):
         """Create project entities"""
