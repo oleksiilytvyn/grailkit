@@ -350,23 +350,6 @@ class OSISParser(Parser):
 
         super(OSISParser, self).__init__(file_in, file_out)
 
-    @classmethod
-    def _get_book_info(cls, osis_id):
-        """Get info of book using OSIS identifier
-
-        Args:
-            osis_id (str): OSIS identifier
-        Returns:
-            array that consists of three items
-            first item is short name of book
-            second item is full name of book
-            and third is abbreviations separated by comma
-        """
-
-        book = Names.osis(osis_id)
-
-        return [book[0], book[1], ", ".join(book[2])] if book else [osis_id, osis_id, osis_id]
-
     def parse_file(self, file_in):
         """Parse input file
 
@@ -438,3 +421,20 @@ class OSISParser(Parser):
                 value = prop.text if prop.text else ""
 
                 self.set_property(key, value)
+
+    @classmethod
+    def _get_book_info(cls, osis_id):
+        """Get info of book using OSIS identifier
+
+        Args:
+            osis_id (str): OSIS identifier
+        Returns:
+            array that consists of three items
+            first item is short name of book
+            second item is full name of book
+            and third is abbreviations separated by comma
+        """
+
+        book = Names.osis(osis_id)
+
+        return [book[0], book[1], ", ".join(book[2])] if book else [osis_id, osis_id, osis_id]
