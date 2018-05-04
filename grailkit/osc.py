@@ -117,6 +117,8 @@ class OSCImpulse(object):
 class OSCMidi(object):
     """Representation of OSC OSCMidi message"""
 
+    __slots__ = ['port', 'status', 'data1', 'data2']
+
     def __init__(self, port, status, data1=None, data2=None):
         self.port = port
         self.status = status
@@ -143,7 +145,7 @@ class OSCMidi(object):
 class OSCColor(object):
     """Representation of OSC color type in RGBA format"""
 
-    # todo: Add slots for better performance
+    __slots__ = ['r', 'g', 'b', 'a']
 
     def __init__(self, r, g, b, a):
         self.r = r
