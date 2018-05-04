@@ -17,6 +17,8 @@ from grailkit.core import Signal
 from grailkit.db import DataBaseHost, DataBaseError
 from grailkit.util import millis_now, default_key
 
+# todo: Add ability to change nodes without executing SQL queries, as each change generates events in current model
+
 
 class DNAError(DataBaseError):
     """Base class for DNA errors"""
@@ -533,7 +535,7 @@ class SongEntity(DNAEntity):
     def language(self):
         """Language code of lyrics"""
 
-        return self.language
+        return self._language
 
     @language.setter
     def language(self, value):
