@@ -92,7 +92,7 @@ class Verse:
     def book_id(self):
         """Book id (int)"""
 
-        return self._book
+        return self._book_id
 
     @property
     def chapter(self):
