@@ -5,15 +5,10 @@ if [[ -z "$PYPI_USERNAME" || -z "$PYPI_PASSWORD" ]]; then
     exit 1
 fi
 
-cat << EOF > /root/.pypirc
-[distutils]
-index-servers =
-  pypi
+# Create distribution
+python setup.py sdist bdist_wheel
 
-[pypi]
-repository=https://upload.pypi.org/legacy/
-username=${PYPI_USERNAME}
-password=${PYPI_PASSWORD}
-EOF
+twine upload --repository-url https://test.pypi.org/legacy/ -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} dist/*
 
-python setup.py sdist upload -r pypi
+# Upload to PyPi
+twine upload -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} dist/*
