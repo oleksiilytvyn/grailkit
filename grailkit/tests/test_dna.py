@@ -30,7 +30,7 @@ class TestGrailkitDNA(unittest.TestCase):
     def tearDown(self):
         """Remove the directory after the test"""
 
-        shutil.rmtree(self.test_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def test_dna_signal(self):
         """Test DNASignal class"""

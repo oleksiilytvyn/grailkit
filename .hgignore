@@ -7,6 +7,7 @@ __pycache__/*
 .idea/*
 grailkit.egg-info/*
 docs/_build/*
+grailkit/spout/_spout/x64
 
 *~
 *.db

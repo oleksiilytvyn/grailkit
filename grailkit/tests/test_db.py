@@ -60,7 +60,7 @@ class TestGrailkitDB(unittest.TestCase):
     def tearDown(self):
         """Remove the directory after the test"""
 
-        shutil.rmtree(self.test_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def test_db_create(self):
         """Test database create"""

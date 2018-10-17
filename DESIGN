@@ -3,7 +3,7 @@ Principles
 ----------
 
 * Grailkit is a set of modules for creative cross-platform applications
-* Pure python
+* Pure python (if possible)
 * Private and Commercial use (MIT license)
 
 
@@ -40,3 +40,6 @@ plug
 
 util
     Utility functions and classes
+
+spout
+    SpoutLibrary binding using pybind11. Spout is a technology similar to Syphon for inter-app video sharing
