@@ -28,7 +28,7 @@ class TestGrailkitProject(unittest.TestCase):
     def tearDown(self):
         """Remove the directory after the test"""
 
-        shutil.rmtree(self.test_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def test_library(self):
         """Test library file"""

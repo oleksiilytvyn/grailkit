@@ -21,7 +21,7 @@ setup(
     author='Oleksii Lytvyn',
     author_email='programer95@gmail.com',
     description='Grail development kit',
-    long_description=open('README.rst').read(),
+    long_description=open('README.md').read(),
     url='https://bitbucket.org/grailapp/grail-kit',
     download_url='https://bitbucket.org/grailapp/grail-kit/get/default.zip',
     platforms='any',
@@ -55,5 +55,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: MIT License'
     ],
-    install_requires=['pyserial', 'python-rtmidi']
+    # install_requires=['pyserial', 'python-rtmidi', 'pybind11']
 )
