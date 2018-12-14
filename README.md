@@ -1,4 +1,4 @@
-![grail.png](https://bitbucket.org/alexlitvin/grailkit/src/default/icon/grailkit.png)
+![grail.png](/icon/grailkit.png)
 
 
 # Grail Kit #
