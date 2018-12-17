@@ -22,6 +22,7 @@ setup(
     author_email='programer95@gmail.com',
     description='Grail development kit',
     long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     url='https://bitbucket.org/alexlitvin/grailkit',
     download_url='https://bitbucket.org/alexlitvin/grailkit/get/default.zip',
     platforms='any',
