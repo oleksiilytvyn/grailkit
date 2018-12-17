@@ -22,8 +22,8 @@ setup(
     author_email='programer95@gmail.com',
     description='Grail development kit',
     long_description=open('README.md').read(),
-    url='https://bitbucket.org/grailapp/grail-kit',
-    download_url='https://bitbucket.org/grailapp/grail-kit/get/default.zip',
+    url='https://bitbucket.org/alexlitvin/grailkit',
+    download_url='https://bitbucket.org/alexlitvin/grailkit/get/default.zip',
     platforms='any',
     packages=['grailkit'],
     keywords=['framework', 'grail', 'development', 'osc', 'midi', 'dmx', 'utilities'],
@@ -55,5 +55,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: MIT License'
     ],
-    # install_requires=['pyserial', 'python-rtmidi', 'pybind11']
+    install_requires=['pyserial', 'python-rtmidi']
 )
