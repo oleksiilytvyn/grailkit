@@ -202,7 +202,7 @@ class Names(object):
         ["2 Иоанна", "Второе соборное послание святого апостола Иоанна", ["2ин"]],
         ["3 Иоанна", "Третье соборное послание святого апостола Иоанна", ["3ин"]],
         ["Иуды", "Соборное послание святого апостола Иуды", ["иуды", "ид"]],
-        ["к Римлянам", "Послание к Римлянам святого апостола Павла", "к римлянам", ["рим"]],
+        ["к Римлянам", "Послание к Римлянам святого апостола Павла", ["к римлянам", "рим"]],
         ["1 Коринфянам", "Первое послание к Коринфянам святого апостола Павла", ["1кор"]],
         ["2 Коринфянам", "Второе послание к Коринфянам святого апостола Павла", ["2кор"]],
         ["к Шалатам", "Послание к Галатам святого апостола Павла", ["гал"]],
@@ -237,15 +237,25 @@ class Names(object):
         }
 
     @classmethod
-    def osis(cls, osis_id):
+    def osis(cls, osis_id, language='en'):
         """Get book info by OSIS id
 
         Args:
             osis_id (str): OSIS identifier
+            language (str): language code
         """
 
         if osis_id in cls._osis_book_names:
-            return cls._books[cls._osis_book_names[osis_id]]
+            index = cls._osis_book_names[osis_id]
+
+            # Join Russian and English names for Russian version
+            if language == 'ru':
+                ru = cls._books_ru[index]
+                en = cls._books[index]
+
+                return [ru[0], ru[1], ru[2] + en[2]]
+            else:
+                return cls._books[index]
         else:
             return None
 
@@ -286,7 +296,7 @@ class Parser(DNA):
             value (str): property value
         """
 
-        self._set(0, key, value, force_type=str)
+        self._set(0, key, value, force_type=DNA.ARG_STRING)
 
     def get_property(self, key, default=""):
         """Get bible property
@@ -325,6 +335,7 @@ class Parser(DNA):
             title (str): full name of book
             abbr (str): string with abbreviations of book name separated by comma
         """
+
         self._db.execute("INSERT INTO books VALUES(?, ?, ?, ?, ?)",
                          (book_id, osis_id, name, title, abbr))
 
@@ -334,6 +345,7 @@ class Parser(DNA):
         Args:
             file_in (str): path to file that will be parsed
         """
+
         raise NotImplementedError()
 
 
@@ -348,6 +360,8 @@ class OSISParser(Parser):
             file_out (str): output file
         """
 
+        self._osis_language = 'en'
+
         super(OSISParser, self).__init__(file_in, file_out)
 
     def parse_file(self, file_in):
@@ -359,14 +373,20 @@ class OSISParser(Parser):
 
         tree = ElementTree.parse(file_in)
         root = tree.getroot()
-
         book = 0
 
+        # parse translation info first
         for book_node in root[0]:
             tag = book_node.tag.split('}')[-1]
 
             if tag == 'header':
                 self._parse_header(book_node)
+
+        self._osis_language = self.get_property('language', default='en')
+
+        # find and parse all books & verses
+        for book_node in root[0]:
+            tag = book_node.tag.split('}')[-1]
 
             if tag == 'div' and book_node.attrib['type'] and book_node.attrib['type'] == 'book':
                 book += 1
@@ -422,8 +442,7 @@ class OSISParser(Parser):
 
                 self.set_property(key, value)
 
-    @classmethod
-    def _get_book_info(cls, osis_id):
+    def _get_book_info(self, osis_id):
         """Get info of book using OSIS identifier
 
         Args:
@@ -435,6 +454,6 @@ class OSISParser(Parser):
             and third is abbreviations separated by comma
         """
 
-        book = Names.osis(osis_id)
+        book = Names.osis(osis_id, self._osis_language)
 
         return [book[0], book[1], ", ".join(book[2])] if book else [osis_id, osis_id, osis_id]
