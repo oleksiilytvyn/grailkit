@@ -23,6 +23,7 @@ import re
 import glob
 import json
 import sqlite3
+import logging
 
 from grailkit import PATH_SHARED
 from grailkit.util import copy_file, default_key, file_exists
@@ -630,6 +631,7 @@ class BibleHost:
 
     # list of available bibles
     _list = {}
+    _list_refs = {}
 
     @classmethod
     def setup(cls):
@@ -682,7 +684,12 @@ class BibleHost:
 
         bible = cls.info(bible_id)
 
-        return Bible(bible.file) if bible else None
+        if bible:
+            cls._list_refs[bible_id] = Bible(bible.file)
+
+            return cls._list_refs[bible_id]
+
+        return None
 
     @classmethod
     def install(cls, file_path, replace=False):
@@ -706,14 +713,17 @@ class BibleHost:
             bible_path = os.path.join(cls._location, bible.identifier + '.grail-bible')
         except (BibleError, sqlite3.OperationalError):
             raise BibleHostError("Unable to install bible from file \"%s\"."
-                                 "File may be corrupted or in wrong format." % file_path)
+                                 "File may be corrupted or in another format." % file_path)
 
         if cls.info(bible.identifier) and not replace:
             raise BibleHostError("Bible %s (%s) already installed" % (bible.title, bible.identifier,))
 
         # just copy file to new location
         copy_file(file_path, bible_path)
+
         installed_bible = Bible(bible_path)
+        # track bible descriptor
+        cls._list_refs[installed_bible.identifier] = installed_bible
 
         # create a description file
         cls._create_descriptor(installed_bible)
@@ -730,10 +740,16 @@ class BibleHost:
         """
 
         if bible_id in cls._list:
+            cls._list_refs[bible_id].close()
+
+            del cls._list_refs[bible_id]
             del cls._list[bible_id]
 
-        os.remove(os.path.join(cls._location, bible_id + ".json"))
-        os.remove(os.path.join(cls._location, bible_id + ".grail-bible"))
+        try:
+            os.remove(os.path.join(cls._location, bible_id + ".json"))
+            os.remove(os.path.join(cls._location, bible_id + ".grail-bible"))
+        except Exception as e:
+            logging.warning("Bible unistalled with error: %s" % e)
 
     @classmethod
     def verify(cls, file_path):

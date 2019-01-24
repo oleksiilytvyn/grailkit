@@ -1211,8 +1211,9 @@ class DNA:
             where.append(" type = ?")
             args.append(filter_type)
 
-        if filter_keyword:
-            keyword = "%" + str(filter_keyword).lstrip().rstrip().lower() + "%"
+        # empty keyword may result in selecting all records
+        if filter_keyword and len(filter_keyword) > 0:
+            keyword = "%" + str(filter_keyword) + "%"
             where.append(""" lowercase(name) LIKE lowercase(?)
                     OR lowercase(search) LIKE lowercase(?)""")
             args.append(keyword)
