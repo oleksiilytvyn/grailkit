@@ -6,7 +6,7 @@
     Implementation of grail file format.
     This file format used for all internal grail data structures.
 
-    :copyright: (c) 2018 by Oleksii Lytvyn.
+    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
 """
 import os

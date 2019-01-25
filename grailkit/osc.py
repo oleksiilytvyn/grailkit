@@ -3,10 +3,9 @@
     grailkit.osc
     ~~~~~~~~~~~~
 
-    OSC protocol implementation in pure python,
-    Code from OSC project (https://bitbucket.org/grailapp/osc)
+    OSC protocol implementation in pure python
 
-    :copyright: (c) 2018 by Oleksii Lytvyn.
+    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
 """
 

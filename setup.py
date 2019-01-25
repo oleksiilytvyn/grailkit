@@ -3,7 +3,7 @@
     setup
     ~~~~~
 
-    :copyright: (c) 2018 by Oleksii Lytvyn.
+    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
 """
 
@@ -20,14 +20,14 @@ setup(
     version=grailkit.__version__,
     author='Oleksii Lytvyn',
     author_email='programer95@gmail.com',
-    description='Grail development kit',
+    description='Grail development kit, a set of libraries for creative coding',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://bitbucket.org/alexlitvin/grailkit',
     download_url='https://bitbucket.org/alexlitvin/grailkit/get/default.zip',
     platforms='any',
     packages=['grailkit'],
-    keywords=['framework', 'grail', 'development', 'osc', 'midi', 'dmx', 'utilities'],
+    keywords=['framework', 'grail', 'development', 'osc', 'midi', 'dmx', 'utilities', 'spout'],
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',

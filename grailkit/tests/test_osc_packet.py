@@ -1,5 +1,13 @@
-#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+"""
+    grailkit.tests.test_osc_packet
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Tests for OSCPacket class
+
+    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
+    :license: MIT, see LICENSE for more details.
+"""
 
 import unittest
 from grailkit import osc
