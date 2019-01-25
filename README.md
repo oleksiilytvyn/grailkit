@@ -36,4 +36,4 @@ This library is in Pure Python and depends only on following projects:
 
 * python-rtmidi (MIDI module)
 * pyserial (DMX module)
-* pybind11
+* pybind11 (for building Spout module)

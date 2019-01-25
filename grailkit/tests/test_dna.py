@@ -5,7 +5,7 @@
 
     Tests for dna module
 
-    :copyright: (c) 2018 by Oleksii Lytvyn.
+    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
     :license: MIT, see LICENSE for more details.
 """
 import unittest
