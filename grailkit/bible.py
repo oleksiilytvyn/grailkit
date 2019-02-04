@@ -740,9 +740,10 @@ class BibleHost:
         """
 
         if bible_id in cls._list:
-            cls._list_refs[bible_id].close()
+            if bible_id in cls._list_refs:
+                cls._list_refs[bible_id].close()
+                del cls._list_refs[bible_id]
 
-            del cls._list_refs[bible_id]
             del cls._list[bible_id]
 
         try:
