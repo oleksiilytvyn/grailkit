@@ -1203,11 +1203,11 @@ class DNA:
         where = []
         args = []
 
-        if filter_parent:
+        if filter_parent is not None:
             where.append(" parent = ?")
             args.append(filter_parent)
 
-        if filter_type:
+        if filter_type is not None:
             where.append(" type = ?")
             args.append(filter_type)
 
