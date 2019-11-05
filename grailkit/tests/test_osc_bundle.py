@@ -80,7 +80,7 @@ _DGRAM_UNKNOWN_TYPE = (
     b"#bundle\x00"
     b"\x00\x00\x00\x00\x00\x00\x00\x01"
     b"\x00\x00\x00\x10"
-    b"iamnotaslash")
+    b"i_am_not_a_slash")
 
 
 class TestOSCBundle(unittest.TestCase):
@@ -161,10 +161,12 @@ class TestOSCBundleBuilder(unittest.TestCase):
 
     def test_raises_on_build(self):
 
+        # noinspection PyTypeChecker
         bundle = osc.OSCBundle(timestamp=0.0)
 
         self.assertRaises(osc.OSCBuildError, bundle.add, None)
 
+    # noinspection PyTypeChecker
     def test_raises_on_invalid_timestamp(self):
 
         bundle = osc.OSCBundle(timestamp="I am not a timestamp")

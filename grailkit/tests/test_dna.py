@@ -122,6 +122,8 @@ class TestGrailkitDNA(unittest.TestCase):
         ref.set(0, 'happy', True)
         ref.set(0, 'unhappy', False)
         ref.set(0, 'none-value', None)
+        ref.set(0, 'list', [1, 2, 3])
+        ref.set(0, 'set', (1, 2, 3))
 
         # get
         self.assertEqual(ref.get(0, 'language'), 'python 3')
@@ -132,6 +134,8 @@ class TestGrailkitDNA(unittest.TestCase):
         self.assertEqual(ref.get(0, 'non-existed', default='default'), 'default')
         self.assertEqual(ref.get(0, 'unhappy'), False)
         self.assertEqual(ref.get(0, 'none-value'), None)
+        self.assertEqual(ref.get(0, 'list'), [1, 2, 3])
+        self.assertEqual(ref.get(0, 'set'), (1, 2, 3))
 
         # has
         self.assertTrue(ref.has(0, 'version'))
@@ -140,7 +144,7 @@ class TestGrailkitDNA(unittest.TestCase):
         # properties
         props = ref.properties(0)
 
-        self.assertEqual(len(props), 6)
+        self.assertEqual(len(props), 8)
         self.assertEqual(props['version'], 3.4)
 
         # rename
@@ -151,7 +155,7 @@ class TestGrailkitDNA(unittest.TestCase):
         # unset
         ref.unset(0, 'happy')
 
-        self.assertEqual(len(ref.properties(0)), 5)
+        self.assertEqual(len(ref.properties(0)), 7)
 
         # unset_all
         ref.unset_all(0)

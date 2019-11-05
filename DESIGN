@@ -22,15 +22,9 @@ core
 db
     Thin layer on top of sqlite3
 
-dmx
-    *Experimental* DMX implementation in pure python with use of pyserial library
-
 dna
     Grail format file I/O, Grail files support many nodes,
     properties and events on their creation, change or deletion
-
-midi
-    MIDI protocol implementation
 
 osc
     Open Sound Control protocol in pure python
@@ -40,6 +34,3 @@ plug
 
 util
     Utility functions and classes
-
-spout
-    SpoutLibrary binding using pybind11. Spout is a technology similar to Syphon for inter-app video sharing

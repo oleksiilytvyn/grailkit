@@ -264,7 +264,7 @@ class OSCType(object):
             arg_type = cls.TYPE_TRUE
         elif builtin_type == builtins.bool and not value:
             arg_type = cls.TYPE_FALSE
-        elif value == None:
+        elif value is None:
             arg_type = cls.TYPE_NULL
         elif builtin_type == builtins.str and len(value) == 1:
             arg_type = cls.TYPE_CHAR
@@ -1159,6 +1159,7 @@ class OSCMessage(object):
 
         return dgram.startswith(b'/')
 
+    # noinspection PyPep8
     @staticmethod
     def is_valid_address(address):
         """Check if given value is valid OSC-string address pattern
@@ -1423,7 +1424,7 @@ class OSCClient(object):
         """
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.setblocking(0)
+        self._socket.setblocking(False)
         self._clients = []
         self._closed = False
 
@@ -1496,7 +1497,7 @@ class OSCClient(object):
         # create new socket if previously closed
         if self._closed:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self._socket.setblocking(0)
+            self._socket.setblocking(False)
             self._closed = False
 
         dgram = message.build().dgram
@@ -1585,7 +1586,7 @@ class OSCServer(socketserver.UDPServer):
         """Handle receiving of OSCMessage or OSCBundle
 
         Args:
-            address: typle (host, port)
+            address: tuple (host, port)
             message: OSCMessage or OSCBundle
             date: int number which represents time of message
         Raises:

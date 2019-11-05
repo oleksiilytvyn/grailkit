@@ -27,7 +27,7 @@ setup(
     download_url='https://bitbucket.org/alexlitvin/grailkit/get/default.zip',
     platforms='any',
     packages=['grailkit'],
-    keywords=['framework', 'grail', 'development', 'osc', 'midi', 'dmx', 'utilities', 'spout'],
+    keywords=['framework', 'grail', 'development', 'osc', 'utilities'],
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -56,5 +56,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: MIT License'
     ],
-    install_requires=['pyserial', 'python-rtmidi']
+    install_requires=[]
 )

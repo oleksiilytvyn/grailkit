@@ -10,18 +10,13 @@
 """
 
 import unittest
+
 from grailkit import osc
-
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 
 class TestOSCSender(unittest.TestCase):
 
-    @mock.patch('socket.socket')
+    @unittest.mock.patch('socket.socket')
     def test_send(self, mock_socket_ctor):
         mock_socket = mock_socket_ctor.return_value
 

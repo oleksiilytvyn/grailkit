@@ -95,7 +95,7 @@ class DataBase:
                 char (str): string to process
             """
             char = re.sub(r'[\[_\].\-,!()\"\':;]', '', char)
-            char = re.sub('[\s+]', '', char)
+            char = re.sub('[s+]', '', char)
 
             return char.lower()
 
@@ -124,7 +124,7 @@ class DataBase:
         """Returns location of database file"""
 
         return self._location
-
+    
     def get(self, query, data=tuple(), factory=None):
         """Execute query and return first record
 
@@ -135,7 +135,6 @@ class DataBase:
         Returns:
             first row
         """
-
         if factory:
             self.set_factory(factory)
 
@@ -157,7 +156,6 @@ class DataBase:
         Returns:
             list of fetched rows
         """
-
         if factory:
             self.set_factory(factory)
 
@@ -177,8 +175,11 @@ class DataBase:
             data (tuple): tuple of data
         """
 
-        cursor = self.cursor
-        cursor.execute(query, data)
+        try:
+            cursor = self.cursor
+            cursor.execute(query, data)
+        except sqlite3.OperationalError:
+            return False
 
     def set_factory(self, factory=sqlite3.Row):
         """Set sqlite row factory function.
