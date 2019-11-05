@@ -7,8 +7,6 @@ pipelines:
     - step:
         script:
             # install dependencies
-          - pip install pyserial
-          - pip install python-rtmidi
           - pip install twine
             # run tests
           - python -m unittest discover -s ./grailkit/tests -p 'test_*.py'
