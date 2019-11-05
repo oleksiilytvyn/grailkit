@@ -147,7 +147,7 @@ class Signal(object):
 
     @classmethod
     def _wrap(cls, fn):
-        """Returns typle with parent object and method
+        """Returns tuple with parent object and method
 
         Args:
             fn (callable): callable to wrap with weakref

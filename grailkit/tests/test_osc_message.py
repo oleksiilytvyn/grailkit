@@ -179,5 +179,6 @@ class TestOSCMessage(unittest.TestCase):
         builder.add('this is not a float', osc.OSCType.TYPE_FLOAT)
         self.assertRaises(osc.OSCBuildError, builder.build)
 
+
 if __name__ == "__main__":
     unittest.main()

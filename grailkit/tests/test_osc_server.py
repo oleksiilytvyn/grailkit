@@ -12,11 +12,6 @@
 import unittest
 from threading import Timer
 
-try:
-    from unittest import mock
-except:
-    import mock
-
 from grailkit import osc
 
 

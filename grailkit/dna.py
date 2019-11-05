@@ -26,6 +26,7 @@ class DNAError(DataBaseError):
     pass
 
 
+# noinspection PyProtectedMember
 class DNAEntity:
     """DNA entity definition class
 
@@ -693,6 +694,7 @@ class FileEntity(DNAEntity):
         self._content = (self._content or '')
 
 
+# noinspection PyProtectedMember
 class CuelistEntity(DNAEntity):
     """Representation of cuelist"""
 
@@ -917,9 +919,10 @@ class DNA:
     ARG_FLOAT = 3
     ARG_STRING = 4
     ARG_JSON = 6
+    ARG_TUPLE = 7
 
     # list all supported types
-    _SUPPORTED_ARGS = (ARG_NONE, ARG_BOOL, ARG_INT, ARG_FLOAT, ARG_STRING, ARG_JSON)
+    _SUPPORTED_ARGS = (ARG_NONE, ARG_BOOL, ARG_INT, ARG_FLOAT, ARG_STRING, ARG_JSON, ARG_TUPLE)
 
     # types of entities
     TYPE_ABSTRACT = 0
@@ -1250,6 +1253,7 @@ class DNA:
         self._changed = True
 
         cursor = self._db.cursor
+        # noinspection PyProtectedMember
         cursor.execute("""UPDATE entities SET
                         id = ?, parent = ?, type = ?, name = ?, created = ?, modified = ?, content = ?, search = ?,
                         sort_order = ?
@@ -1283,8 +1287,7 @@ class DNA:
         else:
             value = ''
 
-        cursor = self._db.cursor
-        cursor.execute("""UPDATE entities SET %s = ? WHERE id = ?""" % field, (value, entity.id))
+        self._db.execute("""UPDATE entities SET %s = ? WHERE id = ?""" % field, (value, entity.id))
 
         self.entity_changed.emit(entity.id)
 
@@ -1582,6 +1585,8 @@ class DNA:
             arg_type = cls.ARG_FLOAT
         elif builtin_type == bool:
             arg_type = cls.ARG_BOOL
+        elif builtin_type == tuple:
+            arg_type = cls.ARG_TUPLE
         elif builtin_type == dict or builtin_type == list:
             arg_type = cls.ARG_JSON
 
@@ -1600,6 +1605,8 @@ class DNA:
         """
 
         if arg_type == cls.ARG_JSON:
+            value = json.dumps(arg_value)
+        elif arg_type == cls.ARG_TUPLE:
             value = json.dumps(arg_value)
         elif arg_value is True:
             value = 'True'
@@ -1626,6 +1633,8 @@ class DNA:
 
         if arg_type == cls.ARG_JSON:
             arg_value = json.loads(arg_value)
+        elif arg_type == cls.ARG_TUPLE:
+            arg_value = tuple(json.loads(arg_value))
         elif arg_type == cls.ARG_INT:
             arg_value = int(arg_value)
         elif arg_type == cls.ARG_FLOAT:
@@ -1638,6 +1647,7 @@ class DNA:
         return arg_value
 
 
+# noinspection PyProtectedMember
 class DNAProxy:
     """This class gives public access to hidden methods of DNA"""
 
@@ -1994,7 +2004,7 @@ class Project(DNA):
                                       'author': 'Grail',
                                       'description': 'Grail project'
                                      })
-        self._id = self._project._id
+        self._id = self._project.id
         self._create(name="settings", entity_type=DNA.TYPE_SETTINGS, parent=self._id)
 
 
