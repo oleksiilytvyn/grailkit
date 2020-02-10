@@ -417,7 +417,7 @@ class Bible(DNA):
     def books(self):
         """Returns list of all books"""
 
-        return self._db.all("""SELECT 
+        return self._db.all("""SELECT
             `books`.`id`,
             `books`.`osisid`,
             `books`.`name`,
@@ -447,7 +447,7 @@ class Bible(DNA):
             chapter (int): chapter id
         """
 
-        return self._db.all("""SELECT 
+        return self._db.all("""SELECT
                 `verses`.`osisid`,
                 `verses`.`book`,
                 `verses`.`chapter`,
@@ -468,7 +468,7 @@ class Bible(DNA):
             verse (int): verse number
         """
 
-        return self._db.get("""SELECT 
+        return self._db.get("""SELECT
                                 `verses`.`osisid`,
                                 `verses`.`book`,
                                 `verses`.`chapter`,
@@ -587,14 +587,14 @@ class Bible(DNA):
 
         keyword = "%" + text.lstrip().rstrip().lower() + "%"
 
-        return self._db.all("""SELECT 
+        return self._db.all("""SELECT
                                 `verses`.`osisid`,
                                 `verses`.`book`,
                                 `verses`.`chapter`,
                                 `verses`.`verse`,
                                 `verses`.`text`,
                                 `books`.`name` as book_name
-                               FROM verses 
+                               FROM verses
                                LEFT JOIN `books` ON `verses`.`book` = `books`.`id`
                                WHERE lowercase(`verses`.`text`) LIKE ? LIMIT ?""",
                             (keyword, limit), factory=verse_factory)
@@ -611,8 +611,7 @@ class Bible(DNA):
             "publisher": self._publisher,
             "copyright": self._copyright,
             "identifier": self._identifier,
-            "description": self._description
-            }
+            "description": self._description}
 
         return json.dumps(data)
 

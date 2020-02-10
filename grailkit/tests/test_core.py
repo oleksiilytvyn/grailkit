@@ -13,7 +13,7 @@ import types
 import unittest
 from unittest.mock import Mock
 
-from grailkit.core import *
+from grailkit.core import Signal, Signalable
 
 
 class TestGrailkitCore(unittest.TestCase):

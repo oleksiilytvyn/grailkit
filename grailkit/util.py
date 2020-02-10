@@ -36,8 +36,7 @@ BUILTIN_TYPES = (
     bytearray,
     types.FunctionType,
     types.LambdaType,
-    types.BuiltinFunctionType
-    )
+    types.BuiltinFunctionType)
 
 
 def application_location():
@@ -165,4 +164,3 @@ def object_type(object_ref):
     """
 
     return object_ref if isinstance(object_ref, type) else type(object_ref)
-

@@ -83,9 +83,7 @@ class TestGrailkitCore(unittest.TestCase):
     def test_json_key(self):
         """Test default_key function"""
 
-        data = {
-            'property': 'value'
-            }
+        data = {'property': 'value'}
 
         class ObjectDef(object):
             """Object with property"""

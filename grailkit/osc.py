@@ -20,7 +20,6 @@ import builtins
 import calendar
 import socketserver
 
-__version__ = '0.6.3'
 __all__ = [
     'OSCType',
     'OSCPacket',
@@ -36,8 +35,7 @@ __all__ = [
 
     'NTPError',
     'OSCParseError',
-    'OSCBuildError'
-    ]
+    'OSCBuildError']
 
 
 class NTPError(Exception):
@@ -209,8 +207,7 @@ class OSCType(object):
 
         TYPE_INT64,
         TYPE_DOUBLE,
-        TYPE_UTF8_STRING
-        )
+        TYPE_UTF8_STRING)
 
     # map of types and corresponding io methods
     TYPES_MAP = {
@@ -225,8 +222,7 @@ class OSCType(object):
         TYPE_TIMETAG: 'timetag',
         TYPE_DOUBLE: 'double',
         TYPE_INT64: 'int64',
-        TYPE_UTF8_STRING: 'utf8_string'
-        }
+        TYPE_UTF8_STRING: 'utf8_string'}
 
     @classmethod
     def is_supported(cls, _type):
@@ -1170,7 +1166,7 @@ class OSCMessage(object):
             True if valid
         """
 
-        return address == '/' or re.compile("^/[a-zA-Z0-9/_\-?*\[\]]+").match(address)
+        return address == '/' or re.compile(r"^/[a-zA-Z0-9/_\-?*\[\]]+").match(address)
 
 
 class OSCBundle(object):

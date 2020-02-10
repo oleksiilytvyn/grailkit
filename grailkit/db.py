@@ -124,7 +124,7 @@ class DataBase:
         """Returns location of database file"""
 
         return self._location
-    
+
     def get(self, query, data=tuple(), factory=None):
         """Execute query and return first record
 

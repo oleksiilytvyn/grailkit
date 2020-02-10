@@ -578,8 +578,7 @@ class SongEntity(DNAEntity):
             'language': self._language,
             'lyrics': self._lyrics,
             'genre': self._genre,
-            'artist': self._artist
-            }
+            'artist': self._artist}
 
         super(SongEntity, self).update()
 
@@ -774,8 +773,7 @@ class CueEntity(DNAEntity):
         'Green',
         'Blue',
         'Purple',
-        'Gray'
-        )
+        'Gray')
 
     def __init__(self, parent):
         """Create a cue instance
@@ -953,8 +951,7 @@ class DNA:
         TYPE_FILE,
         TYPE_SONG,
         TYPE_LAYOUT,
-        TYPE_VIEW
-        )
+        TYPE_VIEW)
 
     # types and their default factories
     TYPES_FACTORIES = {
@@ -963,8 +960,7 @@ class DNA:
         TYPE_CUELIST: CuelistEntity,
         TYPE_CUE: CueEntity,
         TYPE_FILE: FileEntity,
-        TYPE_SONG: SongEntity
-        }
+        TYPE_SONG: SongEntity}
 
     # database handler
     _db = None
@@ -2001,9 +1997,8 @@ class Project(DNA):
                                      parent=0,
                                      entity_type=DNA.TYPE_PROJECT,
                                      properties={
-                                      'author': 'Grail',
-                                      'description': 'Grail project'
-                                     })
+                                         'author': 'Grail',
+                                         'description': 'Grail project'})
         self._id = self._project.id
         self._create(name="settings", entity_type=DNA.TYPE_SETTINGS, parent=self._id)
 

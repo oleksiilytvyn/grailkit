@@ -421,8 +421,7 @@ class OSISParser(Parser):
                 'publisher': '',
                 'rights': 'copyright',
                 'identifier': '',
-                'description': ''
-                }
+                'description': ''}
 
             # check if this property is valid
             if name in ids:
