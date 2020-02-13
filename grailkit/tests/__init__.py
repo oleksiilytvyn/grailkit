@@ -1,10 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.tests
-    ~~~~~~~~~~~~~~
+Tests of functionality.
 
-    Tests of functionality
-
-    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:license: MIT, see LICENSE for more details.
 """

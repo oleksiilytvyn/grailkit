@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""
-Simple plugin discovery, loading & registration mechanisms.
+"""Simple plugin discovery, loading & registration mechanisms.
 
 :copyright: (c) 2017-2019 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.
@@ -11,7 +10,8 @@ import importlib
 
 
 class PluginRegistry(type):
-    """Subclasses registration mechanism based on meta-classes.
+    """
+    Subclasses registration mechanism based on meta-classes.
 
     Use this class as meta-class to register plugin classes.
     """
@@ -19,7 +19,8 @@ class PluginRegistry(type):
     def __init__(cls, *args):
         """Create Plugin Registry.
 
-        Args:
+        Args
+        ----
             name (str): class name
             bases (list): class bases
             attrs (list): attributes
@@ -51,11 +52,13 @@ class Plugin(object, metaclass=PluginRegistry):
 def discover(location, packages=False, exclude=None):
     """Load and execute python modules in given location.
 
-    Args:
+    Args
+    ----
         location (str): path to plugins folder
         packages (bool): If True sub-modules will be also loaded
         exclude (list): list of excluded modules, if modules also included. see `include_modules` argument
-    Returns:
+    Returns
+    -------
         list: modules loaded
     """
     location = os.path.abspath(location)

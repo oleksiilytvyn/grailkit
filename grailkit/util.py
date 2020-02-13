@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""
-Utility functions and constants.
+"""Utility functions and constants.
 
 :copyright: (c) 2017-2019 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.

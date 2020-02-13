@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""
-Core types and widely used components.
+"""Core types and widely used components.
 
 :copyright: (c) 2017-2019 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.

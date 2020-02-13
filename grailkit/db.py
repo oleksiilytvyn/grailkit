@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""
-Simplified interface to SQLite database.
+"""Simplified interface to SQLite database.
 
 :copyright: (c) 2017-2019 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.

@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""
-Parse other bible formats into grail bible format.
+"""Parse other bible formats into grail bible format.
 
 Bibles in OSIS format can be downloaded here:
 https://github.com/matt-cook/bible
