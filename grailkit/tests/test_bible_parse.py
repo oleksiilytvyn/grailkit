@@ -1,12 +1,9 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.tests.test_bible_parse
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tests for bible_parse module.
 
-    Tests for bible_parse module
-
-    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn.
+:license: MIT, see LICENSE for more details.
 """
 import unittest
 

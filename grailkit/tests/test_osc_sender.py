@@ -1,12 +1,9 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.tests.test_osc_sender
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tests for OSCClient class, socket binding and sending message.
 
-    Tests for OSCClient class, socket binding and sending message
-
-    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn.
+:license: MIT, see LICENSE for more details.
 """
 
 import unittest

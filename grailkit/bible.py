@@ -16,7 +16,7 @@ SQL structure:
         abbr TEXT );
     CREATE TABLE verses(osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
 
-:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.
 """
 import os

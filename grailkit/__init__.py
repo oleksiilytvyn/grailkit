@@ -2,7 +2,7 @@
 """
 GrailKit is a set of modules that help develop interactive apps.
 
-:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.
 """
 

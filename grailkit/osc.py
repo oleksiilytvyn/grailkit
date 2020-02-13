@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """OSC protocol implementation in pure python.
 
-:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.
 """
 

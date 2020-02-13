@@ -4,7 +4,7 @@ Implementation of grail file format.
 
 This file format used for all internal grail data structures.
 
-:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn.
 :license: MIT, see LICENSE for more details.
 """
 import os
@@ -15,8 +15,6 @@ from grailkit.core import Signal
 from grailkit.db import DataBaseHost, DataBaseError
 from grailkit.util import millis_now, default_key
 
-# todo: Add ability to change nodes without executing SQL queries, as each change generates events in current model
-
 
 class DNAError(DataBaseError):
     """Base class for DNA errors."""
@@ -26,7 +24,9 @@ class DNAError(DataBaseError):
 
 # noinspection PyProtectedMember
 class DNAEntity:
-    """DNA entity definition class.
+
+    """
+    DNA entity definition class.
 
     Each entity must have following fields:
         id (int): identification number of entity;
