@@ -24,7 +24,6 @@ class DNAError(DataBaseError):
 
 # noinspection PyProtectedMember
 class DNAEntity:
-
     """
     DNA entity definition class.
 
@@ -1090,9 +1089,9 @@ class DNA:
         Returns:
             DNAEntity with id `entity_id` if entity exists otherwise returns Null
         """
-        raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, 
-                                search, sort_order
-                            FROM entities WHERE id = ?""", (entity_id,))
+        raw_entities = self._db.all(
+            """SELECT id, parent, type, name, created, modified, content, search, sort_order
+               FROM entities WHERE id = ?""", (entity_id,))
         entities = self._factory(factory, raw_entities)
 
         return entities[0] if len(entities) > 0 else None
@@ -1135,12 +1134,10 @@ class DNA:
 
         sql = """
             SELECT id, parent, type, name, created, modified, content, search, sort_order
-            FROM entities
-            %s
-            ORDER BY %s %s
-            """ % ('WHERE' + ' AND '.join(where) if len(where) > 0 else '',
-                   sort if isinstance(sort, str) else "sort_order",
-                   "DESC" if reverse else "ASC")
+            FROM entities"""
+
+        if len(where) > 0:
+            sql += " WHERE" + " AND ".join(where)
 
         if limit > 0:
             sql += " LIMIT ? "
@@ -1149,6 +1146,9 @@ class DNA:
         if offset > 0:
             sql += " OFFSET ? "
             args.append(offset)
+
+        sql += " ORDER BY %s %s" % (sort if isinstance(sort, str) else "sort_order",
+                                    "DESC" if reverse else "ASC")
 
         raw_entities = self._db.all(sql, args)
 

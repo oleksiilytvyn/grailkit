@@ -26,6 +26,8 @@ class TestGrailkitCore(unittest.TestCase):
 
         func.assert_called_with('Hello')
 
+        self.assertEqual(len(signal), 1)
+
     def test_signal_types(self):
         """Test signal types template"""
 
@@ -60,3 +62,5 @@ class TestGrailkitCore(unittest.TestCase):
         signals.emit('/second', 3)
 
         func.assert_called_with('Python')
+
+        self.assertEqual(len(signals), 1)

@@ -36,7 +36,6 @@ class PluginRegistry(type):
 
 
 class Plugin(object, metaclass=PluginRegistry):
-
     """Base plugin class."""
 
     def __init__(self):

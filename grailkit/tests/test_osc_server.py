@@ -23,6 +23,19 @@ class TestServer(osc.OSCServer):
         self.log.append((address, message, date))
 
 
+def _send_messages():
+
+    client = osc.OSCClient('127.0.0.1', 31338)
+
+    for value in ["This is example string", 123, True, bytes("utf-8 text", "utf-8")]:
+        msg = osc.OSCMessage(address="/debug")
+        msg.add(value)
+
+        client.send(msg)
+
+    client.close()
+
+
 class TestOSCServer(unittest.TestCase):
 
     def setUp(self):
@@ -32,7 +45,7 @@ class TestOSCServer(unittest.TestCase):
         t = Timer(2.0, self._close_server)
         t.start()
 
-        t2 = Timer(1.0, self._send_messages)
+        t2 = Timer(1.0, _send_messages)
         t2.start()
 
         self.server.serve_forever()
@@ -44,18 +57,6 @@ class TestOSCServer(unittest.TestCase):
 
         self.server.shutdown()
         self.server.server_close()
-
-    def _send_messages(self):
-
-        client = osc.OSCClient('127.0.0.1', 31338)
-
-        for value in ["This is example string", 123, True, bytes("utf-8 text", "utf-8")]:
-            msg = osc.OSCMessage(address="/debug")
-            msg.add(value)
-
-            client.send(msg)
-
-        client.close()
 
     def test_receive(self):
 

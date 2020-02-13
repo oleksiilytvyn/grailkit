@@ -106,7 +106,7 @@ class TestOSCMessage(unittest.TestCase):
 
         self.assertEqual("/SYNC", msg.address)
         self.assertEqual(1, len(msg.args))
-        self.assertTrue(type(msg.args[0]) == float)
+        self.assertTrue(isinstance(msg.args[0], float))
         self.assertAlmostEqual(0.5, msg.args[0])
 
     def test_raises_on_incorrect_datagram(self):
