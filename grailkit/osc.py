@@ -1,12 +1,9 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.osc
-    ~~~~~~~~~~~~
+OSC protocol implementation in pure python.
 
-    OSC protocol implementation in pure python
-
-    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:license: MIT, see LICENSE for more details.
 """
 
 import re
@@ -41,13 +38,19 @@ __all__ = [
 class NTPError(Exception):
     """Base class for ntp errors."""
 
+    pass
+
 
 class OSCParseError(Exception):
     """Exception raised when a datagram parsing error occurs."""
 
+    pass
+
 
 class OSCBuildError(Exception):
     """Exception raised  when a datagram building error occurs."""
+
+    pass
 
 
 NTP_IMMEDIATELY = struct.pack('>q', 1)
@@ -58,6 +61,7 @@ _NTP_DELTA = (_NTP_SYSTEM_EPOCH - _NTP_EPOCH).days * 24 * 3600
 
 def ntp_to_time(date):
     """Convert a NTP time to system time.
+
     System time is represented by seconds since the epoch in UTC.
 
     Args:
@@ -65,12 +69,12 @@ def ntp_to_time(date):
     Returns:
         system time in seconds
     """
-
     return date - _NTP_DELTA
 
 
 def time_to_ntp(date):
     """Convert a system time to a NTP time datagram.
+
     System time is represented by seconds since the epoch in UTC.
 
     Args:
@@ -106,29 +110,30 @@ _CHAR_DGRAM_LEN = 4
 
 
 class OSCImpulse(object):
-    """Representation of Impulse OSC type"""
+    """Representation of Impulse OSC type."""
 
     pass
 
 
 class OSCMidi(object):
-    """Representation of OSC OSCMidi message"""
+    """Representation of OSC OSCMidi message."""
 
     __slots__ = ['port', 'status', 'data1', 'data2']
 
     def __init__(self, port, status, data1=None, data2=None):
+        """Create OSC MIDI type."""
         self.port = port
         self.status = status
         self.data1 = data1
         self.data2 = data2
 
     def pack(self):
-        """Returns midi message representation"""
+        """Return MIDI message representation."""
         return struct.pack('>BBBB', self.port, self.status, self.data1, self.data2)
 
     @classmethod
     def unpack(cls, data):
-        """Parse datagram into OSCMidi instance
+        """Parse datagram into OSCMidi instance.
 
         Args:
             data (bytes): datagram
@@ -140,24 +145,24 @@ class OSCMidi(object):
 
 
 class OSCColor(object):
-    """Representation of OSC color type in RGBA format"""
+    """Representation of OSC color type in RGBA format."""
 
     __slots__ = ['r', 'g', 'b', 'a']
 
     def __init__(self, r, g, b, a):
+        """Create OSC color type."""
         self.r = r
         self.g = g
         self.b = b
         self.a = a
 
     def pack(self):
-        """Returns datagram of OSCColor type"""
-
+        """Return datagram of OSCColor type."""
         return struct.pack('>BBBB', self.r, self.g, self.b, self.a)
 
     @classmethod
     def unpack(cls, data):
-        """Parse datagram into OSCColor instance
+        """Parse datagram into OSCColor instance.
 
         Args:
             data (bytes): datagram
@@ -165,12 +170,11 @@ class OSCColor(object):
         Returns:
             OSCColor instance
         """
-
         return cls(*struct.unpack('>BBBB', data))
 
 
 class OSCType(object):
-    """Reading and writing OSC types"""
+    """Reading and writing OSC types."""
 
     TYPE_INT = 'i'
     TYPE_UINT = 'u'
@@ -226,17 +230,16 @@ class OSCType(object):
 
     @classmethod
     def is_supported(cls, _type):
-        """Check if given type is supported
+        """Check if given type is supported.
 
         Args:
             _type (str): OSC type tag
         """
-
         return _type in cls._SUPPORTED_TYPES
 
     @classmethod
     def tag(cls, value):
-        """Get OSC type tag for `value` argument
+        """Get OSC type tag for `value` argument.
 
         Args:
             value: argument value
@@ -244,7 +247,6 @@ class OSCType(object):
         Returns:
             OSC type tag
         """
-
         builtin_type = type(value)
         arg_type = cls.TYPE_NULL
 
@@ -275,19 +277,18 @@ class OSCType(object):
 
     @classmethod
     def has_datagram(cls, _type):
-        """Check if this type has i/o method
+        """Check if this type has i/o method.
 
         Args:
             _type (str): OSC type tag
-        Returns
+        Returns:
             True if type has datagram processing method
         """
-
         return _type in cls.TYPES_MAP
 
     @classmethod
     def type(cls, _type, data, index=-1):
-        """Read and write any supported OSC type
+        """Read and write any supported OSC type.
 
         Args:
             _type (str): OSC type tag
@@ -296,12 +297,11 @@ class OSCType(object):
         Returns:
             Datagram from value given if `index` is -1, otherwise parse datagram into value
         """
-
         return getattr(cls, cls.TYPES_MAP[_type])(data, index)
 
     @classmethod
     def string(cls, data, index=-1):
-        """Get a python string from the datagram and vice versa
+        """Get a python string from the datagram and vice versa.
 
         According to the specifications, a string is:
         "A sequence of non-null ASCII characters followed by a null,
@@ -317,7 +317,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if datagram could not be build.
         """
-
         # read
         if index != -1:
             offset = 0
@@ -356,7 +355,8 @@ class OSCType(object):
 
     @classmethod
     def utf8_string(cls, data, index=-1):
-        """Get a python string from the datagram and vice versa
+        """Get a python string from the datagram and vice versa.
+
         Like OSC string but in UTF-8 encoding
 
         Args:
@@ -368,7 +368,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if datagram could not be build.
         """
-
         # read
         if index != -1:
             offset = 0
@@ -407,7 +406,8 @@ class OSCType(object):
 
     @classmethod
     def int(cls, data, index=-1):
-        """Returns the datagram for the given integer parameter value
+        """Return the datagram for the given integer parameter value.
+
         Get a 32-bit big-endian two's complement integer from the datagram
 
         Args:
@@ -420,7 +420,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if the int could not be converted.
         """
-
         # read
         if index != -1:
             try:
@@ -438,7 +437,8 @@ class OSCType(object):
 
     @classmethod
     def uint(cls, data, index=-1):
-        """Returns the datagram for the given integer parameter value
+        """Return the datagram for the given integer parameter value.
+
         Get a 32-bit big-endian unsigned integer from the datagram
 
         Args:
@@ -451,7 +451,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if the int could not be converted.
         """
-
         # read
         if index != -1:
             try:
@@ -469,7 +468,7 @@ class OSCType(object):
 
     @classmethod
     def int64(cls, data, index=-1):
-        """Read and write Int64 from OSC message
+        """Read and write Int64 from OSC message.
 
         Args:
             data: integer or datagram
@@ -481,7 +480,6 @@ class OSCType(object):
             OSCBuildError if data can't be written
             OSCParseError if data could not be parsed from datagram
         """
-
         # read
         if index != -1:
             try:
@@ -497,7 +495,7 @@ class OSCType(object):
 
     @classmethod
     def double(cls, data, index=-1):
-        """Read and write OSC double datagram
+        """Read and write OSC double datagram.
 
         Args:
             data: double or datagram of it
@@ -509,7 +507,6 @@ class OSCType(object):
             OSCBuildError if `data` can't be packed
             OSCParseError if `data` could not be parsed
         """
-
         # read
         if index != -1:
             try:
@@ -526,7 +523,8 @@ class OSCType(object):
     @classmethod
     def float(cls, data, index=-1):
         """Get a 32-bit big-endian IEEE 754 floating point number from the datagram.
-        Returns the datagram for the given float parameter value if `index` is -1
+
+        Return the datagram for the given float parameter value if `index` is -1
 
         Args:
             data: A datagram packet of value to be converted
@@ -538,7 +536,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if the float could not be converted.
         """
-
         # read
         if index != -1:
 
@@ -559,6 +556,7 @@ class OSCType(object):
     @classmethod
     def timetag(cls, data, index=-1):
         """Get a 64-bit big-endian fixed-point time tag as a date from the datagram.
+
         Create time tag datagram if `index` is -1
 
         According to the specifications, a date is represented as is:
@@ -606,7 +604,7 @@ class OSCType(object):
 
     @classmethod
     def color(cls, data, index=-1):
-        """Read and write OSCColor OSC type
+        """Read and write OSCColor OSC type.
 
         Args:
             data (bytes, OSCColor): datagram or OSCColor instance
@@ -618,7 +616,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if datagram for OSCMidi message can't be created
         """
-
         # read
         if index != -1:
             try:
@@ -634,7 +631,7 @@ class OSCType(object):
 
     @classmethod
     def midi(cls, data, index=-1):
-        """Read and write OSC OSCMidi message
+        """Read and write OSC OSCMidi message.
 
         Args:
             data: OSCMidi instance or datagram to be parsed
@@ -646,7 +643,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if datagram for OSCMidi message can't be created
         """
-
         # read
         if index != -1:
             try:
@@ -662,7 +658,7 @@ class OSCType(object):
 
     @classmethod
     def char(cls, data, index=-1):
-        """Read and write Char OSC type
+        """Read and write Char OSC type.
 
         Args:
             data: Datagram or char
@@ -674,7 +670,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if datagram can't be created
         """
-
         # read
         if index != -1:
             try:
@@ -690,8 +685,9 @@ class OSCType(object):
 
     @classmethod
     def blob(cls, data, index=-1):
-        """Get a blob from the datagram if index given otherwise
-        returns the datagram for the given `data` value.
+        """Get a blob from the datagram if index given otherwise.
+
+        Return the datagram for the given `data` value.
 
         According to the specifications, a blob is made of
         "an int32 size count, followed by that many 8-bit bytes of arbitrary
@@ -708,7 +704,6 @@ class OSCType(object):
             OSCParseError if the datagram could not be parsed.
             OSCBuildError if the value was empty or if its size didn't fit an OSC int.
         """
-
         # read
         if index != -1:
             size, offset = OSCType.int(data, index)
@@ -750,7 +745,6 @@ class OSCPacket(object):
         Raises:
             OSCParseError if the datagram could not be parsed.
         """
-
         self.time = calendar.timegm(time.gmtime())
         self.dgram = dgram
         self.message = None
@@ -762,25 +756,24 @@ class OSCPacket(object):
                 self.message = OSCMessage.parse(dgram)
             else:
                 # Empty packet, should not happen as per the spec but heh, UDP...
-                raise OSCParseError('OSC Packet should at least contain an OSCMessage or an OSCBundle.')
+                raise OSCParseError("OSC Packet should at least contain an OSCMessage "
+                                    "or an OSCBundle.")
         except OSCParseError as pe:
-            raise OSCParseError('Could not parse packet: %s' % pe)
+            raise OSCParseError("Could not parse packet: %s" % pe)
 
     def __cmp__(self, other):
-        """Compare two OSCPacket's
+        """Compare two OSCPacket's.
 
         Args:
             other (OSCPacket): other OSCPacket to compare
         Returns:
             True if two OSCPacket's is the same
         """
-
         return self.dgram == other.dgram
 
     @property
     def size(self):
-        """Size of datagram"""
-
+        """Size of datagram."""
         return len(self.dgram)
 
 
@@ -794,7 +787,6 @@ class OSCMessage(object):
             address (str): The osc address to send this message to.
             args (list): list of args to add to message
         """
-
         self._address = "/"
         self._args = []
         self._dgram = b''
@@ -807,17 +799,15 @@ class OSCMessage(object):
                 self.add(value)
 
     def __iter__(self):
-        """Returns an iterator over the arguments of this message in pairs (osc type tag, value)"""
-
+        """Return an iterator over the arguments of this message in pairs (osc type tag, value)."""
         return iter(self._args)
 
     def __len__(self):
-        """Returns length of arguments"""
-
+        """Return length of arguments."""
         return len(self._args)
 
     def __getitem__(self, key):
-        """Get a OSCMessage argument by index
+        """Get a OSCMessage argument by index.
 
         Args:
             key (int): index of argument
@@ -826,15 +816,13 @@ class OSCMessage(object):
         Raises:
             IndexError if index out of range
         """
-
         if key >= len(self._args):
             raise IndexError("Index out of range.")
 
         return self._args[key]
 
     def __setitem__(self, key, value):
-        """Set argument by index, if key is greater than
-        length of arguments error will be raised
+        """Set argument by index, if key is greater than length of arguments error will be raised.
 
         Args:
             key (int): index of argument
@@ -842,7 +830,6 @@ class OSCMessage(object):
         Raises:
             IndexError if there is no argument with this index
         """
-
         if key >= len(self._args):
             raise IndexError("Index out of range.")
         else:
@@ -850,76 +837,69 @@ class OSCMessage(object):
             self._args[key] = (arg_type, value)
 
     def __delitem__(self, key):
-        """Delete argument by index
+        """Delete argument by index.
 
         Args:
-            key (int): index of argument
         Raises:
             IndexError if there is no argument with this index
+            key (int): index of argument
         """
-
         if key >= len(self._args):
             raise IndexError("Index out of range.")
 
         del self._args[key]
 
     def __contains__(self, value):
-        """Returns True if value in arguments list
+        """Return True if value in arguments list.
 
         Args:
             value: argument value
         """
-
         return self.index(value) >= 0
 
     def __cmp__(self, other):
-        """Check two OSCMessage's to be equal
+        """Check two OSCMessage's to be equal.
 
         Args:
             other (OSCMessage): other OSCMessage
         Returns:
             True if two messages equals
         """
-
         return self.build().dgram == other.build().dgram
 
     @property
     def address(self):
-        """Returns the OSC address this message will be sent to."""
-
+        """Return the OSC address this message will be sent to."""
         return self._address
 
     @address.setter
     def address(self, value):
-        """Sets the OSC address this message will be sent to.
+        """Set the OSC address this message will be sent to.
 
         Args:
             value (str): OSC message address pattern
         """
-
         if not value.startswith('/'):
             raise ValueError("Given '%s' OSC address doesn't start with /." % str(value))
         elif not self.is_valid_address(value):
-            raise ValueError("Given '%s' OSC address doesn't matches with valid address pattern." % str(value))
+            raise ValueError("Given '%s' OSC address doesn't matches with "
+                             "valid address pattern." % str(value))
 
         self._address = value
 
     @property
     def args(self):
-        """Returns list of value added as arguments"""
-
+        """Return list of value added as arguments."""
         return [a[1] for a in self._args]
 
     @property
     def size(self):
-        """Returns length of the datagram for this message."""
-
+        """Return length of the datagram for this message."""
         return len(self._dgram)
 
     @property
     def dgram(self):
-        """Returns datagram from which this message was built."""
-
+        """Return datagram from which this message was built."""
         return self._dgram
 
     def add(self, value, _type=None):
@@ -932,7 +912,6 @@ class OSCMessage(object):
         Raises:
             ValueError: if the type is not supported.
         """
-
         self.append(value, _type)
 
     def append(self, value, _type=None):
@@ -945,7 +924,6 @@ class OSCMessage(object):
         Raises:
             ValueError: if the type is not supported.
         """
-
         if _type and not OSCType.is_supported(_type):
             raise ValueError('Given type is not supported')
 
@@ -955,17 +933,16 @@ class OSCMessage(object):
         self._args.append((_type, value))
 
     def extend(self, values):
-        """Extend arguments list, all values will be added using auto type
+        """Extend arguments list, all values will be added using auto type.
 
         Args:
             values (list): a list of values
         """
-
         for value in values:
             self.append(value)
 
     def insert(self, index, value, _type=None):
-        """Insert typed argument at specific index
+        """Insert typed argument at specific index.
 
         Args:
             index (int): index of insertion
@@ -976,7 +953,6 @@ class OSCMessage(object):
             ValueError: if the type is not supported.
             IndexError: if index is greater than list size
         """
-
         if index >= len(self._args):
             raise IndexError("Index is out of range.")
 
@@ -996,7 +972,6 @@ class OSCMessage(object):
         Raises:
             ValueError: if value is not fund in arguments list
         """
-
         index = self.index(value)
 
         if (index > 0) and (index < len(self._args)):
@@ -1006,7 +981,9 @@ class OSCMessage(object):
 
     def index(self, value, start=0, end=False):
         """Find value in arguments list and return first index otherwise return -1.
-        The returned index is computed relative to the beginning of the full sequence rather than the start argument.
+
+        The returned index is computed relative to the beginning of the full sequence
+        rather than the start argument.
         """
         found_index = -1
 
@@ -1027,12 +1004,11 @@ class OSCMessage(object):
         return found_index
 
     def clear(self):
-        """Remove all arguments from message"""
-
+        """Remove all arguments from message."""
         self._args.clear()
 
     def copy(self):
-        """Create copy of OSCMessage
+        """Create copy of OSCMessage.
 
         Returns:
             New OSCMessage instance
@@ -1042,14 +1018,13 @@ class OSCMessage(object):
         return OSCMessage.parse(self._dgram)
 
     def build(self):
-        """Builds OSCMessage datagram and return current instance
+        """Build OSCMessage datagram and return current instance.
 
         Returns:
             an OSCMessage instance.
         Raises:
             OSCBuildError: if the message could not be build or if the address was empty.
         """
-
         if not self._address:
             raise OSCBuildError('OSC addresses cannot be empty')
 
@@ -1086,12 +1061,11 @@ class OSCMessage(object):
             raise OSCBuildError('Could not build the message: {}'.format(be))
 
     def _parse(self, dgram):
-        """Parse datagram
+        """Parse datagram.
 
         Args:
             dgram (bytes): datagram of OSCMessage
         """
-
         self._dgram = dgram
 
         try:
@@ -1130,14 +1104,13 @@ class OSCMessage(object):
 
     @staticmethod
     def parse(dgram):
-        """Create OSCMessage from datagram
+        """Create OSCMessage from datagram.
 
         Args:
             dgram (bytes): from what to build OSCMessage
         Returns:
             OSCMessage parsed from datagram
         """
-
         message = OSCMessage()
         message._parse(dgram)
 
@@ -1145,27 +1118,25 @@ class OSCMessage(object):
 
     @staticmethod
     def is_valid(dgram):
-        """Check datagram to be valid OSCMessage
+        """Check datagram to be valid OSCMessage.
 
         Args:
             dgram (bytes): datagram os of OSCMessage
         Returns:
             whether this datagram starts as an OSC message.
         """
-
         return dgram.startswith(b'/')
 
     # noinspection PyPep8
     @staticmethod
     def is_valid_address(address):
-        """Check if given value is valid OSC-string address pattern
+        """Check if given value is valid OSC-string address pattern.
 
         Args:
             address (str): OSC address pattern
         Returns:
             True if valid
         """
-
         return address == '/' or re.compile(r"^/[a-zA-Z0-9/_\-?*\[\]]+").match(address)
 
 
@@ -1182,7 +1153,6 @@ class OSCBundle(object):
                        seconds since the epoch in UTC or IMMEDIATELY.
             messages (list): List of OSCMessage's to add to bundle
         """
-
         self._timestamp = timestamp
         self._contents = []
         self._dgram = b''
@@ -1192,34 +1162,30 @@ class OSCBundle(object):
                 self.add(value)
 
     def __iter__(self):
-        """Returns an iterator over the bundle's content."""
-
+        """Return an iterator over the bundle's content."""
         return iter(self._contents)
 
     def __len__(self):
-        """Returns length of contents"""
-
+        """Return length of contents."""
         return len(self._contents)
 
     def __getitem__(self, key):
-        """Get item from OSCBundle by index
+        """Get item from OSCBundle by index.
 
         Args:
             key (int): index of item
         Returns:
             item from contents
         """
-
         return self._contents[key]
 
     def __setitem__(self, key, value):
-        """Set item of OSCBundle
+        """Set item of OSCBundle.
 
         Args:
             key (int): index of item
             value (OSCBundle, OSCMessage): an OSCBundle or OSCMessage
         """
-
         if key >= len(self._contents):
             raise IndexError("Index out of range.")
 
@@ -1229,57 +1195,50 @@ class OSCBundle(object):
         self._contents[key] = value
 
     def __delitem__(self, key):
-        """Remove item from bundle
+        """Remove item from bundle.
 
         Args:
             key (int): index of item
         """
-
         if key >= len(self._contents):
             raise IndexError("Index out of range.")
 
         del self._contents[key]
 
     def __contains__(self, item):
-        """Check if OSCMessage in bundle
+        """Check if OSCMessage in bundle.
 
         Returns:
             returns True if item in this bundle
         """
-
         return item in self._contents
 
     def __cmp__(self, other):
-        """Compare two bundles
+        """Compare two bundles.
 
         Args:
             other (OSCBundle): other bundle to compare
         """
-
         return self.dgram == other.dgram
 
     @property
     def timestamp(self):
-        """Returns timestamp associated with this bundle."""
-
+        """Return timestamp associated with this bundle."""
         return self._timestamp
 
     @property
     def length(self):
-        """Returns number of messages in bundle."""
-
+        """Return number of messages in bundle."""
         return len(self._contents)
 
     @property
     def size(self):
-        """Returns length of the datagram for this bundle."""
-
+        """Return length of the datagram for this bundle."""
         return len(self._dgram)
 
     @property
     def dgram(self):
-        """Returns datagram from which this bundle was built."""
-
+        """Return datagram from which this bundle was built."""
         return self._dgram
 
     def append(self, content):
@@ -1290,15 +1249,13 @@ class OSCBundle(object):
         Raises:
             OSCBuildError: if we could not build the bundle.
         """
-
         if isinstance(content, OSCMessage) or isinstance(content, OSCBundle):
             self._contents.append(content.build())
         else:
             raise OSCBuildError("Content must be either OSCBundle or OSCMessage found {}".format(type(content)))
 
     def add(self, content):
-        """Same as append method"""
-
+        """Same as append method."""
         self.append(content)
 
     def build(self):
@@ -1307,7 +1264,6 @@ class OSCBundle(object):
         Raises:
             OSCBuildError: if we could not build the bundle.
         """
-
         dgram = b'' + self._BUNDLE_PREFIX
 
         try:
@@ -1328,38 +1284,35 @@ class OSCBundle(object):
 
     @classmethod
     def is_valid(cls, dgram):
-        """Returns whether this datagram starts like an OSC bundle.
+        """Return whether this datagram starts like an OSC bundle.
 
         Args:
             dgram: datagram of OSCBundle
         Returns:
             weather datagram is OSCBundle
         """
-
         return dgram.startswith(cls._BUNDLE_PREFIX)
 
     @staticmethod
     def parse(dgram):
-        """Parse OSCBundle from datagram
+        """Parse OSCBundle from datagram.
 
         Args:
             dgram: datagram of OSCBundle
         Returns:
             OSCBundle instance
         """
-
         bundle = OSCBundle()
         bundle._parse(dgram)
 
         return bundle
 
     def _parse(self, dgram):
-        """Parse datagram and fill contents of this OSCBundle
+        """Parse datagram and fill contents of this OSCBundle.
 
         Args:
             dgram (bytes): datagram of OSCBundle
         """
-
         # Interesting stuff starts after the initial b"#bundle\x00".
         self._dgram = dgram
         index = len(self._BUNDLE_PREFIX)
@@ -1373,14 +1326,13 @@ class OSCBundle(object):
         self._contents = self._parse_contents(index)
 
     def _parse_contents(self, index):
-        """Parse datagram into OSCBundle
+        """Parse datagram into OSCBundle.
 
         Args:
             index (int): start index of next OSCMessage in bundle
         Raises:
             OSCParseError: if we could not parse the bundle.
         """
-
         contents = []
 
         try:
@@ -1409,7 +1361,7 @@ class OSCBundle(object):
 
 
 class OSCClient(object):
-    """Send OSCMessage's and OSCBundle's to multiple servers"""
+    """Send OSCMessage's and OSCBundle's to multiple servers."""
 
     def __init__(self, address='127.0.0.1', port=False):
         """Initialize the client.
@@ -1418,7 +1370,6 @@ class OSCClient(object):
             address (str): recipient ip address
             port (int): recipient port
         """
-
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._socket.setblocking(False)
         self._clients = []
@@ -1428,23 +1379,20 @@ class OSCClient(object):
             self.add(address, port)
 
     def __len__(self):
-        """Returns number of clients"""
-
+        """Return number of clients."""
         return len(self._clients)
 
     def __bool__(self):
-        """Returns True if at least one client is available"""
-
+        """Return True if at least one client is available."""
         return len(self) > 0
 
     @property
     def clients(self):
-        """Returns list of receipts"""
-
+        """Return list of receipts."""
         return self._clients
 
     def add(self, address, port):
-        """Add a recipient
+        """Add a recipient.
 
         Args:
             address (str): ip address of server
@@ -1452,7 +1400,6 @@ class OSCClient(object):
         Raises:
             ValueError if one of arguments is invalid
         """
-
         if not isinstance(address, str):
             raise ValueError("Given address is not a string")
 
@@ -1462,13 +1409,12 @@ class OSCClient(object):
         self._clients.append((address, port))
 
     def remove(self, address, port):
-        """Remove a recipient
+        """Remove a recipient.
 
         Args:
             address (str): ip address of server
             port (int): port of server
         """
-
         for client in self._clients:
             if client[0] == address and client[1] == port:
                 self._clients.remove(client)
@@ -1476,17 +1422,15 @@ class OSCClient(object):
                 break
 
     def clear(self):
-        """Clear list of receipts"""
-
+        """Clear list of receipts."""
         self._clients = []
 
     def send(self, message):
-        """Sends an OSCBundle or OSCMessage to the servers.
+        """Send an OSCBundle or OSCMessage to the servers.
 
         Args:
             message (OSCMessage, OSCBundle): a OSCMessage or OSCBundle to send
         """
-
         if not (isinstance(message, OSCMessage) or isinstance(message, OSCBundle)):
             raise ValueError("Given message is not a OSCMessage or OSCBundle")
 
@@ -1502,8 +1446,7 @@ class OSCClient(object):
             self._socket.sendto(dgram, address)
 
     def close(self):
-        """Close socket connection"""
-
+        """Close socket connection."""
         if not self._closed:
             self._socket.close()
             self._closed = True
@@ -1522,8 +1465,7 @@ class _UDPRequestHandler(socketserver.BaseRequestHandler):
     """
 
     def handle(self):
-        """Handle UDP request and call handler callback"""
-
+        """Handle UDP request and call handler callback."""
         data = self.request[0]
         callback = self.server.handle
 
@@ -1542,24 +1484,23 @@ class _UDPRequestHandler(socketserver.BaseRequestHandler):
 
 
 class OSCServer(socketserver.UDPServer):
-    """Superclass for different flavors of OSCServer
+    """Superclass for different flavors of OSCServer.
 
     You can change server logic by extending from both
     OSCServer and socketserver.ThreadingMixIn or socketserver.ForkingMixIn
     """
 
     def __init__(self, address='127.0.0.1', port=9000):
-        """Initialize OSCServer class
+        """Initialize OSCServer class.
 
         Args:
             address (string): string representation of ip address, for example: '127.0.0.1'
             port (int): port of server
         """
-
         super(OSCServer, self).__init__((address, port), _UDPRequestHandler)
 
     def verify_request(self, request, client_address):
-        """Returns true if the data looks like a valid OSC UDP datagram.
+        """Return True if the data looks like a valid OSC UDP datagram.
 
         Args:
             request: A request data
@@ -1567,7 +1508,6 @@ class OSCServer(socketserver.UDPServer):
         Returns:
             True if request is valid
         """
-
         data = request[0]
 
         return OSCBundle.is_valid(data) or OSCMessage.is_valid(data)
@@ -1579,7 +1519,7 @@ class OSCServer(socketserver.UDPServer):
         self.server_address = self.socket.getsockname()
 
     def handle(self, address, message, date):
-        """Handle receiving of OSCMessage or OSCBundle
+        """Handle receiving of OSCMessage or OSCBundle.
 
         Args:
             address: tuple (host, port)
@@ -1588,5 +1528,4 @@ class OSCServer(socketserver.UDPServer):
         Raises:
             NotImplementedError if you don't override it
         """
-
         raise NotImplementedError("Re-implement this method")

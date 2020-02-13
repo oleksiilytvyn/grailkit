@@ -8,7 +8,7 @@ fi
 # Create distribution
 python setup.py sdist bdist_wheel
 
-twine upload --repository-url https://test.pypi.org/legacy/ -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} dist/*
+twine upload --repository-url https://test.pypi.org/legacy/ -u "$PYPI_USERNAME" -p "$PYPI_PASSWORD" dist/*
 
 # Upload to PyPi
-twine upload -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} dist/*
+twine upload -u "$PYPI_USERNAME" -p "$PYPI_PASSWORD" dist/*

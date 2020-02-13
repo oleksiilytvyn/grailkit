@@ -1,12 +1,9 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.plug
-    ~~~~~~~~~~~~~
+Simple plugin discovery, loading & registration mechanisms.
 
-    Simple plugin discovery, loading & registration mechanisms
-
-    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:license: MIT, see LICENSE for more details.
 """
 import re
 import os
@@ -14,13 +11,15 @@ import importlib
 
 
 class PluginRegistry(type):
-    """Subclasses registration mechanism based on meta-classes
+    """Subclasses registration mechanism based on meta-classes.
 
-    Use this class as meta-class to register plugin classes
+    Use this class as meta-class to register plugin classes.
     """
 
     def __init__(cls, *args):
-        """Args:
+        """Create Plugin Registry.
+
+        Args:
             name (str): class name
             bases (list): class bases
             attrs (list): attributes
@@ -37,20 +36,20 @@ class PluginRegistry(type):
 
 
 class Plugin(object, metaclass=PluginRegistry):
-    """Base plugin class"""
+    """Base plugin class."""
 
     def __init__(self):
+        """Dummy plugin instance."""
         pass
 
     @classmethod
     def plugins(cls):
-        """Returns list of classes extended from Plugin"""
-
+        """Return list of classes extended from Plugin."""
         return cls.__registry__
 
 
 def discover(location, packages=False, exclude=None):
-    """Load and execute python modules in given location
+    """Load and execute python modules in given location.
 
     Args:
         location (str): path to plugins folder
@@ -59,7 +58,6 @@ def discover(location, packages=False, exclude=None):
     Returns:
         list: modules loaded
     """
-
     location = os.path.abspath(location)
     module_name = os.path.basename(location)
     files = filter(re.compile('.py$', re.IGNORECASE).search, os.listdir(location))

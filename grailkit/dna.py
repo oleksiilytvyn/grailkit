@@ -629,7 +629,7 @@ class FileEntity(DNAEntity):
             value (bytes): new file contents
         """
 
-        if type(value) != bytes:
+        if not isinstance(value, bytes):
             raise DNAError('File contents must be bytes object')
 
         self._content = value.decode('utf-8')
@@ -1283,7 +1283,7 @@ class DNA:
         else:
             value = ''
 
-        self._db.execute("""UPDATE entities SET %s = ? WHERE id = ?""" % field, (value, entity.id))
+        self._db.execute("""UPDATE entities SET ? = ? WHERE id = ?""", (field, value, entity.id))
 
         self.entity_changed.emit(entity.id)
 

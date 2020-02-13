@@ -1,12 +1,9 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.db
-    ~~~~~~~~~~~
+Simplified interface to SQLite database.
 
-    Simplified interface to SQLite database
-
-    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:license: MIT, see LICENSE for more details.
 """
 import os
 import re
@@ -20,7 +17,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def create_factory(object_def, cursor, row):
-    """Create object factory
+    """Create object factory.
 
     Args:
         object_def (callable): callable object
@@ -29,27 +26,28 @@ def create_factory(object_def, cursor, row):
     Returns:
         instance of `object_def`
     """
-
     if not object_def or not callable(object_def):
-        raise DataBaseError("Can't create factory with given object. Object is not callable or not exists.")
+        raise DataBaseError("Can't create factory with given object. "
+                            "Object is not callable or not exists.")
 
     return object_def(row, cursor)
 
 
 class DataBaseError(Exception):
-    """Base class for DataBase Errors"""
+    """Base class for DataBase Errors."""
 
     pass
 
 
 class DataBase:
-    """SQLite database wrapper"""
+    """SQLite database wrapper."""
 
     # sqlite connection handler
     _connection = None
 
     def __init__(self, file_path, file_copy=False, query="", create=False):
         """Create SQLite database wrapper.
+
         Also define custom functions sql `lowercase` an `search_strip`.
 
         Args:
@@ -58,7 +56,6 @@ class DataBase:
             query (str): execute query if file_path not exists
             create (bool): create database file or not
         """
-
         directory = os.path.dirname(os.path.realpath(file_path))
         execute_query = False
 
@@ -81,7 +78,7 @@ class DataBase:
         self._location = file_path
 
         def lowercase(char):
-            """Lover string
+            """Lover string.
 
             Args:
                 char (str): string to process
@@ -89,7 +86,7 @@ class DataBase:
             return char.lower()
 
         def search_strip(char):
-            """Prepare string for search
+            """Prepare string for search.
 
             Args:
                 char (str): string to process
@@ -109,24 +106,21 @@ class DataBase:
 
     @property
     def connection(self):
-        """Returns sqlite3 connection object"""
-
+        """Return sqlite3 connection object."""
         return self._connection
 
     @property
     def cursor(self):
-        """Returns sqlite3 connection cursor"""
-
+        """Return sqlite3 connection cursor."""
         return self._connection.cursor()
 
     @property
     def location(self):
-        """Returns location of database file"""
-
+        """Return location of database file."""
         return self._location
 
     def get(self, query, data=tuple(), factory=None):
-        """Execute query and return first record
+        """Execute query and return first record.
 
         Args:
             query (str): SQL query string
@@ -147,7 +141,7 @@ class DataBase:
         return result
 
     def all(self, query, data=tuple(), factory=None):
-        """Execute query and return all records
+        """Execute query and return all records.
 
         Args:
             query (str): SQL query string
@@ -168,13 +162,12 @@ class DataBase:
         return result
 
     def execute(self, query, data=tuple()):
-        """Execute many sql queries at once
+        """Execute many sql queries at once.
 
         Args:
             query (str): SQL query string
             data (tuple): tuple of data
         """
-
         try:
             cursor = self.cursor
             cursor.execute(query, data)
@@ -183,6 +176,7 @@ class DataBase:
 
     def set_factory(self, factory=sqlite3.Row):
         """Set sqlite row factory function.
+
         If you call `set_factory` without arguments default factory will be used
 
         Example:
@@ -192,17 +186,15 @@ class DataBase:
         Args:
             factory (callable): factory object
         """
-
         self._connection.row_factory = factory
 
     def copy(self, file_path, create=False):
-        """Copy database to new file location
+        """Copy database to new file location.
 
         Args:
             file_path (str): path to new file
             create (bool): create file if not exists
         """
-
         directory = os.path.dirname(os.path.realpath(file_path))
 
         if not file_path:
@@ -226,13 +218,11 @@ class DataBase:
         db.close()
 
     def commit(self):
-        """Commit changes to database"""
-
+        """Commit changes to database."""
         self._connection.commit()
 
     def close(self):
-        """Commit changes to database and close connection"""
-
+        """Commit changes to database and close connection."""
         try:
             self._connection.commit()
         except sqlite3.ProgrammingError:
@@ -244,14 +234,14 @@ class DataBase:
 
 
 class DataBaseHost:
-    """Host all sqlite database connections"""
+    """Host all sqlite database connections."""
 
     # list of all connected databases
     _list = {}
 
     @classmethod
     def get(cls, file_path, file_copy=False, query="", create=True):
-        """Get DataBase object
+        """Get DataBase object.
 
         Args:
             file_path (str): path to database file
@@ -261,7 +251,6 @@ class DataBaseHost:
         Returns:
             DataBase object if opened or opens database and returns it.
         """
-
         file_path = os.path.abspath(file_path)
 
         if file_path in DataBaseHost._list:
@@ -274,16 +263,16 @@ class DataBaseHost:
 
     @classmethod
     def add(cls, db_ref):
-        """Add DataBase object to list if not exists
+        """Add DataBase object to list if not exists.
 
         Args:
             db_ref (DataBase): reference to database error
         Raises:
             DataBaseError: If wrong object were passed
         """
-
         if not db_ref or not isinstance(db_ref, DataBase):
-            raise DataBaseError("DataBase object doesn't exists or it's not an instance of DataBase class.")
+            raise DataBaseError("DataBase object doesn't exists or "
+                                "it's not an instance of DataBase class.")
 
         file_path = os.path.abspath(db_ref.location)
 
@@ -292,22 +281,20 @@ class DataBaseHost:
 
     @classmethod
     def has(cls, file_path):
-        """Returns True if `file_path` in list of opened connections
+        """Return True if `file_path` in list of opened connections.
 
         Args:
             file_path (str): file location
         """
-
         return os.path.abspath(file_path) in cls._list
 
     @staticmethod
     def close():
-        """Close all connections
+        """Close all connections.
 
         Returns:
             bool: True if all connections closed successfully
         """
-
         for key in DataBaseHost._list:
             DataBaseHost._list[key].close()
 

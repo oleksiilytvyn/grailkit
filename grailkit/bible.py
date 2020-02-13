@@ -1,22 +1,23 @@
 # -*- coding: UTF-8 -*-
 """
-    grailkit.bible
-    ~~~~~~~~~~~~~~
+Implements access to bible files.
 
-    Implements access to bible files.
+Grail bible format consists of standard grail DNA format plus
+two additional tables: `books` and `verses`.
 
-    Grail bible format consists of standard grail DNA format plus
-    two additional tables: `books` and `verses`
+SQL structure:
+.. code:: sql
 
-    SQL structure:
+    CREATE TABLE books
+        (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        osisid TEXT,
+        name TEXT,
+        title TEXT,
+        abbr TEXT );
+    CREATE TABLE verses(osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
 
-    .. code:: sql
-
-        CREATE TABLE books(id INTEGER PRIMARY KEY AUTOINCREMENT, osisid TEXT, name TEXT, title TEXT, abbr TEXT );
-        CREATE TABLE verses( osisid TEXT, book INT, chapter INT, verse INT, text TEXT );
-
-    :copyright: (c) 2017-2019 by Oleksii Lytvyn.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2017-2019 by Oleksii Lytvyn.
+:license: MIT, see LICENSE for more details.
 """
 import os
 import re
@@ -31,7 +32,7 @@ from grailkit.dna import DNA
 
 
 def verse_factory(cursor, row):
-    """Parse sqlite row into Verse object
+    """Parse sqlite row into Verse object.
 
     Args:
         cursor (sqlite3.Cursor): sqlite3 cursor
@@ -40,12 +41,11 @@ def verse_factory(cursor, row):
     Returns:
         Verse object parsed from sqlite row
     """
-
     return Verse.from_sqlite(row)
 
 
 def book_factory(cursor, row):
-    """Parse sqlite row into Book object
+    """Parse sqlite row into Book object.
 
     Args:
         cursor (sqlite3.Cursor): sqlite3 cursor
@@ -54,7 +54,6 @@ def book_factory(cursor, row):
     Returns:
         Book object parsed from sqlite row
     """
-
     return Book.from_sqlite(row)
 
 
@@ -65,11 +64,10 @@ class BibleError(Exception):
 
 
 class Verse:
-    """Representation of Bible verse"""
+    """Representation of Bible verse."""
 
     def __init__(self):
-        """Create verse"""
-
+        """Create verse."""
         self._osisid = ""
         self._book = ""
         self._book_id = 1
@@ -79,54 +77,46 @@ class Verse:
 
     @property
     def type(self):
-        """DNA type (int)"""
-
+        """Return type of the DNA node (int)."""
         return DNA.TYPE_VERSE
 
     @property
     def book(self):
-        """Book name (str)"""
-
+        """Return book name (str)."""
         return self._book
 
     @property
     def book_id(self):
-        """Book id (int)"""
-
+        """Return book id (int)."""
         return self._book_id
 
     @property
     def chapter(self):
-        """Chapter number (int)"""
-
+        """Return chapter number (int)."""
         return self._chapter
 
     @property
     def verse(self):
-        """Verse number (int)"""
-
+        """Return verse number (int)."""
         return self._verse
 
     @property
     def reference(self):
-        """Returns complete reference string
+        """Return complete reference string.
 
         Examples:
             Genesis 1:1
             1 Corinthians 2:12
         """
-
         return "%s %d:%d" % (self._book, self._chapter, self._verse)
 
     @property
     def text(self):
-        """Text of verse"""
-
+        """Text of verse."""
         return self._text
 
     def parse(self, row):
-        """Parse sqlite row into verse"""
-
+        """Parse sqlite row into verse."""
         self._book = row[5]
         self._book_id = row[1]
         self._chapter = row[2]
@@ -136,7 +126,7 @@ class Verse:
 
     @staticmethod
     def from_sqlite(row):
-        """Parse sqlite row and return Verse
+        """Parse sqlite row and return Verse.
 
         Args:
             row: sqlite3 row
@@ -144,7 +134,6 @@ class Verse:
         Returns:
             Verse parsed from given sqlite row
         """
-
         verse = Verse()
         verse.parse(row)
 
@@ -152,11 +141,10 @@ class Verse:
 
 
 class Book:
-    """Representation of bible book"""
+    """Representation of bible book."""
 
     def __init__(self):
-        """Create book"""
-
+        """Create book."""
         self._id = 0
         self._abbr = ""
         self._name = ""
@@ -165,43 +153,36 @@ class Book:
 
     @property
     def type(self):
-        """DNA type (int)"""
-
+        """Return type of DNA node (int)."""
         return DNA.TYPE_BOOK
 
     @property
     def id(self):
-        """Book abbreviations (str)"""
-
+        """Return Book abbreviations (str)."""
         return self._id
 
     @property
     def abbr(self):
-        """Book abbreviations (str)"""
-
+        """Return Book abbreviations (str)."""
         return self._abbr
 
     @property
     def name(self):
-        """Name of book (str)"""
-
+        """Return Name of book (str)."""
         return self._name
 
     @property
     def title(self):
-        """Full name of book, it might be bigger than name"""
-
+        """Full name of book, it might be bigger than name."""
         return self._title
 
     @property
     def osisid(self):
-        """OSIS identifier, can be used for cross-referencing"""
-
+        """OSIS identifier, can be used for cross-referencing."""
         return self._osisid
 
     def parse(self, row):
-        """Parse sqlite row and fill Book"""
-
+        """Parse sqlite row and fill Book."""
         self._id = row[0]
         self._abbr = row[4]
         self._name = row[2]
@@ -210,7 +191,7 @@ class Book:
 
     @staticmethod
     def from_sqlite(row):
-        """Parse sqlite row and return Book
+        """Parse sqlite row and return Book.
 
         Args:
             row: sqlite row
@@ -218,7 +199,6 @@ class Book:
         Returns:
             Book
         """
-
         book = Book()
         book.parse(row)
 
@@ -226,11 +206,10 @@ class Book:
 
 
 class BibleInfo:
-    """Read only representation of bible file"""
+    """Read only representation of bible file."""
 
     def __init__(self):
-        """Create a object"""
-
+        """Create a object."""
         self._file = ""
         self._date = ""
         self._title = ""
@@ -245,74 +224,63 @@ class BibleInfo:
 
     @property
     def file(self):
-        """File location"""
-
+        """File location."""
         return self._file
 
     @property
     def date(self):
-        """Date of publication"""
-
+        """Date of publication."""
         return self._date
 
     @property
     def title(self):
-        """Bible title"""
-
+        """Bible title."""
         return self._title
 
     @property
     def subject(self):
-        """Subject of a bible"""
-
+        """Subject of a bible."""
         return self._subject
 
     @property
     def language(self):
-        """Language of bible"""
-
+        """Language of bible."""
         return self._language
 
     @property
     def publisher(self):
-        """Publisher information"""
-
+        """Publisher information."""
         return self._publisher
 
     @property
     def copyright(self):
-        """Copyright information"""
-
+        """Copyright information."""
         return self._copyright
 
     @property
     def identifier(self):
-        """Bible identifier, must be unique"""
-
+        """Bible identifier, must be unique."""
         return self._identifier
 
     @property
     def description(self):
-        """A little description of Bible"""
-
+        """A little description of Bible."""
         return self._description
 
     @property
     def version(self):
-        """Schema version number"""
-
+        """Schema version number."""
         return self._version
 
     @staticmethod
     def from_json(data):
-        """Fill properties from json string
+        """Fill properties from json string.
 
         Args:
             data (dict): parsed json object
         Returns:
             BibleInfo object
         """
-
         info = BibleInfo()
 
         info._file = default_key(data, 'file', '')
@@ -330,6 +298,7 @@ class BibleInfo:
 
 class Bible(DNA):
     """Representation of grail bible file.
+
     This class gives you read only access to file
     """
 
@@ -337,7 +306,7 @@ class Bible(DNA):
     _file_extension = ".grail-bible"
 
     def __init__(self, file_path):
-        """Read grail bible file into Bible class
+        """Read grail bible file into Bible class.
 
         Args:
             file_path (str): file location
@@ -345,7 +314,6 @@ class Bible(DNA):
         Raises:
             DNAError if file does not exists
         """
-
         super(Bible, self).__init__(file_path, create=False)
 
         # read bible info
@@ -362,61 +330,51 @@ class Bible(DNA):
 
     @property
     def date(self):
-        """Date of publication"""
-
+        """Date of publication."""
         return self._date
 
     @property
     def title(self):
-        """Bible title"""
-
+        """Bible title."""
         return self._title
 
     @property
     def subject(self):
-        """Subject of a bible"""
-
+        """Subject of a bible."""
         return self._subject
 
     @property
     def language(self):
-        """Language of bible"""
-
+        """Language of bible."""
         return self._language
 
     @property
     def publisher(self):
-        """Publisher information"""
-
+        """Publisher information."""
         return self._publisher
 
     @property
     def copyright(self):
-        """Copyright information"""
-
+        """Copyright information."""
         return self._copyright
 
     @property
     def identifier(self):
-        """Bible identifier, must be unique"""
-
+        """Bible identifier, must be unique."""
         return self._identifier
 
     @property
     def description(self):
-        """A little description of Bible"""
-
+        """A little description of Bible."""
         return self._description
 
     @property
     def version(self):
-        """Schema version number"""
-
+        """Schema version number."""
         return self._version
 
     def books(self):
-        """Returns list of all books"""
-
+        """Return list of all books."""
         return self._db.all("""SELECT
             `books`.`id`,
             `books`.`osisid`,
@@ -426,12 +384,11 @@ class Bible(DNA):
             FROM books""", factory=book_factory)
 
     def book(self, book):
-        """Returns single book
+        """Return single book.
 
         Args:
             book (int): book id
         """
-
         return self._db.get("""SELECT
             `books`.`id`,
             `books`.`osisid`,
@@ -440,13 +397,12 @@ class Bible(DNA):
             `books`.`abbr` FROM books WHERE id = ?""", (book,), factory=book_factory)
 
     def chapter(self, book, chapter):
-        """Returns all verses in chapter
+        """Return all verses in chapter.
 
         Args:
             book (int): book id
             chapter (int): chapter id
         """
-
         return self._db.all("""SELECT
                 `verses`.`osisid`,
                 `verses`.`book`,
@@ -460,14 +416,13 @@ class Bible(DNA):
             ORDER BY `verses`.`verse` ASC""", (book, chapter), factory=verse_factory)
 
     def verse(self, book, chapter, verse):
-        """Returns single verse
+        """Return single verse.
 
         Args:
             book (int): book id
             chapter (int): chapter id
             verse (int): verse number
         """
-
         return self._db.get("""SELECT
                                 `verses`.`osisid`,
                                 `verses`.`book`,
@@ -481,33 +436,30 @@ class Bible(DNA):
                             (book, chapter, verse), factory=verse_factory)
 
     def count_verses(self, book, chapter):
-        """Returns number of verses in chapter
+        """Return number of verses in chapter.
 
         Args:
             book (int): book id
             chapter (int): chapter id
         """
-
         return self._db.get("SELECT COUNT(*) as count FROM verses WHERE book = ? AND chapter = ?",
                             (book, chapter))["count"]
 
     def count_chapters(self, book):
-        """Returns number of chapters in book
+        """Return number of chapters in book.
 
         Args:
             book (int): book id
         """
-
         return self._db.get("SELECT COUNT(*) as count FROM verses WHERE book = ? AND verse = 1",
                             (book,))["count"]
 
     def match_book(self, keyword):
-        """Find books by keyword
+        """Find books by keyword.
 
         Args:
             keyword (str): search phrase
         """
-
         keyword = "%" + keyword + "%"
 
         return self._db.all("""SELECT
@@ -524,13 +476,12 @@ class Bible(DNA):
                             """, (keyword, keyword, keyword), factory=book_factory)
 
     def match_reference(self, keyword, limit=3):
-        """find verse by keyword
+        """find verse by keyword.
 
         Args:
             keyword (str): keywords
             limit (int): limit results
         """
-
         # default values
         chapter = 1
         verse = 1
@@ -578,13 +529,12 @@ class Bible(DNA):
                             (keyword, keyword, keyword, chapter, verse, limit), factory=verse_factory)
 
     def match_text(self, text, limit=3):
-        """Search for text occurrences
+        """Search for text occurrences.
 
         Args:
             text (str): search string
             limit (int): limit results
         """
-
         keyword = "%" + text.lstrip().rstrip().lower() + "%"
 
         return self._db.all("""SELECT
@@ -600,8 +550,7 @@ class Bible(DNA):
                             (keyword, limit), factory=verse_factory)
 
     def json_info(self):
-        """Create json information string"""
-
+        """Create json information string."""
         data = {
             "file": self._location,
             "date": self._date,
@@ -617,7 +566,7 @@ class Bible(DNA):
 
 
 class BibleHostError(Exception):
-    """BibleHost errors"""
+    """BibleHost errors."""
 
     pass
 
@@ -635,8 +584,9 @@ class BibleHost:
     @classmethod
     def setup(cls):
         """Gather information about installed bibles.
-        Call this method before use of BibleHost."""
 
+        Call this method before use of BibleHost.
+        """
         cls._list = {}
 
         for f in glob.glob(cls._location + "*.json"):
@@ -648,24 +598,22 @@ class BibleHost:
 
     @classmethod
     def list(cls):
-        """List all installed bibles
+        """List all installed bibles.
 
         Returns:
             list of BibleInfo objects
         """
-
         return cls._list
 
     @classmethod
     def info(cls, bible_id):
-        """Get a bible info object
+        """Get a bible info object.
 
         Args:
             bible_id (str): bible identifier
         Returns:
             Bible object if exists otherwise None
         """
-
         if bible_id in cls._list:
             return cls._list[bible_id]
 
@@ -673,14 +621,13 @@ class BibleHost:
 
     @classmethod
     def get(cls, bible_id):
-        """Get a Bible by identifier
+        """Get a Bible by identifier.
 
         Args:
             bible_id (str): bible identifier string
         Returns:
             Bible object if bible exists under given identifier
         """
-
         bible = cls.info(bible_id)
 
         if bible:
@@ -692,7 +639,7 @@ class BibleHost:
 
     @classmethod
     def install(cls, file_path, replace=False):
-        """Install bible from file, grail-bible format only
+        """Install bible from file, grail-bible format only.
 
         Args:
             file_path (str): path to bible file
@@ -702,7 +649,6 @@ class BibleHost:
         Raises:
             BibleHostError raised if bible identifier already exists
         """
-
         if not cls.verify(file_path):
             raise BibleHostError("Unable to install bible from file \"%s\" due to file corruption." % file_path)
 
@@ -732,12 +678,11 @@ class BibleHost:
 
     @classmethod
     def uninstall(cls, bible_id):
-        """Uninstall bible by id
+        """Uninstall bible by id.
 
         Args:
             bible_id (str): bible identifier
         """
-
         if bible_id in cls._list:
             if bible_id in cls._list_refs:
                 cls._list_refs[bible_id].close()
@@ -753,14 +698,13 @@ class BibleHost:
 
     @classmethod
     def verify(cls, file_path):
-        """Check file to be valid grail-bible file
+        """Check file to be valid grail-bible file.
 
         Args:
             file_path (str): path to bible file
         Returns:
             True if bible file is valid
         """
-
         if not file_exists(file_path):
             return False
 
@@ -768,12 +712,11 @@ class BibleHost:
 
     @classmethod
     def _create_descriptor(cls, bible):
-        """Create a description file for a bible
+        """Create a description file for a bible.
 
         Args:
             bible (Bible): bible object
         """
-
         data = bible.json_info()
 
         file = open(os.path.join(cls._location, bible.identifier + ".json"), "w")
