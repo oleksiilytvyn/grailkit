@@ -27,6 +27,6 @@ Reading and writing to grail bible format. Implements MIDI, OSC, DMX protocols.
 
 ## Requirements ##
 
-*   Python 3.3+
+*   Python 3.6+
 
-This library is in Pure Python so there is no dependencies!
+This is a Pure Python so there is no dependencies!

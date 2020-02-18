@@ -2,9 +2,11 @@
 """
 Simple plugin discovery, loading & registration mechanisms.
 
-:copyright: (c) 2017-2020 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn (http://alexlitvin.name).
 :license: MIT, see LICENSE for more details.
 """
+from typing import List, Any
+
 import re
 import os
 import importlib
@@ -48,13 +50,14 @@ class Plugin(object, metaclass=PluginRegistry):
         return cls.__registry__
 
 
-def discover(location, packages=False, exclude=None):
+def discover(location: str, packages: bool = False, exclude: List[str] = None) -> List[Any]:
     """Load and execute python modules in given location.
 
     Args:
         location (str): path to plugins folder
         packages (bool): If True sub-modules will be also loaded
-        exclude (list): list of excluded modules, if modules also included. see `include_modules` argument
+        exclude (list): list of excluded modules, if modules also included.
+            see `include_modules` argument
     Returns:
         list: modules loaded
     """

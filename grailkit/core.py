@@ -1,15 +1,19 @@
 # -*- coding: UTF-8 -*-
 """Core types and widely used components.
 
-:copyright: (c) 2017-2020 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn (http://alexlitvin.name).
 :license: MIT, see LICENSE for more details.
 """
+from typing import Union, Callable, Any, List, Dict, Tuple, Type
+
 import weakref
 import logging
 
 from grailkit.util import object_type
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+_Callable = Union[Callable, Type]
 
 
 class Signal(object):
@@ -25,9 +29,9 @@ class Signal(object):
         Args:
             *args: list of types, used as template of arguments
         """
-        self._args = [object_type(x) for x in args]
-        self._fns = {}
-        self._flush_keys = []
+        self._args: List[type] = [object_type(x) for x in args]
+        self._fns: Dict[str, Tuple[Any, Any]] = {}
+        self._flush_keys: List[str] = []
 
     def __len__(self):
         """Return number of connected slots."""
@@ -38,11 +42,11 @@ class Signal(object):
         return True
 
     @property
-    def template(self):
+    def template(self) -> str:
         """Return string template of types of signal."""
         return ", ".join("<%s>" % str(x.__name__) for x in self._args)
 
-    def connect(self, fn, name=None):
+    def connect(self, fn: _Callable, name: str = "") -> None:
         """Add function to list of callbacks.
 
         Args:
@@ -54,12 +58,12 @@ class Signal(object):
 
         ref = self._wrap(fn)
 
-        if not name:
-            name = len(self._fns)
+        if len(name) == 0:
+            name = str(len(self._fns))
 
         self._fns[name] = ref
 
-    def disconnect(self, fn):
+    def disconnect(self, fn: _Callable):
         """Remove function from list, if it previously added to it.
 
         Args:
@@ -76,7 +80,7 @@ class Signal(object):
         if found_key:
             del self._fns[found_key]
 
-    def emit(self, *args, name=False, **kwargs):
+    def emit(self, *args, name: str = "", **kwargs):
         """Emit signal.
 
         If `name` argument was given, only slot with this name will be called
@@ -96,7 +100,7 @@ class Signal(object):
         # remove dead references
         self._flush()
 
-    def _call(self, name, *args, **kwargs):
+    def _call(self, name: str, *args, **kwargs):
         """Call method, if reference is dead then flush.
 
         Args:
@@ -136,14 +140,14 @@ class Signal(object):
         self._flush_keys = []
 
     @classmethod
-    def _wrap(cls, fn):
+    def _wrap(cls, fn: _Callable) -> Tuple[Any, Any]:
         """Return tuple with parent object and method.
 
         Args:
             fn (callable): callable to wrap with weakref
         """
         if hasattr(fn, '__self__') and hasattr(fn, '__func__'):
-            return weakref.ref(fn.__self__), weakref.ref(fn.__func__)
+            return weakref.ref(getattr(fn, '__self__')), weakref.ref(getattr(fn, '__func__'))
         else:
             return None, fn
 
@@ -165,11 +169,11 @@ class Signalable(object):
         return self.callbacks_length
 
     @property
-    def callbacks_length(self):
+    def callbacks_length(self) -> int:
         """Return number of registered callbacks."""
         return sum(len(v) for k, v in self.__slots.items()) + len(self.__bundle_slots)
 
-    def connect(self, message, fn):
+    def connect(self, message: str, fn: _Callable) -> None:
         """Connect listener `fn` to slot `message`.
 
         Args:
@@ -190,7 +194,7 @@ class Signalable(object):
 
         self.__slots[message].connect(fn)
 
-    def disconnect(self, message, fn):
+    def disconnect(self, message: str, fn: _Callable) -> None:
         """Disconnect listener from slot.
 
         Args:
@@ -200,7 +204,7 @@ class Signalable(object):
         if message in self.__slots:
             self.__slots[message].disconnect(fn)
 
-    def emit(self, message, *args):
+    def emit(self, message: str, *args) -> None:
         """Trigger all listeners of message.
 
         Args:
@@ -210,7 +214,7 @@ class Signalable(object):
         if message in self.__slots:
             self.__slots[message].emit(*args)
 
-    def connect_bundle(self, fn):
+    def connect_bundle(self, fn: _Callable) -> None:
         """Connect a bundle listener.
 
         Args:
@@ -218,7 +222,7 @@ class Signalable(object):
         """
         self.__bundle_slots.connect(fn)
 
-    def disconnect_bundle(self, fn):
+    def disconnect_bundle(self, fn: _Callable) -> None:
         """Remove bundle listener.
 
         Args:
@@ -226,7 +230,7 @@ class Signalable(object):
         """
         self.__bundle_slots.disconnect(fn)
 
-    def emit_bundle(self, bundle):
+    def emit_bundle(self, bundle: List[str]) -> None:
         """Emit bundle of messages.
 
         Args:

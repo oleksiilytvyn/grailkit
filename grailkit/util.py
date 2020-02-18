@@ -1,9 +1,11 @@
 # -*- coding: UTF-8 -*-
 """Utility functions and constants.
 
-:copyright: (c) 2017-2020 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn (http://alexlitvin.name).
 :license: MIT, see LICENSE for more details.
 """
+from typing import Union, Any
+
 import os
 import sys
 import time
@@ -35,7 +37,7 @@ BUILTIN_TYPES = (
     types.BuiltinFunctionType)
 
 
-def application_location():
+def application_location() -> str:
     """Get the path to main script file no matter how it's run.
 
     Returns:
@@ -51,7 +53,7 @@ def application_location():
     return os.path.abspath(path)
 
 
-def data_location(app_name):
+def data_location(app_name: str) -> str:
     """Return path to application data folder.
 
     Args:
@@ -68,7 +70,7 @@ def data_location(app_name):
     return os.path.abspath(path)
 
 
-def copy_file(source, destination):
+def copy_file(source: str, destination: str) -> bool:
     """Copy file 'source' to file 'destination'.
 
     Args:
@@ -92,7 +94,7 @@ def copy_file(source, destination):
     return True
 
 
-def millis_now():
+def millis_now() -> int:
     """Get current time in ms.
 
     Returns:
@@ -101,7 +103,7 @@ def millis_now():
     return int(round(time.time() * 1000))
 
 
-def default_key(obj, key, default=None):
+def default_key(obj: object, key: str, default: Any = None) -> Any:
     """Get value by attribute in object or by key in dict.
 
     If property exists returns value otherwise returns `default` value.
@@ -122,7 +124,7 @@ def default_key(obj, key, default=None):
         return default
 
 
-def file_exists(path):
+def file_exists(path: str) -> bool:
     """Check if file exists.
 
     Args:
@@ -133,7 +135,7 @@ def file_exists(path):
     return os.path.exists(os.path.dirname(os.path.realpath(path))) and os.path.isfile(path)
 
 
-def is_builtin(type_object):
+def is_builtin(type_object: Union[type, object]) -> bool:
     """Check if object type is built-in.
 
     Args:
@@ -144,11 +146,11 @@ def is_builtin(type_object):
     return isinstance(type_object, type) or isinstance(type_object, BUILTIN_TYPES)
 
 
-def object_type(object_ref):
+def object_type(object_ref: Union[type, object]) -> type:
     """Get type of anything.
 
     Args:
-        object_ref (object, type): Object or type
+        object_ref (type, object): Object or type
     Returns:
         type: Type of given object
     """

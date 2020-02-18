@@ -4,16 +4,29 @@ Implementation of grail file format.
 
 This file format used for all internal grail data structures.
 
-:copyright: (c) 2017-2020 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn (http://alexlitvin.name).
 :license: MIT, see LICENSE for more details.
 """
+from __future__ import annotations
+from typing import Any, Dict, List, Optional, Callable, Union, Type
+
 import os
 import json
-import sqlite3 as lite
+import sqlite3
 
 from grailkit.core import Signal
 from grailkit.db import DataBaseHost, DataBaseError
 from grailkit.util import millis_now, default_key
+
+
+class DNAFactory:
+
+    @classmethod
+    def from_sqlite(cls, parent: DNA, row: sqlite3.Row) -> Any:
+        return row
+
+
+_Factory = Type[DNAFactory]
 
 
 class DNAError(DataBaseError):
@@ -23,7 +36,7 @@ class DNAError(DataBaseError):
 
 
 # noinspection PyProtectedMember
-class DNAEntity:
+class DNAEntity(DNAFactory):
     """
     DNA entity definition class.
 
@@ -39,7 +52,7 @@ class DNAEntity:
         index (int): index of entity, in case of ordered lists of entities;
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent: DNA):
         """DNA entity representation.
 
         This class provides methods and properties for easier management
@@ -56,7 +69,7 @@ class DNAEntity:
         self._name = ""
         self._parent = 0
         self._search = ""
-        self._content = None
+        self._content: Any = None
         self._created = millis_now()
         self._modified = 0
         self._index = 0
@@ -71,27 +84,27 @@ class DNAEntity:
         return True
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Return entity identifier number."""
         return self._id
 
     @property
-    def dna(self):
+    def dna(self) -> DNA:
         """Return parent DNA object, where this entity belongs."""
         return self._dna
 
     @property
-    def parent(self):
+    def parent(self) -> DNAEntity:
         """Return parent entity."""
         return self._dna._entity(self._parent)
 
     @property
-    def parent_id(self):
+    def parent_id(self) -> int:
         """Return parent entity identifier."""
         return self._parent
 
     @parent_id.setter
-    def parent_id(self, value):
+    def parent_id(self, value: int) -> None:
         """Set parent identifier.
 
         Args:
@@ -108,12 +121,12 @@ class DNAEntity:
         self._dna._update_field(self, 'parent')
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Name of entity."""
         return self._name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str) -> None:
         """Name of entity."""
         self._name = name
         self._changed()
@@ -121,12 +134,12 @@ class DNAEntity:
         self._dna._update_field(self, 'name')
 
     @property
-    def type(self):
+    def type(self) -> int:
         """Entity type."""
         return self._type
 
     @type.setter
-    def type(self, value):
+    def type(self, value: int) -> None:
         """Set type of entity.
 
         Args:
@@ -143,22 +156,22 @@ class DNAEntity:
         self._dna._update_field(self, 'type')
 
     @property
-    def created(self):
+    def created(self) -> float:
         """Time in milliseconds when entity was created."""
         return self._created
 
     @property
-    def modified(self):
+    def modified(self) -> float:
         """Time in milliseconds when entity was modified last time."""
         return self._modified
 
     @property
-    def content(self):
+    def content(self) -> Any:
         """Get contents of item."""
         return self._content
 
     @content.setter
-    def content(self, content):
+    def content(self, content: Any) -> None:
         """Set content of item.
 
         Args:
@@ -170,12 +183,12 @@ class DNAEntity:
         self._dna._update_field(self, 'content')
 
     @property
-    def search(self):
+    def search(self) -> str:
         """Search string."""
         return self._search
 
     @search.setter
-    def search(self, value):
+    def search(self, value: str) -> None:
         """Set value of search field.
 
         Args:
@@ -192,12 +205,12 @@ class DNAEntity:
         self._dna._update_field(self, 'search')
 
     @property
-    def index(self):
+    def index(self) -> int:
         """Index inside parent entity."""
         return self._index
 
     @index.setter
-    def index(self, value):
+    def index(self, value: int) -> None:
         """Set index of entity.
 
         Args:
@@ -211,7 +224,7 @@ class DNAEntity:
 
         self._dna._update_field(self, 'sort_order')
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: Any = None) -> Any:
         """Get a property value.
 
         Args:
@@ -220,7 +233,7 @@ class DNAEntity:
         """
         return self._dna._get(self.id, key, default)
 
-    def set(self, key, value, force_type=None):
+    def set(self, key: str, value: Any, force_type: Any = None) -> None:
         """Set a property.
 
         Args:
@@ -230,7 +243,7 @@ class DNAEntity:
         """
         self._dna._set(self.id, key, value, force_type)
 
-    def has(self, key):
+    def has(self, key: str) -> bool:
         """Check if property exists.
 
         Args:
@@ -238,16 +251,16 @@ class DNAEntity:
         """
         return self._dna._has(self.id, key)
 
-    def rename(self, old_key, new_key):
+    def rename(self, old_key: str, new_key: str) -> None:
         """Rename property.
 
         Args:
             old_key (str): old property name
             new_key (str): new property name
         """
-        return self._dna._rename(self.id, old_key, new_key)
+        self._dna._rename(self.id, old_key, new_key)
 
-    def unset(self, key):
+    def unset(self, key: str) -> None:
         """Remove property.
 
         Args:
@@ -255,19 +268,21 @@ class DNAEntity:
         """
         self._dna._unset(self.id, key)
 
-    def properties(self):
+    def properties(self) -> Dict[str, Any]:
         """Return list of all properties."""
         return self._dna._properties(self.id)
 
-    def update(self):
+    def update(self) -> None:
         """Force entity update and commit changes to database."""
         self._dna._update(self)
 
-    def delete(self):
+    def delete(self) -> None:
         """Delete this entity from DNA."""
         self._dna._remove(self._id)
 
-    def create(self, name, entity_type=None, index=-1, properties=None, factory=None):
+    def create(self, name: str, entity_type: int = None, index: int = -1,
+               properties: Optional[Dict[str, Any]] = None,
+               factory: Optional[_Factory] = None) -> DNAEntity:
         """Create new child entity.
 
         Args:
@@ -284,7 +299,7 @@ class DNAEntity:
                                  properties=properties,
                                  factory=factory)
 
-    def remove(self, entity):
+    def remove(self, entity: DNAEntity) -> None:
         """Remove first entity if given `entity` is children.
 
         Args:
@@ -292,7 +307,8 @@ class DNAEntity:
         """
         self._dna._remove(entity.id, parent=self.id)
 
-    def insert(self, index, entity, factory=None):
+    def insert(self, index: int, entity: DNAEntity,
+               factory: Optional[_Factory] = None) -> DNAEntity:
         """Create new entity and insert as child item.
 
         Args:
@@ -305,7 +321,7 @@ class DNAEntity:
                                index=index,
                                factory=factory)
 
-    def append(self, entity, factory=None):
+    def append(self, entity: DNAEntity, factory: Optional[_Factory] = None) -> DNAEntity:
         """Create and append new entity.
 
         Args:
@@ -314,11 +330,11 @@ class DNAEntity:
         """
         return self._dna._copy(entity, parent=self._id, factory=factory)
 
-    def clear(self):
+    def clear(self) -> None:
         """Remove all child entities."""
         self._dna._remove_childs(self._id)
 
-    def childs(self):
+    def childs(self) -> List[DNAEntity]:
         """Return list of all child entities."""
         return self._dna._childs(self._id)
 
@@ -326,11 +342,11 @@ class DNAEntity:
         """Return True if this entity has child's."""
         return self._dna._has_childs(self._id)
 
-    def reverse(self):
+    def reverse(self) -> None:
         """Sort child entities in reverse order."""
         self._dna._sort(self._id, key='sort_order', reverse=True)
 
-    def sort(self, key=None, reverse=False):
+    def sort(self, key: Optional[str] = None, reverse: bool = False) -> None:
         """Reorder child entities.
 
         Args:
@@ -339,12 +355,12 @@ class DNAEntity:
         """
         self._dna._sort(self._id, key=key, reverse=reverse)
 
-    def _changed(self):
+    def _changed(self) -> None:
         """Called when property is modified."""
         self._modified = millis_now()
         self._dna._update_field(self, 'modified')
 
-    def _parse(self, row):
+    def _parse(self, row: sqlite3.Row):
         """Parse sqlite row into DNAEntity.
 
         Args:
@@ -367,7 +383,7 @@ class DNAEntity:
                 pass
 
     @classmethod
-    def from_sqlite(cls, parent, row):
+    def from_sqlite(cls, parent: DNA, row: sqlite3.Row) -> Any:
         """Parse entity from sqlite."""
         entity = cls(parent=parent)
         entity._parse(row)
@@ -378,7 +394,7 @@ class DNAEntity:
 class SettingsEntity(DNAEntity):
     """Settings object."""
 
-    def __init__(self, parent):
+    def __init__(self, parent: DNA):
         """Initialize Settings entity.
 
         Args:
@@ -390,7 +406,7 @@ class SettingsEntity(DNAEntity):
 class SongEntity(DNAEntity):
     """Representation of song inside Grail file."""
 
-    def __init__(self, parent):
+    def __init__(self, parent: DNA):
         """Song DNA entity object."""
         super(SongEntity, self).__init__(parent)
 
@@ -407,12 +423,12 @@ class SongEntity(DNAEntity):
         self._lyrics = ""
 
     @property
-    def year(self):
+    def year(self) -> int:
         """Year of song release."""
         return self._year
 
     @year.setter
-    def year(self, value):
+    def year(self, value: int) -> None:
         """Set song release year.
 
         Args:
@@ -422,12 +438,12 @@ class SongEntity(DNAEntity):
         self._modified = millis_now()
 
     @property
-    def artist(self):
+    def artist(self) -> str:
         """Song artist name."""
         return self._artist
 
     @artist.setter
-    def artist(self, value):
+    def artist(self, value: str) -> None:
         """Set song artist name.
 
         Args:
@@ -437,12 +453,12 @@ class SongEntity(DNAEntity):
         self._modified = millis_now()
 
     @property
-    def album(self):
+    def album(self) -> str:
         """Album name."""
         return self._album
 
     @album.setter
-    def album(self, value):
+    def album(self, value: str) -> None:
         """Set album name.
 
         Args:
@@ -452,12 +468,12 @@ class SongEntity(DNAEntity):
         self._modified = millis_now()
 
     @property
-    def track(self):
+    def track(self) -> int:
         """Track number."""
         return self._track
 
     @track.setter
-    def track(self, value):
+    def track(self, value: int) -> None:
         """Set track number.
 
         Args:
@@ -467,12 +483,12 @@ class SongEntity(DNAEntity):
         self._modified = millis_now()
 
     @property
-    def genre(self):
+    def genre(self) -> str:
         """Genre name."""
         return self._genre
 
     @genre.setter
-    def genre(self, value):
+    def genre(self, value: str) -> None:
         """Set genre.
 
         Args:
@@ -482,12 +498,12 @@ class SongEntity(DNAEntity):
         self._modified = millis_now()
 
     @property
-    def language(self):
+    def language(self) -> str:
         """Language code of lyrics."""
         return self._language
 
     @language.setter
-    def language(self, value):
+    def language(self, value: str) -> None:
         """Set language.
 
         Args:
@@ -497,12 +513,12 @@ class SongEntity(DNAEntity):
         self._modified = millis_now()
 
     @property
-    def lyrics(self):
+    def lyrics(self) -> str:
         """Song lyrics text."""
         return self._lyrics
 
     @lyrics.setter
-    def lyrics(self, value):
+    def lyrics(self, value: str) -> None:
         """Set lyrics text.
 
         Args:
@@ -511,7 +527,7 @@ class SongEntity(DNAEntity):
         self._lyrics = value
         self._modified = millis_now()
 
-    def update(self):
+    def update(self) -> None:
         """Update song information."""
         self._search = "%s %s %s" % (self._lyrics, self._album, self._artist)
         self._content = {
@@ -526,7 +542,7 @@ class SongEntity(DNAEntity):
 
         super(SongEntity, self).update()
 
-    def _parse(self, row):
+    def _parse(self, row: sqlite3.Row) -> None:
         """Parse sqlite row into SongEntity.
 
         Args:
@@ -553,19 +569,19 @@ class FileEntity(DNAEntity):
     SEEK_CUR = 1
     SEEK_END = 2
 
-    def __init__(self, parent):
+    def __init__(self, parent: DNA):
         """Create DNA file entity."""
         super(FileEntity, self).__init__(parent)
 
         self._offset = 0
 
     @property
-    def content(self):
+    def content(self) -> bytes:
         """Get file contents."""
         return self._content.encode('utf-8')
 
     @content.setter
-    def content(self, value):
+    def content(self, value: bytes) -> None:
         """Set file contents.
 
         Args:
@@ -576,7 +592,7 @@ class FileEntity(DNAEntity):
 
         self._content = value.decode('utf-8')
 
-    def read(self, size=0):
+    def read(self, size: int = 0) -> bytes:
         """Read contents of file, if buffer_size is 0 or None returns whole file.
 
         Args:
@@ -586,16 +602,18 @@ class FileEntity(DNAEntity):
             return self.content
 
         self._offset += size
+
         return self.content[self._offset - size:self._offset]
 
-    def write(self, data):
+    def write(self, data: bytes) -> None:
         """Write data at cursor position."""
         content = self.content
 
-        self._content = (content[0:self._offset] + data + content[self._offset + len(data):]).decode('utf-8')
+        self._content = (content[0:self._offset] + data +
+                         content[self._offset + len(data):]).decode('utf-8')
         self._offset += len(data)
 
-    def truncate(self, size=0):
+    def truncate(self, size: int = 0) -> None:
         """Truncate the file size.
 
         If the optional size argument is present, the file is truncated to that size.
@@ -605,12 +623,12 @@ class FileEntity(DNAEntity):
         """
         self._content = self.content[0:size].decode('utf-8')
 
-    def seek(self, offset, whence=SEEK_SET):
+    def seek(self, offset: int, whence: int = SEEK_SET) -> None:
         """Set the file's current position.
 
         Args:
             offset (int): new position
-            whence (int): how to calculate offset - from begging, current position or end of contents
+            whence (int): how to calculate offset
         """
         if whence == self.SEEK_SET:
             self._offset = offset
@@ -619,11 +637,11 @@ class FileEntity(DNAEntity):
         elif whence == self.SEEK_END:
             self._offset = len(self.content) - offset
 
-    def tell(self):
+    def tell(self) -> int:
         """Return current stream position."""
         return self._offset
 
-    def _parse(self, row):
+    def _parse(self, row: sqlite3.Row) -> None:
         super(FileEntity, self)._parse(row)
 
         self._content = (self._content or '')
@@ -633,7 +651,7 @@ class FileEntity(DNAEntity):
 class CuelistEntity(DNAEntity):
     """Representation of cuelist."""
 
-    def __init__(self, parent):
+    def __init__(self, parent: DNA):
         """Create a cuelist."""
         super(CuelistEntity, self).__init__(parent)
 
@@ -641,11 +659,11 @@ class CuelistEntity(DNAEntity):
         """Return number of cues."""
         return len(self.cues())
 
-    def cues(self):
+    def cues(self) -> List[DNAEntity]:
         """Return list of all cues in Cuelist."""
         return self._dna._entities(filter_parent=self._id)
 
-    def cue(self, cue_id):
+    def cue(self, cue_id: int) -> DNAEntity:
         """Get cue by id.
 
         Args:
@@ -653,7 +671,9 @@ class CuelistEntity(DNAEntity):
         """
         return self._dna._entity(cue_id)
 
-    def create(self, name, entity_type=None, index=-1, properties=None, factory=None):
+    def create(self, name: str, entity_type: int = None, index: int = -1,
+               properties: Optional[Dict[str, Any]] = None,
+               factory: Optional[_Factory] = None) -> DNAEntity:
         """Create entity with DNA.TYPE_CUE by default.
 
         Args:
@@ -666,7 +686,8 @@ class CuelistEntity(DNAEntity):
         if entity_type is None:
             entity_type = DNA.TYPE_CUE
 
-        super(CuelistEntity, self).create(name, entity_type, index=-1, properties=properties, factory=factory)
+        return super(CuelistEntity, self).create(name, entity_type, index=-1,
+                                                 properties=properties, factory=factory)
 
 
 class CueEntity(DNAEntity):
@@ -707,7 +728,7 @@ class CueEntity(DNAEntity):
         'Purple',
         'Gray')
 
-    def __init__(self, parent):
+    def __init__(self, parent: DNA):
         """Create a cue instance.
 
         Args:
@@ -716,12 +737,12 @@ class CueEntity(DNAEntity):
         super(CueEntity, self).__init__(parent)
 
     @property
-    def number(self):
+    def number(self) -> str:
         """Identifier of cue assigned by user."""
         return self.get("number", default=self.index)
 
     @number.setter
-    def number(self, value):
+    def number(self, value: str) -> None:
         """Set number.
 
         Args:
@@ -735,29 +756,30 @@ class CueEntity(DNAEntity):
         self.set("number", value)
 
     @property
-    def color(self):
+    def color(self) -> str:
         """any text that describe cue."""
         return self.get("color", default=self.COLOR_DEFAULT)
 
     @color.setter
-    def color(self, value):
+    def color(self, value: str) -> None:
         """Set color of cue.
 
         Args:
             value (str): cue color
         """
         if not isinstance(value, str):
-            raise ValueError('Cue color must be string in #000000 format, \'%s\' given' % str(value))
+            raise ValueError('Cue color must be string in #000000 format, \'%s\' given'
+                             % str(value))
 
         self.set('color', value)
 
     @property
-    def pre_wait(self):
+    def pre_wait(self) -> float:
         """Wait before execution of cue."""
         return self.get("pre-wait", default=0)
 
     @pre_wait.setter
-    def pre_wait(self, value):
+    def pre_wait(self, value: Union[float, int]) -> None:
         """Set pre wait.
 
         Args:
@@ -771,12 +793,12 @@ class CueEntity(DNAEntity):
         self.set('pre-wait', value, force_type=DNA.ARG_FLOAT)
 
     @property
-    def post_wait(self):
+    def post_wait(self) -> float:
         """Wait after execution of cue."""
         return self.get("post-wait", default=0)
 
     @post_wait.setter
-    def post_wait(self, value):
+    def post_wait(self, value: Union[float, int]) -> None:
         """Set post wait time.
 
         Args:
@@ -790,12 +812,12 @@ class CueEntity(DNAEntity):
         self.set('post-wait', value, force_type=DNA.ARG_FLOAT)
 
     @property
-    def follow(self):
+    def follow(self) -> int:
         """Execute next cue after this finishes, move cursor to next or do nothing."""
         return self.get("follow", default=self.FOLLOW_OFF)
 
     @follow.setter
-    def follow(self, value):
+    def follow(self, value: int) -> None:
         """Set follow mode.
 
         Args:
@@ -808,7 +830,8 @@ class CueEntity(DNAEntity):
 
         self.set("follow", value)
 
-    def create(self, name, entity_type=None, index=-1, properties=None, factory=None):
+    def create(self, name: str, entity_type: int = None, index: int = -1,
+               properties: Optional[Dict[str, Any]] = None, factory: Optional[_Factory] = None):
         """Create entity with DNA.TYPE_CUE by default.
 
         Args:
@@ -821,7 +844,8 @@ class CueEntity(DNAEntity):
         if entity_type is None:
             entity_type = DNA.TYPE_CUE
 
-        super(CueEntity, self).create(name, entity_type, index=-1, properties=properties, factory=factory)
+        super(CueEntity, self)\
+            .create(name, entity_type, index=-1, properties=properties, factory=factory)
 
 
 class DNA:
@@ -884,8 +908,6 @@ class DNA:
         TYPE_FILE: FileEntity,
         TYPE_SONG: SongEntity}
 
-    # database handler
-    _db = None
     # create file from this query
     _db_create_query = """
         DROP TABLE IF EXISTS properties;
@@ -898,7 +920,7 @@ class DNA:
     # file extension
     _file_extension = ".grail"
 
-    def __init__(self, file_path, create=False):
+    def __init__(self, file_path: str, create: bool = False):
         """Open a *.grail file for read and write.
 
         Args:
@@ -914,6 +936,8 @@ class DNA:
         self.entity_removed = Signal(int)
         self.entity_added = Signal(int)
 
+        # database handler
+        # self._db = None
         self._changed = False
         self._location = file_path
 
@@ -923,26 +947,26 @@ class DNA:
             self._db = DataBaseHost.get(file_path, query=self._db_create_query, create=create)
 
     @property
-    def location(self):
+    def location(self) -> str:
         """Return path to file."""
         return self._location
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         """Return file name."""
         return os.path.splitext(os.path.basename(self._location))[0]
 
     @property
-    def changed(self):
+    def changed(self) -> bool:
         """Return True if changes not saved."""
         return self._changed
 
-    def save(self):
+    def save(self) -> None:
         """Save all changes."""
         self._db.commit()
         self._changed = False
 
-    def save_copy(self, file_path, create=True):
+    def save_copy(self, file_path: str, create: bool = True) -> None:
         """Save a copy of this file to `file_path` location.
 
         Args:
@@ -952,12 +976,15 @@ class DNA:
         self.save()
         self._db.copy(file_path, create=create)
 
-    def close(self):
+    def close(self) -> None:
         """Close connection."""
         self._db.close()
         self._changed = False
 
-    def _create(self, name="", parent=0, entity_type=None, index=-1, properties=None, factory=None):
+    def _create(self, name: str = "", parent: int = 0,
+                entity_type: Optional[int] = None, index: int = -1,
+                properties: Optional[Dict[str, Any]] = None,
+                factory: Optional[_Factory] = None) -> Any:
         """Return new DNAEntity inside this DNA file.
 
         Args:
@@ -1010,7 +1037,8 @@ class DNA:
         if properties and len(properties) > 0:
             for key, value in properties.items():
                 force_type = self._get_type(value)
-                self._db.execute("INSERT OR IGNORE INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
+                self._db.execute("INSERT OR IGNORE "
+                                 "INTO properties(entity, key, value, type) VALUES(?, ?, ?, ?)",
                                  (entity_id, key, self._write_type(value, force_type), force_type))
 
         entity = self._entity(entity_id, factory)
@@ -1021,7 +1049,9 @@ class DNA:
 
         return entity
 
-    def _copy(self, entity, name=None, parent=None, entity_type=None, index=-1, factory=None):
+    def _copy(self, entity: DNAEntity, name: Optional[str] = None,
+              parent: Optional[int] = None, entity_type: Optional[int] = None,
+              index: int = -1, factory: Optional[_Factory] = None) -> Any:
         """Create copy of given entity and override properties if needed.
 
         Args:
@@ -1079,7 +1109,7 @@ class DNA:
 
         return entity
 
-    def _entity(self, entity_id, factory=None):
+    def _entity(self, entity_id: int, factory: Optional[_Factory] = None) -> Any:
         """Get entity by `entity_id`.
 
         Args:
@@ -1096,8 +1126,12 @@ class DNA:
 
         return entities[0] if len(entities) > 0 else None
 
-    def _entities(self, filter_type=None, filter_parent=None, filter_keyword=None,
-                  sort=None, reverse=False, offset=0, limit=0, factory=None):
+    def _entities(self, filter_type: Optional[int] = None,
+                  filter_parent: Optional[int] = None,
+                  filter_keyword: Optional[str] = None,
+                  sort: Optional[str] = None, reverse: bool = False,
+                  offset: int = 0, limit: int = 0, factory: Optional[_Factory] = None) \
+            -> List[Any]:
         """Get list of all entities.
 
         Args:
@@ -1114,7 +1148,7 @@ class DNA:
             list of all entities available regarding filter arguments
         """
         where = []
-        args = []
+        args: List[Any] = []
 
         if filter_parent is not None:
             where.append(" parent = ?")
@@ -1154,7 +1188,7 @@ class DNA:
 
         return self._factory(factory, raw_entities)
 
-    def _update(self, entity):
+    def _update(self, entity: DNAEntity) -> None:
         """Update entity.
 
         Args:
@@ -1170,12 +1204,14 @@ class DNA:
                         search = ?,
                         sort_order = ?
                         WHERE id = ?""",
-                       (entity.id, entity.parent_id, entity.type, entity.name, entity.created, entity.modified,
-                        json.dumps(entity._content, separators=(',', ':')), entity.search, entity.index, entity.id))
+                       (entity.id, entity.parent_id, entity.type, entity.name,
+                        entity.created, entity.modified,
+                        json.dumps(entity._content, separators=(',', ':')),
+                        entity.search, entity.index, entity.id))
 
         self.entity_changed.emit(entity.id)
 
-    def _update_field(self, entity, field):
+    def _update_field(self, entity: DNAEntity, field: str) -> None:
         """Update entity field.
 
         Args:
@@ -1184,7 +1220,8 @@ class DNA:
         """
         self._changed = True
 
-        if field not in ('parent', 'type', 'name', 'created', 'modified', 'content', 'search', 'sort_order'):
+        if field not in ('parent', 'type', 'name', 'created',
+                         'modified', 'content', 'search', 'sort_order'):
             raise ValueError('Given field "%s" not supported' % str(field))
 
         if field in ('type', 'name', 'created', 'modified', 'search'):
@@ -1202,7 +1239,7 @@ class DNA:
 
         self.entity_changed.emit(entity.id)
 
-    def _remove(self, entity_id, parent=None):
+    def _remove(self, entity_id: int, parent: Optional[int] = None) -> bool:
         """Remove entity by id.
 
         Args:
@@ -1210,7 +1247,8 @@ class DNA:
             parent (int): parent entity id
         """
         if parent:
-            entity = self._db.get("SELECT parent FROM entities WHERE id = ? AND parent = ?", (entity_id, parent))
+            entity = self._db.get("SELECT parent FROM entities "
+                                  "WHERE id = ? AND parent = ?", (entity_id, parent))
             parent_id = entity[0] if entity else None
 
             # return False since there is no entity to remove
@@ -1234,7 +1272,7 @@ class DNA:
 
         return True
 
-    def _remove_childs(self, entity_id):
+    def _remove_childs(self, entity_id: int) -> None:
         """Remove child entities.
 
         Args:
@@ -1243,7 +1281,7 @@ class DNA:
         for child in self._childs(entity_id):
             self._remove(child.id)
 
-    def _sort(self, entity_id, key=None, reverse=False):
+    def _sort(self, entity_id: int, key: Optional[str] = None, reverse: bool = False) -> None:
         """Sort child entities.
 
         Args:
@@ -1254,11 +1292,12 @@ class DNA:
         entities = self._entities(filter_parent=entity_id, sort=key, reverse=reverse)
 
         for index, entity in enumerate(entities):
-            self._db.execute("""UPDATE entities SET sort_order = ? WHERE id = ?""", (index, entity.id))
+            self._db.execute("""UPDATE entities 
+                                SET sort_order = ? WHERE id = ?""", (index, entity.id))
 
         self._db.commit()
 
-    def _has_childs(self, entity_id):
+    def _has_childs(self, entity_id: int) -> bool:
         """Check entity child nodes.
 
         Args:
@@ -1271,7 +1310,7 @@ class DNA:
 
         return bool(parent)
 
-    def _childs(self, entity_id, factory=None):
+    def _childs(self, entity_id: int, factory: Optional[_Factory] = None) -> List[Any]:
         """Get child nodes of entity.
 
         Args:
@@ -1280,14 +1319,15 @@ class DNA:
         Returns:
             list of child entities
         """
-        raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, content, search, sort_order
+        raw_entities = self._db.all("""SELECT id, parent, type, name, created, modified, 
+                                              content, search, sort_order
                                 FROM entities
                                 WHERE parent = ?
                                 ORDER BY sort_order ASC""", (entity_id,))
 
         return self._factory(factory, raw_entities)
 
-    def _get(self, entity_id, key, default=None):
+    def _get(self, entity_id: int, key: str, default: Any = None) -> Any:
         """Get property of entity with id `entity_id` and property name `key`.
 
         Args:
@@ -1303,7 +1343,7 @@ class DNA:
 
         return self._read_type(value[0], value[1]) if value else default
 
-    def _set(self, entity_id, key, value, force_type=None):
+    def _set(self, entity_id: int, key: str, value: Any, force_type: Any = None) -> int:
         """Set a property value of an entity.
 
         Args:
@@ -1334,7 +1374,7 @@ class DNA:
 
         return self._db.cursor.lastrowid
 
-    def _has(self, entity_id, key):
+    def _has(self, entity_id: int, key: str) -> bool:
         """Check property existence.
 
         Args:
@@ -1349,7 +1389,7 @@ class DNA:
 
         return bool(value)
 
-    def _contains(self, entity_id, child_id):
+    def _contains(self, entity_id: int, child_id: int) -> bool:
         """Check if entity contains a child.
 
         Args:
@@ -1367,7 +1407,7 @@ class DNA:
 
         return value
 
-    def _properties(self, entity_id):
+    def _properties(self, entity_id: int) -> Dict[str, Any]:
         """Get list of all properties linked to entity.
 
         Args:
@@ -1376,11 +1416,12 @@ class DNA:
         Returns:
             properties list of an entity
         """
-        props = self._db.all("SELECT key, value, type FROM `properties` WHERE `entity` = ?", (entity_id,))
+        props = self._db.all("SELECT key, value, type "
+                             "FROM `properties` WHERE `entity` = ?", (entity_id,))
 
         return {prop[0]: self._read_type(prop[1], prop[2]) for prop in props}
 
-    def _unset(self, entity_id, key):
+    def _unset(self, entity_id: int, key: str) -> None:
         """Remove property of an entity.
 
         Args:
@@ -1391,7 +1432,7 @@ class DNA:
 
         self._db.execute("DELETE FROM properties WHERE entity = ? AND key = ?", (entity_id, key))
 
-    def _unset_all(self, entity_id):
+    def _unset_all(self, entity_id: int) -> None:
         """Remove all properties of an entity.
 
         Args:
@@ -1401,7 +1442,7 @@ class DNA:
 
         self._db.execute("DELETE FROM properties WHERE entity = ?", (entity_id,))
 
-    def _rename(self, entity_id, old_key, new_key):
+    def _rename(self, entity_id: int, old_key: str, new_key: str) -> None:
         """Rename property key.
 
         Args:
@@ -1417,7 +1458,7 @@ class DNA:
         # emit property changed signal
         self.property_changed.emit(entity_id, new_key, self._get(entity_id, new_key))
 
-    def _factory(self, factory, raw_entities):
+    def _factory(self, factory: Optional[_Factory], raw_entities: List[sqlite3.Row]) -> List[Any]:
         """Return list of entities created by factory from raw_entities.
 
         Args:
@@ -1433,7 +1474,7 @@ class DNA:
         return entities
 
     @classmethod
-    def validate(cls, file_path):
+    def validate(cls, file_path: str):
         """Validate file to be proper grail file.
 
         Args:
@@ -1451,13 +1492,13 @@ class DNA:
         try:
             db = DataBaseHost.get(file_path)
             db.all("SELECT name FROM sqlite_master WHERE type='table'")
-        except lite.DatabaseError:
+        except sqlite3.DatabaseError:
             return False
 
         return True
 
     @classmethod
-    def _get_factory(cls, entity_type):
+    def _get_factory(cls, entity_type: int) -> _Factory:
         """Map types to entities.
 
         Args:
@@ -1468,7 +1509,7 @@ class DNA:
         return cls.TYPES_FACTORIES[entity_type] if entity_type in cls.TYPES_FACTORIES else DNAEntity
 
     @classmethod
-    def _get_type(cls, value):
+    def _get_type(cls, value: Any) -> int:
         """Get type of value.
 
         Args:
@@ -1495,7 +1536,7 @@ class DNA:
         return arg_type
 
     @classmethod
-    def _write_type(cls, arg_value, arg_type):
+    def _write_type(cls, arg_value: Any, arg_type: int) -> str:
         """Create a string representation of value given.
 
         Args:
@@ -1521,7 +1562,7 @@ class DNA:
         return value
 
     @classmethod
-    def _read_type(cls, arg_value, arg_type):
+    def _read_type(cls, arg_value: Any, arg_type: int) -> Any:
         """Parse string from db into correct object.
 
         Args:
@@ -1627,7 +1668,7 @@ class DNAProxy:
 class DNAFile(DNA, DNAProxy):
     """Interface to Grail-file with public methods."""
 
-    def __init__(self, file_path, create=False):
+    def __init__(self, file_path: str, create: bool = False):
         """Open a grail file.
 
         Args:
@@ -1641,7 +1682,7 @@ class DNAFile(DNA, DNAProxy):
 class SettingsFile(DNA):
     """Represents a grail file with properties only."""
 
-    def __init__(self, file_path, create=False):
+    def __init__(self, file_path: str, create: bool = False):
         """Open or create a settings file.
 
         Args:
@@ -1650,7 +1691,7 @@ class SettingsFile(DNA):
         """
         super(SettingsFile, self).__init__(file_path, create=create)
 
-    def has(self, key):
+    def has(self, key: str) -> bool:
         """Check if property exists.
 
         Args:
@@ -1660,7 +1701,7 @@ class SettingsFile(DNA):
         """
         return self._has(0, key)
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: Any = None) -> Any:
         """Get a property value.
 
         Args:
@@ -1671,7 +1712,7 @@ class SettingsFile(DNA):
         """
         return self._get(0, key, default)
 
-    def set(self, key, value, force_type=None):
+    def set(self, key: str, value: Any, force_type: Any = None) -> Any:
         """Set value of property.
 
         Args:
@@ -1686,14 +1727,14 @@ class SettingsFile(DNA):
 
         return result
 
-    def properties(self):
+    def properties(self) -> Dict[str, Any]:
         """Get a all properties.
 
         Returns: dist object of all properties
         """
         return self._properties(0)
 
-    def unset(self, key):
+    def unset(self, key: str) -> bool:
         """Remove property by key value.
 
         Args:
@@ -1706,7 +1747,7 @@ class SettingsFile(DNA):
 
         return True
 
-    def unset_all(self):
+    def unset_all(self) -> bool:
         """Remove all properties.
 
         Returns:
@@ -1717,7 +1758,7 @@ class SettingsFile(DNA):
 
         return True
 
-    def rename(self, old_key, new_key):
+    def rename(self, old_key: str, new_key: str) -> bool:
         """Rename property key.
 
         Args:
@@ -1742,7 +1783,7 @@ class ProjectError(DNAError):
 class Project(DNA):
     """Representation of a project file."""
 
-    def __init__(self, file_path, create=False):
+    def __init__(self, file_path: str, create: bool = False):
         """Open or create a project.
 
         Args:
@@ -1770,17 +1811,17 @@ class Project(DNA):
         return len(self.cuelists())
 
     @property
-    def dna(self):
+    def dna(self) -> DNAProxy:
         """Get a proxy for dna."""
         return self._dna_proxy
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Project name."""
         return self._root().name
 
     @name.setter
-    def name(self, value):
+    def name(self, value: str) -> None:
         """Project name setter.
 
         Args:
@@ -1789,12 +1830,12 @@ class Project(DNA):
         self._root().name = value
 
     @property
-    def description(self):
+    def description(self) -> str:
         """Project description."""
         return self._root().get('description', default='Grail project')
 
     @description.setter
-    def description(self, value):
+    def description(self, value: str) -> None:
         """Project description setter.
 
         Args:
@@ -1803,12 +1844,12 @@ class Project(DNA):
         self._root().set('description', value)
 
     @property
-    def author(self):
+    def author(self) -> str:
         """Project author."""
         return self._root().get('author', default='Grail')
 
     @author.setter
-    def author(self, value):
+    def author(self, value: str) -> None:
         """Project author setter.
 
         Args:
@@ -1817,18 +1858,18 @@ class Project(DNA):
         self._root().set('author', value)
 
     @property
-    def created(self):
+    def created(self) -> float:
         """Date on witch project was created."""
         return self._root().created
 
     @property
-    def modified(self):
+    def modified(self) -> float:
         """Date of last edit on project."""
         return self._root().modified
 
-    def settings(self):
+    def settings(self) -> SettingsEntity:
         """Get a setting entity."""
-        entity = self._entities(filter_type=DNA.TYPE_SETTINGS,
+        entity: Any = self._entities(filter_type=DNA.TYPE_SETTINGS,
                                 filter_parent=self._id,
                                 factory=SettingsEntity)
 
@@ -1841,23 +1882,24 @@ class Project(DNA):
         else:
             return entity[0]
 
-    def cuelists(self):
+    def cuelists(self) -> List[CuelistEntity]:
         """Get all cuelists in project."""
         return self._entities(filter_type=DNA.TYPE_CUELIST,
                               filter_parent=self._id,
                               factory=CuelistEntity)
 
-    def cuelist(self, cuelist_id):
+    def cuelist(self, cuelist_id: int) -> CuelistEntity:
         """Get a cuelist."""
         return self._entity(cuelist_id, factory=CuelistEntity)
 
-    def remove(self, cuelist_id):
+    def remove(self, cuelist_id: int) -> bool:
         """Remove a cuelist."""
         return self._remove(cuelist_id)
 
-    def create(self, name="Untitled cuelist"):
+    def create(self, name: str = "Untitled cuelist") -> CuelistEntity:
         """Create a cuelist."""
-        return self._create(name=name, parent=self._id, entity_type=DNA.TYPE_CUELIST, factory=CuelistEntity)
+        return self._create(name=name, parent=self._id,
+                            entity_type=DNA.TYPE_CUELIST, factory=CuelistEntity)
 
     def _root(self):
         """Return root project entity."""
@@ -1894,7 +1936,7 @@ class Library(DNA):
     # file extension
     _file_extension = ".grail-library"
 
-    def __init__(self, file_path, create=False):
+    def __init__(self, file_path: str, create: bool = False):
         """Open or create a project.
 
         Args:
@@ -1902,7 +1944,7 @@ class Library(DNA):
         """
         super(Library, self).__init__(file_path, create=create)
 
-        self._root = None
+        self._root: Any = None
         self._dna_proxy = DNAProxy(self)
 
         if not self.root() and create:
@@ -1912,11 +1954,12 @@ class Library(DNA):
             raise LibraryError("Library entity not found in file %s" % (file_path,))
 
     @property
-    def dna(self):
+    def dna(self) -> DNAProxy:
         """Get a proxy for dna."""
         return self._dna_proxy
 
-    def create(self, name, entity_type=DNA.TYPE_ABSTRACT, factory=None):
+    def create(self, name: str, entity_type: int = DNA.TYPE_ABSTRACT,
+               factory: Optional[_Factory] = None) -> DNAEntity:
         """Create new library entity.
 
         Returns:
@@ -1929,7 +1972,7 @@ class Library(DNA):
 
         return item
 
-    def copy(self, entity):
+    def copy(self, entity: DNAEntity) -> None:
         """Copy existing entity into library.
 
         Args:
@@ -1937,7 +1980,7 @@ class Library(DNA):
         """
         self._copy(entity)
 
-    def root(self):
+    def root(self) -> DNAEntity:
         """Get a library entity.
 
         Returns:
@@ -1946,13 +1989,13 @@ class Library(DNA):
         if self._root:
             return self._root
 
-        root = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
+        root: Any = self._entities(filter_type=DNA.TYPE_LIBRARY, filter_parent=0)
         root = root[0] if len(root) > 0 else None
         self._root = root
 
         return root
 
-    def remove(self, entity_id):
+    def remove(self, entity_id: int) -> None:
         """Remove entity from library.
 
         Args:
@@ -1960,12 +2003,14 @@ class Library(DNA):
         """
         self._remove(entity_id)
 
-    def clear(self):
+    def clear(self) -> None:
         """Remove all entities from library."""
         for entity in self.items():
             self._remove(entity.id)
 
-    def items(self, filter_type=None, filter_keyword=None, sort='name', reverse=False, offset=0, limit=0):
+    def items(self, filter_type: Any = None, filter_keyword: Optional[str] = None,
+              sort: str = 'name', reverse: bool = False, offset: int = 0, limit: int = 0)\
+            -> List[DNAEntity]:
         """Return list of library items.
 
         Args:
@@ -1985,7 +2030,7 @@ class Library(DNA):
             offset=offset,
             limit=limit)
 
-    def item(self, entity_id):
+    def item(self, entity_id: int) -> DNAEntity:
         """Return library item by id.
 
         Args:

@@ -2,7 +2,7 @@
 """
 Tests for db module
 
-:copyright: (c) 2017-2020 by Oleksii Lytvyn.
+:copyright: (c) 2017-2020 by Oleksii Lytvyn (http://alexlitvin.name).
 :license: MIT, see LICENSE for more details.
 """
 import unittest

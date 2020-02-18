@@ -3,13 +3,11 @@ syntax: glob
 bin/*
 dist/*
 build/*
-__pycache__/*
 .idea/*
+.mypy_cache/*
+__pycache__/*
 grailkit.egg-info/*
 docs/_build/*
-grailkit/spout/_spout/x64/*
-grailkit/spout/_spout/build/*
-grailkit/spout/_spout/.vs/*
 
 *~
 *.db
