@@ -114,6 +114,10 @@ class Verse:
         return "%s %d:%d" % (self._book, self._chapter, self._verse)
 
     @property
+    def name(self) -> str:
+        return "%s\n%s" % (self._text, self.reference);
+
+    @property
     def text(self) -> str:
         """Text of verse."""
         return self._text

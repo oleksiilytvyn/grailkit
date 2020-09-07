@@ -1173,6 +1173,9 @@ class DNA:
         if len(where) > 0:
             sql += " WHERE" + " AND ".join(where)
 
+        sql += " ORDER BY %s %s" % (sort if isinstance(sort, str) else "sort_order",
+                                    "DESC" if reverse else "ASC")
+
         if limit > 0:
             sql += " LIMIT ? "
             args.append(limit)
@@ -1180,9 +1183,6 @@ class DNA:
         if offset > 0:
             sql += " OFFSET ? "
             args.append(offset)
-
-        sql += " ORDER BY %s %s" % (sort if isinstance(sort, str) else "sort_order",
-                                    "DESC" if reverse else "ASC")
 
         raw_entities = self._db.all(sql, args)
 
